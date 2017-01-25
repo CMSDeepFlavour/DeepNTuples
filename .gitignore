@@ -4,3 +4,5 @@
 *.out
 *.root
 #*.*#
+*.pyc
+__init__.py
