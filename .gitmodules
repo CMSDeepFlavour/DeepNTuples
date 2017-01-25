@@ -1,0 +1,3 @@
+[submodule "JMEAnalysis/JetToolbox"]
+	path = JMEAnalysis/JetToolbox
+	url = git@github.com:cms-jet/JetToolbox.git
