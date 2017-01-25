@@ -39,13 +39,13 @@ private:
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
   edm::EDGetTokenT<pat::JetCollection>     jetToken_;
 
-  TFile *file = new TFile("output.root","recreate");
-  TTree *tree = new TTree("tree","tree");
+  TFile *file_ = new TFile("output.root","recreate");
+  TTree *tree_ = new TTree("tree","tree");
 
-  unsigned int npv;
+  unsigned int npv_;
 
   // jet variables
-  std::vector<float > jet_pt;
+  float jet_pt_;
 
 };
 
@@ -54,19 +54,19 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
   jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets")))
 {
-  //now do what ever initialization is needed                                                                                                    
+  //now do what ever initialization is needed
   usesResource("TFileService");
 
-  tree->Branch("npv"    ,&npv    ,"npv/i"    );
+  tree_->Branch("npv"    ,&npv_    ,"npv/i"    );
 
   // jet variables
-  tree->Branch("jet_pt"            , &jet_pt            );
+  tree_->Branch("jet_pt", &jet_pt_);
 }
 
 
 DeepNtuplizer::~DeepNtuplizer()
 {
-  file->Close();
+  file_->Close();
 }
 
 
@@ -74,42 +74,23 @@ DeepNtuplizer::~DeepNtuplizer()
 void
 DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-
-
   edm::Handle<reco::VertexCollection> vertices;
   iEvent.getByToken(vtxToken_, vertices);
-  if (vertices->empty()) return; // skip the event if no PV found                                                                                
+  if (vertices->empty()) return; // skip the event if no PV found
   const reco::Vertex &PV = vertices->front();
 
   edm::Handle<pat::JetCollection> jets;
   iEvent.getByToken(jetToken_, jets);
 
-  // clear vectors                                                                                                                               
-  jet_pt.clear();
-
-  npv = vertices->size();
+  // clear vectors
+  npv_ = vertices->size();
 
 
   // loop over the jets
   for (const pat::Jet &jet : *jets) {
-
-    jet_pt.push_back           ( jet.pt()                                 );
-
-
+    jet_pt_ = jet.pt();
+		tree_->Fill();
   }
-
-
-  tree->Fill();
-
-#ifdef THIS_IS_AN_EVENT_EXAMPLE
-  Handle<ExampleData> pIn;
-  iEvent.getByLabel("example",pIn);
-#endif
-
-#ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
-  ESHandle<SetupData> pSetup;
-  iSetup.get<SetupRecord>().get(pSetup);
-#endif
 }
 
 
@@ -123,9 +104,9 @@ DeepNtuplizer::beginJob()
 void
 DeepNtuplizer::endJob()
 {
-  file->cd();
-  tree->Write();
-  file->Write();
+  file_->cd();
+  tree_->Write();
+  file_->Write();
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
