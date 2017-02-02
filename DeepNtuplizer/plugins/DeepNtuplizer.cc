@@ -43,7 +43,6 @@ private:
   TFile *file_ = new TFile("output.root","recreate");
   TTree *tree_ = new TTree("tree","tree");
 
-
  // labels (MC truth)
   float gen_pt_;
   int flavour_;
@@ -125,17 +124,21 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   tree_->Branch("Cpfcan_dptdpt",&Cpfcan_dptdpt_,"Cpfcan_dptdpt_[n_Cpfcand_]/f");
   tree_->Branch("Cpfcan_detadeta",&Cpfcan_detadeta_,"Cpfcan_detadeta_[n_Cpfcand_]/f");
   tree_->Branch("Cpfcan_dphidphi",&Cpfcan_dphidphi_,"Cpfcan_dphidphi_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_dxydxy",&Cpfcan_dxydxy_,"Cpfcan_dxydxy_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_dzdz",&Cpfcan_dzdz_,"Cpfcan_dzdz_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_dxydz",&Cpfcan_dxydz_,"Cpfcan_dxydz_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_dphidxy",&Cpfcan_dphidxy_,"Cpfcan_dphidxy_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_dlambdadz",&Cpfcan_dlambdadz_,"Cpfcan_dlambdadz_[n_Cpfcand_]/f");
+
+  // FIXME gave INFs?
+  //  tree_->Branch("Cpfcan_dxydxy",&Cpfcan_dxydxy_,"Cpfcan_dxydxy_[n_Cpfcand_]/f");
+  //  tree_->Branch("Cpfcan_dzdz",&Cpfcan_dzdz_,"Cpfcan_dzdz_[n_Cpfcand_]/f");
+  // tree_->Branch("Cpfcan_dxydz",&Cpfcan_dxydz_,"Cpfcan_dxydz_[n_Cpfcand_]/f");
+  // tree_->Branch("Cpfcan_dphidxy",&Cpfcan_dphidxy_,"Cpfcan_dphidxy_[n_Cpfcand_]/f");
+  // tree_->Branch("Cpfcan_dlambdadz",&Cpfcan_dlambdadz_,"Cpfcan_dlambdadz_[n_Cpfcand_]/f");
   tree_->Branch("Cpfcan_isMu",&Cpfcan_isMu_,"Cpfcan_isMu_[n_Cpfcand_]/i");
   tree_->Branch("Cpfcan_isEl",&Cpfcan_isEl_,"Cpfcan_isEl_[n_Cpfcand_]/i");
-  tree_->Branch("Cpfcan_lostInnerHits",&Cpfcan_lostInnerHits_,"Cpfcan_lostInnerHits_[n_Cpfcand_]/i");
+  // tree_->Branch("Cpfcan_lostInnerHits",&Cpfcan_lostInnerHits_,"Cpfcan_lostInnerHits_[n_Cpfcand_]/i");
   tree_->Branch("Cpfcan_chi2",&Cpfcan_chi2_,"Cpfcan_chi2_[n_Cpfcand_]/f");
   tree_->Branch("Cpfcan_highPurity",&Cpfcan_highPurity_,"Cpfcan_highPurity_[n_Cpfcand_]/i");
-  tree_->Branch("Cpfcan_charge",&Cpfcan_charge_,"Cpfcan_charge_[n_Cpfcand_]/i");
+
+  // did not give integers !!
+  //  tree_->Branch("Cpfcan_charge",&Cpfcan_charge_,"Cpfcan_charge_[n_Cpfcand_]/i");
 
   //Neutral Pf candidates 
   tree_->Branch("n_Npfcand", &n_Npfcand_,"n_Npfcand_/i");
