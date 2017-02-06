@@ -44,8 +44,13 @@ private:
   TTree *tree_ = new TTree("tree","tree");
 
  // labels (MC truth)
+  // regressions pt, Deta, Dphi
   float gen_pt_;
-  int flavour_;
+  //classification
+  int isB_;
+  int isC_;
+  int isUDS_;
+  int isG_;
 
   // global variables 
   unsigned int npv_;
@@ -105,13 +110,17 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   usesResource("TFileService");
   // truthe labels
   tree_->Branch("gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
-  tree_->Branch("flavour",&flavour_, "flavour_/i");
-
+  tree_->Branch("isB",&isB_, "isB_/i");
+  tree_->Branch("isC",&isC_, "isC_/i");
+  tree_->Branch("isUDS",&isUDS_, "isUDS_/i");
+  tree_->Branch("isG",&isG_, "isG_/i");
 
   tree_->Branch("npv"    ,&npv_    ,"npv/i"    );
 
   // jet variables
   tree_->Branch("jet_pt", &jet_pt_);
+  tree_->Branch("jet_eta", &jet_eta_);
+
   // Cpfcanditates per jet
   tree_->Branch("n_Cpfcand", &n_Cpfcand_,"n_Cpfcand_/i");
   tree_->Branch("Cpfcan_pt", &Cpfcan_pt_,"Cpfcan_pt_[n_Cpfcand_]/f");
@@ -180,7 +189,10 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     // truth labels
     gen_pt_ = 0.;
     if(jet.genJet()!=NULL)   gen_pt_ =  jet.genJet()->pt();
-    flavour_=abs(jet.partonFlavour());
+    isB_= int(abs(jet.partonFlavour())==5);
+    isC_= int(abs(jet.partonFlavour())==4);
+    isUDS_= int( (abs(jet.partonFlavour())>0) && (abs(jet.partonFlavour())<4 ));
+    isG_= int(jet.partonFlavour()==21);
 
     jet_pt_ = jet.pt();
     jet_eta_ = jet.eta();
