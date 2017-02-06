@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include "TSystem.h"
+#include <TRandom.h>
 
 //CMSSW includes
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -39,6 +40,14 @@ private:
   // ----------member data --------------------------- 
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
   edm::EDGetTokenT<pat::JetCollection>     jetToken_;
+  const double                    jetPtMin_;
+  const double                    jetPtMax_;
+  const double                    jetAbsEtaMin_;
+  const double                    jetAbsEtaMax_;
+  const double                    gluonReduction_;
+  TRandom TRandom_;
+
+
 
   TFile *file_ = new TFile("output.root","recreate");
   TTree *tree_ = new TTree("tree","tree");
@@ -104,7 +113,13 @@ private:
 
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
-  jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets")))
+  jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
+  jetPtMin_(iConfig.getParameter<double>("jetPtMin")),
+  jetPtMax_(iConfig.getParameter<double>("jetPtMax")),
+  jetAbsEtaMin_(iConfig.getParameter<double>("jetAbsEtaMin")),
+  jetAbsEtaMax_(iConfig.getParameter<double>("jetAbsEtaMax")),
+  gluonReduction_(iConfig.getParameter<double>("gluonReduction"))
+
 {
   //now do what ever initialization is needed
   usesResource("TFileService");
@@ -185,6 +200,18 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   // loop over the jets
   for (const pat::Jet &jet : *jets) {
+
+   // some cuts to contrin training region 
+    if ( jet.pt() < jetPtMin_ ||  jet.pt() > jetPtMax_ ) continue;                  // apply jet pT cut
+    if ( jet.eta() < fabs(jetAbsEtaMin_) ||jet.eta() > fabs(jetAbsEtaMax_) ) continue; // apply jet eta cut
+    // often we have way to many gluons that we do not need. This randomply reduces the gluons
+    if (gluonReduction_>0)
+      {
+	if(jet.partonFlavour()==21)
+	  {
+	    if(TRandom_.Uniform()>gluonReduction_) continue; 
+	  }
+      }
 
     // truth labels
     gen_pt_ = 0.;
