@@ -125,8 +125,6 @@ private:
   float SV_d3d_[100];
   float SV_d3derr_[100];
   float SV_costheta_[100];
-
-
  
 };
 
@@ -148,7 +146,6 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   tree_->Branch("gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
   tree_->Branch("Delta_gen_pt"    ,&Delta_gen_pt_,"Delta_gen_pt_/f"    );
   tree_->Branch("Delta_gen_pt"    ,&Delta_gen_pt_    ,"Delta_gen_pt_/f"    );
-
   tree_->Branch("isB",&isB_, "isB_/i");
   tree_->Branch("isC",&isC_, "isC_/i");
   tree_->Branch("isUDS",&isUDS_, "isUDS_/i");
@@ -197,18 +194,18 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   tree_->Branch("Npfcan_HadFrac",&Npfcan_HadFrac_,"Npfcan_HadFrac_[n_Npfcand_]/f");
   // Secondary Vertex collection
   tree_->Branch("n_SV", &n_SV_,"n_SV_/i");
-  tree_->Branch("SV_pt", &SV_pt_,"SV_pt_[n_SV_]/f");
-  tree_->Branch("SV_phirel", &SV_phirel_,"SV_phirel_[n_SV_]/f");
-  tree_->Branch("SV_etarel", &SV_etarel_,"SV_etarel_[n_SV_]/f");
+  // tree_->Branch("SV_pt", &SV_pt_,"SV_pt_[n_SV_]/f");
+  //  tree_->Branch("SV_phirel", &SV_phirel_,"SV_phirel_[n_SV_]/f");
+  // tree_->Branch("SV_etarel", &SV_etarel_,"SV_etarel_[n_SV_]/f");
   tree_->Branch("SV_mass", &SV_mass_,"SV_mass_[n_SV_]/f");
   tree_->Branch("SV_ntracks", &SV_ntracks_,"SV_ntracks_[n_SV_]/f");
   tree_->Branch("SV_chi2", &SV_chi2_,"SV_chi2_[n_SV_]/f");
   tree_->Branch("SV_ndf", &SV_ndf_,"SV_ndf_[n_SV_]/f");
-  tree_->Branch("SV_dxy", &SV_dxy_,"SV_dxy_[n_SV_]/f");
-  tree_->Branch("SV_dxyerr", &SV_dxyerr_,"SV_dxyerr_[n_SV_]/f");
-  tree_->Branch("SV_d3d", &SV_d3d_,"SV_d3d_[n_SV_]/f");
-  tree_->Branch("SV_d3derr", &SV_d3derr_,"SV_d3derr_[n_SV_]/f");
-  tree_->Branch("SV_costheta", &SV_costheta_,"SV_costheta_[n_SV_]/f");
+  //  tree_->Branch("SV_dxy", &SV_dxy_,"SV_dxy_[n_SV_]/f");
+  // tree_->Branch("SV_dxyerr", &SV_dxyerr_,"SV_dxyerr_[n_SV_]/f");
+  // tree_->Branch("SV_d3d", &SV_d3d_,"SV_d3d_[n_SV_]/f");
+  // tree_->Branch("SV_d3derr", &SV_d3derr_,"SV_d3derr_[n_SV_]/f");
+  // tree_->Branch("SV_costheta", &SV_costheta_,"SV_costheta_[n_SV_]/f");
 }
 
 
@@ -254,13 +251,15 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       }
 
     // truth labels
-    gen_pt_ = 0.;
-    Delta_gen_pt_ = 0.;
+    //gen_pt_ = 0.;
+    //Delta_gen_pt_ = 0.;
 
     if(jet.genJet()!=NULL) {
       gen_pt_ =  jet.genJet()->pt();
       Delta_gen_pt_ =  jet.genJet()->pt()- jet.pt();
     }
+    else continue;// bad for regression if PT not defined
+
 
     isB_= int(abs(jet.partonFlavour())==5);
     isC_= int(abs(jet.partonFlavour())==4);
