@@ -24,6 +24,24 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
+#include "DataFormats/Math/interface/deltaR.h"
+#include "TrackingTools/IPTools/interface/IPTools.h"
+#include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
+
+// for ivf
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "TLorentzVector.h"
+
+#if defined( __GXX_EXPERIMENTAL_CXX0X__)
+#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
+#endif
+
+struct MagneticField;
+
+
 class DeepNtuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 public:
   explicit DeepNtuplizer(const edm::ParameterSet&);
@@ -36,9 +54,15 @@ private:
   virtual void beginJob() override;
   virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
   virtual void endJob() override;
+  
+  Measurement1D vertexDxy(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv) const;
+  Measurement1D vertexD3d(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
+  float vertexDdotP(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
+
 
   // ----------member data --------------------------- 
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
+  edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> svToken_;
   edm::EDGetTokenT<pat::JetCollection>     jetToken_;
   const double                    jetPtMin_;
   const double                    jetPtMax_;
@@ -107,12 +131,28 @@ private:
   float  Npfcan_etarel_[100]; 
   int  Npfcan_isGamma_[100]; 
   float  Npfcan_HadFrac_[100]; 
-
+  
+  // SV candidates
+  int   sv_num_;
+  float sv_pt_[100];
+  float sv_eta_[100];
+  float sv_phi_[100];
+  float sv_mass_[100];
+  int   sv_ntracks_[100];
+  float sv_chi2_[100];
+  float sv_ndf_[100];
+  float sv_dxy_[100];
+  float sv_dxyerr_[100];
+  float sv_d3d_[100];
+  float sv_d3derr_[100];
+  float sv_costhetasvpv_[100];
+  
 };
 
 
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
+  svToken_(consumes<reco::VertexCompositePtrCandidateCollection>(iConfig.getParameter<edm::InputTag>("secVertices"))),
   jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
   jetPtMin_(iConfig.getParameter<double>("jetPtMin")),
   jetPtMax_(iConfig.getParameter<double>("jetPtMax")),
@@ -171,8 +211,22 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   tree_->Branch("Npfcan_etarel",&Npfcan_etarel_,"Npfcan_etarel_[n_Npfcand_]/f");
   tree_->Branch("Npfcan_isGamma",&Npfcan_isGamma_,"Npfcan_isGamma_[n_Npfcand_]/i");
   tree_->Branch("Npfcan_HadFrac",&Npfcan_HadFrac_,"Npfcan_HadFrac_[n_Npfcand_]/f");
-
-
+  
+  // SV candidates
+  tree_->Branch("sv_num"         ,&sv_num_         ,"sv_num_/i"                  );
+  tree_->Branch("sv_pt"          ,&sv_pt_          ,"sv_pt_[sv_num_]/f"          );
+  tree_->Branch("sv_eta"         ,&sv_eta_         ,"sv_eta_[sv_num_]/f"         );
+  tree_->Branch("sv_phi"         ,&sv_phi_         ,"sv_phi_[sv_num_]/f"         );
+  tree_->Branch("sv_mass"        ,&sv_mass_        ,"sv_mass_[sv_num_]/f"        );
+  tree_->Branch("sv_ntracks"     ,&sv_ntracks_     ,"sv_ntracks_[sv_num_]/i"     );
+  tree_->Branch("sv_chi2"        ,&sv_chi2_        ,"sv_chi2_[sv_num_]/f"        );
+  tree_->Branch("sv_ndf"         ,&sv_ndf_         ,"sv_ndf_[sv_num_]/f"         );
+  tree_->Branch("sv_dxy"         ,&sv_dxy_         ,"sv_dxy_[sv_num_]/f"         );
+  tree_->Branch("sv_dxyerr"      ,&sv_dxyerr_      ,"sv_dxyerr_[sv_num_]/f"      );
+  tree_->Branch("sv_d3d"         ,&sv_d3d_         ,"sv_d3d_[sv_num_]/f"         );
+  tree_->Branch("sv_d3derr"      ,&sv_d3derr_      ,"sv_d3err_[sv_num_]/f"       );
+  tree_->Branch("sv_costhetasvpv",&sv_costhetasvpv_,"sv_costhetasvpv_[sv_num_]/f");
+  
 }
 
 
@@ -194,12 +248,17 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   edm::Handle<pat::JetCollection> jets;
   iEvent.getByToken(jetToken_, jets);
 
-  // clear vectors
+  edm::Handle<reco::VertexCompositePtrCandidateCollection> secVertices;
+  iEvent.getByToken(svToken_, secVertices);
+
+
   npv_ = vertices->size();
 
 
   // loop over the jets
   for (const pat::Jet &jet : *jets) {
+
+    if (npv_==0) { continue; } // we need a vertex
 
    // some cuts to contrin training region 
     if ( jet.pt() < jetPtMin_ ||  jet.pt() > jetPtMax_ ) continue;                  // apply jet pT cut
@@ -288,8 +347,57 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	} // end loop over jet.numberOfDaughters()
 
 
+      // get the SV that are in cone DR<0.4 of the jet
+      const reco::Vertex & pv = (*vertices)[0];
+      sv_num_ = 0; 
+      for (const reco::VertexCompositePtrCandidate &sv : *secVertices) {
+	
+	if (reco::deltaR(sv,jet)>0.4) { continue; }
+
+	sv_pt_[sv_num_]           = sv.pt();
+	sv_eta_[sv_num_]          = sv.eta();
+	sv_phi_[sv_num_]          = sv.phi();
+	sv_mass_[sv_num_]         = sv.mass();
+	sv_ntracks_[sv_num_]      = sv.numberOfDaughters();
+	sv_chi2_[sv_num_]         = sv.vertexChi2();
+	sv_ndf_[sv_num_]          = sv.vertexNdof();
+	sv_dxy_[sv_num_]          = vertexDxy(sv,pv).value();
+	sv_dxyerr_[sv_num_]       = vertexDxy(sv,pv).error();
+	sv_d3d_[sv_num_]          = vertexD3d(sv,pv).value();
+	sv_d3derr_[sv_num_]       = vertexD3d(sv,pv).error();
+	sv_costhetasvpv_[sv_num_] = vertexDdotP(sv,pv); // the pointing angle (i.e. the angle between the sum of the momentum
+	                                                // of the tracks in the SV and the flight direction betwen PV and SV)
+	sv_num_++;
+
+      } // end of looping over the secondary vertices
+
+
+
+
+
     tree_->Fill();
   }
+}
+
+
+Measurement1D DeepNtuplizer::vertexDxy(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv) const {
+  VertexDistanceXY dist;
+  reco::Vertex::CovarianceMatrix csv; svcand.fillVertexCovariance(csv);
+  reco::Vertex svtx(svcand.vertex(), csv);
+  return dist.distance(svtx, pv);
+}
+
+Measurement1D DeepNtuplizer::vertexD3d(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv) const {
+  VertexDistance3D dist;
+  reco::Vertex::CovarianceMatrix csv; svcand.fillVertexCovariance(csv);
+  reco::Vertex svtx(svcand.vertex(), csv);
+  return dist.distance(svtx, pv);
+}
+
+float DeepNtuplizer::vertexDdotP(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const {
+  reco::Candidate::Vector p = sv.momentum();
+  reco::Candidate::Vector d(sv.vx() - pv.x(), sv.vy() - pv.y(), sv.vz() - pv.z());
+  return p.Unit().Dot(d.Unit());
 }
 
 
