@@ -40,6 +40,8 @@ private:
   // ----------member data --------------------------- 
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
   edm::EDGetTokenT<pat::JetCollection>     jetToken_;
+  edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> SVToken_;
+
   const double                    jetPtMin_;
   const double                    jetPtMax_;
   const double                    jetAbsEtaMin_;
@@ -47,14 +49,13 @@ private:
   const double                    gluonReduction_;
   TRandom TRandom_;
 
-
-
   TFile *file_ = new TFile("output.root","recreate");
   TTree *tree_ = new TTree("tree","tree");
 
  // labels (MC truth)
   // regressions pt, Deta, Dphi
   float gen_pt_;
+  float Delta_gen_pt_;
   //classification
   int isB_;
   int isC_;
@@ -91,6 +92,7 @@ private:
   float  Cpfcan_dlambdadz_[100];
  
   // ID, skipped "charged hadron" as that is true if now the other
+  // TODO (comment of Markus Stoye) add reco information
   int Cpfcan_isMu_[100]; // pitty that the quality is missing
   int Cpfcan_isEl_[100]; // pitty that the quality is missing
   int Cpfcan_charge_[100];
@@ -108,12 +110,29 @@ private:
   int  Npfcan_isGamma_[100]; 
   float  Npfcan_HadFrac_[100]; 
 
+  // Secondary verticies
+  int n_SV_;
+  float SV_pt_[100];
+  float SV_phirel_[100];
+  float SV_etarel_[100];
+  float SV_mass_[100];
+  // TODO (comment of Markus Stoye) add information to PF candidates on which tracks were used !!!
+  float SV_ntracks_[100];
+  float SV_chi2_[100];
+  float SV_ndf_[100];
+  float SV_dxy_[100];
+  float SV_dxyerr_[100];
+  float SV_d3d_[100];
+  float SV_d3derr_[100];
+  float SV_costheta_[100];
+ 
 };
 
 
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
   jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
+  SVToken_(consumes<reco::VertexCompositePtrCandidateCollection>(iConfig.getParameter<edm::InputTag>("SVs"))),
   jetPtMin_(iConfig.getParameter<double>("jetPtMin")),
   jetPtMax_(iConfig.getParameter<double>("jetPtMax")),
   jetAbsEtaMin_(iConfig.getParameter<double>("jetAbsEtaMin")),
@@ -125,6 +144,8 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   usesResource("TFileService");
   // truthe labels
   tree_->Branch("gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
+  tree_->Branch("Delta_gen_pt"    ,&Delta_gen_pt_,"Delta_gen_pt_/f"    );
+  tree_->Branch("Delta_gen_pt"    ,&Delta_gen_pt_    ,"Delta_gen_pt_/f"    );
   tree_->Branch("isB",&isB_, "isB_/i");
   tree_->Branch("isC",&isC_, "isC_/i");
   tree_->Branch("isUDS",&isUDS_, "isUDS_/i");
@@ -171,8 +192,20 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   tree_->Branch("Npfcan_etarel",&Npfcan_etarel_,"Npfcan_etarel_[n_Npfcand_]/f");
   tree_->Branch("Npfcan_isGamma",&Npfcan_isGamma_,"Npfcan_isGamma_[n_Npfcand_]/i");
   tree_->Branch("Npfcan_HadFrac",&Npfcan_HadFrac_,"Npfcan_HadFrac_[n_Npfcand_]/f");
-
-
+  // Secondary Vertex collection
+  tree_->Branch("n_SV", &n_SV_,"n_SV_/i");
+  // tree_->Branch("SV_pt", &SV_pt_,"SV_pt_[n_SV_]/f");
+  //  tree_->Branch("SV_phirel", &SV_phirel_,"SV_phirel_[n_SV_]/f");
+  // tree_->Branch("SV_etarel", &SV_etarel_,"SV_etarel_[n_SV_]/f");
+  tree_->Branch("SV_mass", &SV_mass_,"SV_mass_[n_SV_]/f");
+  tree_->Branch("SV_ntracks", &SV_ntracks_,"SV_ntracks_[n_SV_]/f");
+  tree_->Branch("SV_chi2", &SV_chi2_,"SV_chi2_[n_SV_]/f");
+  tree_->Branch("SV_ndf", &SV_ndf_,"SV_ndf_[n_SV_]/f");
+  //  tree_->Branch("SV_dxy", &SV_dxy_,"SV_dxy_[n_SV_]/f");
+  // tree_->Branch("SV_dxyerr", &SV_dxyerr_,"SV_dxyerr_[n_SV_]/f");
+  // tree_->Branch("SV_d3d", &SV_d3d_,"SV_d3d_[n_SV_]/f");
+  // tree_->Branch("SV_d3derr", &SV_d3derr_,"SV_d3derr_[n_SV_]/f");
+  // tree_->Branch("SV_costheta", &SV_costheta_,"SV_costheta_[n_SV_]/f");
 }
 
 
@@ -194,9 +227,13 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   edm::Handle<pat::JetCollection> jets;
   iEvent.getByToken(jetToken_, jets);
 
+  edm::Handle<reco::VertexCompositePtrCandidateCollection> SVs;
+  iEvent.getByToken(SVToken_, SVs);
+
+
+
   // clear vectors
   npv_ = vertices->size();
-
 
   // loop over the jets
   for (const pat::Jet &jet : *jets) {
@@ -214,8 +251,16 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       }
 
     // truth labels
-    gen_pt_ = 0.;
-    if(jet.genJet()!=NULL)   gen_pt_ =  jet.genJet()->pt();
+    //gen_pt_ = 0.;
+    //Delta_gen_pt_ = 0.;
+
+    if(jet.genJet()!=NULL) {
+      gen_pt_ =  jet.genJet()->pt();
+      Delta_gen_pt_ =  jet.genJet()->pt()- jet.pt();
+    }
+    else continue;// bad for regression if PT not defined
+
+
     isB_= int(abs(jet.partonFlavour())==5);
     isC_= int(abs(jet.partonFlavour())==4);
     isUDS_= int( (abs(jet.partonFlavour())>0) && (abs(jet.partonFlavour())<4 ));
@@ -286,6 +331,33 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  }
 	  
 	} // end loop over jet.numberOfDaughters()
+      n_SV_ = 0;
+      // Filling the SV cadidates
+       for (const reco::VertexCompositePtrCandidate &SV : *SVs)
+	 {
+	   // TODO (markus stoye comments) Add some resonable criteria
+	   // if ( ((vertexDxy(SV,PV).value())>2.) || (vertexDdotP(SV,PV)<0.9) ) { continue; }
+	   // TODO (markus stoye comments) What is the best approximation of the SV direction (MAYBE not SV.phi ect.
+	   if (reco::deltaR(SV.eta(),SV.phi(),jet.eta(),jet.phi()) < 0.4)
+	     {
+
+	       //   SV_phirel_[n_SV_]=;
+	       //   SV_etarel_[n_SV_]=;
+	       SV_mass_[n_SV_]= SV.mass();
+	       SV_ntracks_[n_SV_]=SV.numberOfDaughters();
+	       SV_chi2_[n_SV_]=SV.vertexChi2();
+	       SV_ndf_[n_SV_]=SV.vertexNdof();
+	       // SV_dxy_[n_SV_]=;
+	       // SV_dxyerr_[n_SV_]=;
+	       // SV_d3d_[n_SV_]=;
+	       //  SV_d3derr_[n_SV_]=;
+	       // SV_costheta_[n_SV_]=;
+	       n_SV_++;
+
+	     }
+	   
+	 }
+
 
 
     tree_->Fill();

@@ -3,6 +3,7 @@ import FWCore.ParameterSet.Config as cms
 deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                vertices   = cms.InputTag("offlineSlimmedPrimaryVertices"),
                                jets       = cms.InputTag("slimmedJets"),
+                               SVs  = cms.InputTag("slimmedSecondaryVertices"),
                                jetPtMin     = cms.double(0.0),
                                jetPtMax     = cms.double(10000),
                                jetAbsEtaMin = cms.double(0.0),
