@@ -1,0 +1,5 @@
+Contains packages to be checked out locally (not for mass production)
+Devel-tools or XCode on Mac is required
+Anaconda is used as package manager
+
+To install the full package, run
