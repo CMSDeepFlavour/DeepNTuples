@@ -1,0 +1,23 @@
+files and config file for production
+
+The samples.cfg file contains a list of samples to be processed. 
+Please look at the content of the file for description.
+
+The mass production can be started and monitored by the scripts in the "../scripts"
+directory
+
+example:
+jobSub.py myconfig.py myoutdir
+
+-> submits jobs to the condor batch for mass production. The output root files will NOT be stored in
+the output directory specified. Instead, a new directory will be created on the user eos (cernbox).
+A symlink will be provided in the output directory <myoutdir>
+
+To check the job status, run:
+
+check.py my_sample
+
+where "my_sample" is a subfolder that was created in the output directory "myoutdir"
+
+
+The functionality is still very limited. To be extended in future versions.
