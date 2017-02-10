@@ -37,10 +37,16 @@ private:
   virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
   virtual void endJob() override;
 
-  // ----------member data --------------------------- 
+  // ----------member data ---------------------------
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
   edm::EDGetTokenT<pat::JetCollection>     jetToken_;
   edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> SVToken_;
+
+  //Quark gluon likelihood
+  edm::EDGetTokenT<edm::ValueMap<float>>   qglToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>>   ptDToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>>   axis2Token_;
+  edm::EDGetTokenT<edm::ValueMap<int>>     multToken_;
 
   const double                    jetPtMin_;
   const double                    jetPtMax_;
@@ -62,12 +68,19 @@ private:
   int isUDS_;
   int isG_;
 
-  // global variables 
+  // global variables
   unsigned int npv_;
 
   // jet variables
   float jet_pt_;
   float  jet_eta_;
+
+  // quark/gluon
+  float jet_qgl_;
+  float jet_ptD_;
+  float jet_axis2_;
+  int   jet_mult_;
+
 
   // variables with own  coordinates (eta phi)
 
@@ -90,7 +103,7 @@ private:
   float  Cpfcan_dxydz_[100];
   float  Cpfcan_dphidxy_[100];
   float  Cpfcan_dlambdadz_[100];
- 
+
   // ID, skipped "charged hadron" as that is true if now the other
   // TODO (comment of Markus Stoye) add reco information
   int Cpfcan_isMu_[100]; // pitty that the quality is missing
@@ -98,17 +111,17 @@ private:
   int Cpfcan_charge_[100];
 
   // track quality
-  int Cpfcan_lostInnerHits_[100]; 
-  float Cpfcan_chi2_[100]; 
-  int Cpfcan_highPurity_[100]; 
+  int Cpfcan_lostInnerHits_[100];
+  float Cpfcan_chi2_[100];
+  int Cpfcan_highPurity_[100];
 
   //Neutral Pf candidates
   int n_Npfcand_;
-  float  Npfcan_pt_[100]; 
-  float  Npfcan_phirel_[100]; 
-  float  Npfcan_etarel_[100]; 
-  int  Npfcan_isGamma_[100]; 
-  float  Npfcan_HadFrac_[100]; 
+  float  Npfcan_pt_[100];
+  float  Npfcan_phirel_[100];
+  float  Npfcan_etarel_[100];
+  int  Npfcan_isGamma_[100];
+  float  Npfcan_HadFrac_[100];
 
   // Secondary verticies
   int n_SV_;
@@ -125,7 +138,7 @@ private:
   float SV_d3d_[100];
   float SV_d3derr_[100];
   float SV_costheta_[100];
- 
+
 };
 
 
@@ -157,6 +170,16 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   tree_->Branch("jet_pt", &jet_pt_);
   tree_->Branch("jet_eta", &jet_eta_);
 
+  // quark gluon
+  qglToken_ = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood"));
+  ptDToken_ = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "ptD"));
+  axis2Token_ = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2"));
+  multToken_ = consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult"));
+  tree_->Branch("jet_qgl",   &jet_qgl_);
+  tree_->Branch("jet_ptD",   &jet_ptD_);
+  tree_->Branch("jet_axis2", &jet_axis2_);
+  tree_->Branch("jet_mult",  &jet_mult_);
+
   // Cpfcanditates per jet
   tree_->Branch("n_Cpfcand", &n_Cpfcand_,"n_Cpfcand_/i");
   tree_->Branch("Cpfcan_pt", &Cpfcan_pt_,"Cpfcan_pt_[n_Cpfcand_]/f");
@@ -185,7 +208,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   // did not give integers !!
   //  tree_->Branch("Cpfcan_charge",&Cpfcan_charge_,"Cpfcan_charge_[n_Cpfcand_]/i");
 
-  //Neutral Pf candidates 
+  //Neutral Pf candidates
   tree_->Branch("n_Npfcand", &n_Npfcand_,"n_Npfcand_/i");
   tree_->Branch("Npfcan_pt", &Npfcan_pt_,"Npfcan_pt_[n_Npfcand_]/f");
   tree_->Branch("Npfcan_phirel",&Npfcan_phirel_,"Npfcan_phirel_[n_Npfcand_]/f");
@@ -230,25 +253,37 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   edm::Handle<reco::VertexCompositePtrCandidateCollection> SVs;
   iEvent.getByToken(SVToken_, SVs);
 
-
+  // qgl
+  edm::Handle<edm::ValueMap<float>> qglHandle; iEvent.getByToken(qglToken_, qglHandle);
+  edm::Handle<edm::ValueMap<float>> ptDHandle; iEvent.getByToken(ptDToken_, ptDHandle);
+  edm::Handle<edm::ValueMap<float>> axis2Handle; iEvent.getByToken(axis2Token_, axis2Handle);
+  edm::Handle<edm::ValueMap<int>> multHandle; iEvent.getByToken(multToken_, multHandle);
 
   // clear vectors
   npv_ = vertices->size();
 
   // loop over the jets
-  for (const pat::Jet &jet : *jets) {
+  for (auto jetIter = jets->begin(); jetIter != jets->end(); ++jetIter) {
+    const auto& jet = *jetIter;
 
-   // some cuts to contrin training region 
+   // some cuts to contrin training region
     if ( jet.pt() < jetPtMin_ ||  jet.pt() > jetPtMax_ ) continue;                  // apply jet pT cut
     if ( jet.eta() < fabs(jetAbsEtaMin_) ||jet.eta() > fabs(jetAbsEtaMax_) ) continue; // apply jet eta cut
     // often we have way to many gluons that we do not need. This randomply reduces the gluons
     if (gluonReduction_>0)
+    {
+      if(jet.partonFlavour()==21)
       {
-	if(jet.partonFlavour()==21)
-	  {
-	    if(TRandom_.Uniform()>gluonReduction_) continue; 
-	  }
+        if(TRandom_.Uniform()>gluonReduction_) continue;
       }
+    }
+
+    // quark/gluon
+    const auto jetRef = reco::CandidatePtr(jets, jetIter - jets->begin());
+    jet_qgl_ = (*qglHandle)[jetRef];
+    jet_ptD_ = (*ptDHandle)[jetRef];
+    jet_axis2_ = (*axis2Handle)[jetRef];
+    jet_mult_ = (*multHandle)[jetRef];
 
     // truth labels
     //gen_pt_ = 0.;
@@ -274,7 +309,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       // counts neutral and charged candicates
       n_Cpfcand_ = 0;
       n_Npfcand_ = 0;
-   
+
       for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++)
 	{
 
@@ -293,7 +328,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	      Cpfcan_dz_[n_Cpfcand_] = PackedCandidate_->dz();
 	      Cpfcan_VTX_ass_[n_Cpfcand_] = PackedCandidate_->pvAssociationQuality();
 	      Cpfcan_puppiw_[n_Cpfcand_] = PackedCandidate_->puppiWeight();
-	      
+
 	      const reco::Track & PseudoTrack =  PackedCandidate_->pseudoTrack();
 	      reco::Track::CovarianceMatrix myCov = PseudoTrack.covariance ();
 	      //https://github.com/cms-sw/cmssw/blob/CMSSW_9_0_X/DataFormats/PatCandidates/interface/PackedCandidate.h#L394
@@ -307,7 +342,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	      Cpfcan_dlambdadz_[n_Cpfcand_] =  myCov[1][4]; //zero if pvAssociationQuality ==7 ?
 
 	      // TO DO: we can do better than that by including reco::muon informations
-	      Cpfcan_isMu_[n_Cpfcand_] = 0; 
+	      Cpfcan_isMu_[n_Cpfcand_] = 0;
 	      if(abs(PackedCandidate_->pdgId())==13)    Cpfcan_isMu_[n_Cpfcand_] = 1;
 
 	      // TO DO: we can do better than that by including reco::electron informations
@@ -329,7 +364,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	      Npfcan_HadFrac_[n_Npfcand_] = PackedCandidate_->hcalFraction();
 	      n_Npfcand_++;
 	  }
-	  
+
 	} // end loop over jet.numberOfDaughters()
       n_SV_ = 0;
       // Filling the SV cadidates
@@ -355,7 +390,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	       n_SV_++;
 
 	     }
-	   
+
 	 }
 
 
