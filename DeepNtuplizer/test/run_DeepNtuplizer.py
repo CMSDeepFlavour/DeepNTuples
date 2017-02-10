@@ -45,6 +45,7 @@ process.patGenJetMatchRecluster = cms.EDProducer("GenJetMatcher",  # cut on delt
     resolveByMatchQuality = cms.bool(False),         # False = just match input in order; True = pick lowest deltaR pair first          
 )
 
+process.genJetSequence = cms.Sequence(process.packedGenParticlesForJetsNoNu*process.ak4GenJetsWithNu*process.ak4GenJetsRecluster*process.patGenJetMatchWithNu*process.patGenJetMatchRecluster)
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -59,4 +60,4 @@ process.source = cms.Source("PoolSource",
 
 process.load("DeepNTuples.DeepNtuplizer.DeepNtuplizer_cfi")
 
-process.p = cms.Path(process.packedGenParticlesForJetsNoNu*process.ak4GenJetsWithNu*process.ak4GenJetsRecluster*process.patGenJetMatchWithNu*process.patGenJetMatchRecluster*process.deepntuplizer)
+process.p = cms.Path(process.genJetSequence*process.deepntuplizer)
