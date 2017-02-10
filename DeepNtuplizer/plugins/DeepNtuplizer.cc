@@ -39,7 +39,9 @@ private:
 
   // ----------member data --------------------------- 
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
-  edm::EDGetTokenT<pat::JetCollection>     jetToken_;
+  edm::EDGetTokenT<edm::View<pat::Jet> >     jetToken_; 
+  edm::EDGetTokenT<edm::Association<reco::GenJetCollection> > genJetMatchReclusterToken_;
+  edm::EDGetTokenT<edm::Association<reco::GenJetCollection> > genJetMatchWithNuToken_;
   const double                    jetPtMin_;
   const double                    jetPtMax_;
   const double                    jetAbsEtaMin_;
@@ -55,6 +57,8 @@ private:
  // labels (MC truth)
   // regressions pt, Deta, Dphi
   float gen_pt_;
+  float gen_pt_Recluster_;
+  float gen_pt_WithNu_;
   //classification
   int isB_;
   int isC_;
@@ -113,7 +117,9 @@ private:
 
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
-  jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
+  jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets"))),
+  genJetMatchReclusterToken_(consumes<edm::Association<reco::GenJetCollection> >(iConfig.getParameter<edm::InputTag>( "genJetMatchRecluster" ))),
+  genJetMatchWithNuToken_(consumes<edm::Association<reco::GenJetCollection> >(iConfig.getParameter<edm::InputTag>( "genJetMatchWithNu" ))),
   jetPtMin_(iConfig.getParameter<double>("jetPtMin")),
   jetPtMax_(iConfig.getParameter<double>("jetPtMax")),
   jetAbsEtaMin_(iConfig.getParameter<double>("jetAbsEtaMin")),
@@ -125,6 +131,8 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   usesResource("TFileService");
   // truthe labels
   tree_->Branch("gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
+  tree_->Branch("gen_pt_Recluster"    ,&gen_pt_Recluster_    ,"gen_pt_Recluster_/f"    );
+  tree_->Branch("gen_pt_WithNu"    ,&gen_pt_WithNu_    ,"gen_pt_WithNu_/f"    );
   tree_->Branch("isB",&isB_, "isB_/i");
   tree_->Branch("isC",&isC_, "isC_/i");
   tree_->Branch("isUDS",&isUDS_, "isUDS_/i");
@@ -191,23 +199,30 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   if (vertices->empty()) return; // skip the event if no PV found
   const reco::Vertex &PV = vertices->front();
 
-  edm::Handle<pat::JetCollection> jets;
+  edm::Handle<edm::View<pat::Jet> > jets;
   iEvent.getByToken(jetToken_, jets);
+
+  edm::Handle<edm::Association<reco::GenJetCollection> > genJetMatchRecluster;
+  iEvent.getByToken(genJetMatchReclusterToken_, genJetMatchRecluster);
+
+  edm::Handle<edm::Association<reco::GenJetCollection> > genJetMatchWithNu;
+  iEvent.getByToken(genJetMatchWithNuToken_, genJetMatchWithNu);
 
   // clear vectors
   npv_ = vertices->size();
 
 
   // loop over the jets
-  for (const pat::Jet &jet : *jets) {
+  for (edm::View<pat::Jet>::const_iterator itJet = jets->begin(); itJet != jets->end(); itJet++) {
+    unsigned int idx = itJet - jets->begin();       
 
    // some cuts to contrin training region 
-    if ( jet.pt() < jetPtMin_ ||  jet.pt() > jetPtMax_ ) continue;                  // apply jet pT cut
-    if ( jet.eta() < fabs(jetAbsEtaMin_) ||jet.eta() > fabs(jetAbsEtaMax_) ) continue; // apply jet eta cut
+    if ( itJet->pt() < jetPtMin_ ||  itJet->pt() > jetPtMax_ ) continue;                  // apply jet pT cut
+    if ( itJet->eta() < fabs(jetAbsEtaMin_) ||itJet->eta() > fabs(jetAbsEtaMax_) ) continue; // apply jet eta cut
     // often we have way to many gluons that we do not need. This randomply reduces the gluons
     if (gluonReduction_>0)
       {
-	if(jet.partonFlavour()==21)
+	if(itJet->partonFlavour()==21)
 	  {
 	    if(TRandom_.Uniform()>gluonReduction_) continue; 
 	  }
@@ -215,22 +230,34 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     // truth labels
     gen_pt_ = 0.;
-    if(jet.genJet()!=NULL)   gen_pt_ =  jet.genJet()->pt();
-    isB_= int(abs(jet.partonFlavour())==5);
-    isC_= int(abs(jet.partonFlavour())==4);
-    isUDS_= int( (abs(jet.partonFlavour())>0) && (abs(jet.partonFlavour())<4 ));
-    isG_= int(jet.partonFlavour()==21);
+    if(itJet->genJet()!=NULL)   gen_pt_ =  itJet->genJet()->pt();
+    const edm::RefToBase<pat::Jet> patJetRef = jets->refAt(idx);      
+    //    const edm::RefToBase<reco::Jet> jetRef(patJetRef.castTo<reco::JetRef>());     
+    reco::GenJetRef genjetRecluster = (*genJetMatchRecluster)[patJetRef];
+    gen_pt_Recluster_ = 0.; 
+    if (genjetRecluster.isNonnull() && genjetRecluster.isAvailable()) {        
+      gen_pt_Recluster_ = genjetRecluster->pt();       
+    }
+    reco::GenJetRef genjetWithNu = (*genJetMatchWithNu)[patJetRef];
+    gen_pt_WithNu_ = 0.; 
+    if (genjetWithNu.isNonnull() && genjetWithNu.isAvailable()) {        
+      gen_pt_WithNu_ = genjetWithNu->pt();       
+    }
+    isB_= int(abs(itJet->partonFlavour())==5);
+    isC_= int(abs(itJet->partonFlavour())==4);
+    isUDS_= int( (abs(itJet->partonFlavour())>0) && (abs(itJet->partonFlavour())<4 ));
+    isG_= int(itJet->partonFlavour()==21);
 
-    jet_pt_ = jet.pt();
-    jet_eta_ = jet.eta();
+    jet_pt_ = itJet->pt();
+    jet_eta_ = itJet->eta();
       float etasign = 1.;
-      if (jet.eta()<0) etasign =-1.;
+      if (itJet->eta()<0) etasign =-1.;
 
       // counts neutral and charged candicates
       n_Cpfcand_ = 0;
       n_Npfcand_ = 0;
    
-      for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++)
+      for (unsigned int i = 0; i <  itJet->numberOfDaughters(); i++)
 	{
 
 	  /// This might include more than PF candidates, e.g. Reco muons and could
@@ -238,12 +265,12 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	  ///
 	  /// Split to charged and neutral candidates
 
-	  const pat::PackedCandidate* PackedCandidate_ = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
+	  const pat::PackedCandidate* PackedCandidate_ = dynamic_cast<const pat::PackedCandidate*>(itJet->daughter(i));
 	  if(PackedCandidate_->charge()!=0)
 	    {
 	      Cpfcan_pt_[n_Cpfcand_] = PackedCandidate_->pt();
-	      Cpfcan_phirel_[n_Cpfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
-	      Cpfcan_etarel_[n_Cpfcand_] = etasign*(PackedCandidate_->eta()-jet.eta());
+	      Cpfcan_phirel_[n_Cpfcand_] = reco::deltaPhi(PackedCandidate_->phi(),itJet->phi());
+	      Cpfcan_etarel_[n_Cpfcand_] = etasign*(PackedCandidate_->eta()-itJet->eta());
 	      Cpfcan_dxy_[n_Cpfcand_] = PackedCandidate_->dxy();
 	      Cpfcan_dz_[n_Cpfcand_] = PackedCandidate_->dz();
 	      Cpfcan_VTX_ass_[n_Cpfcand_] = PackedCandidate_->pvAssociationQuality();
@@ -277,15 +304,15 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	}
 	  else{// neutral candidates
 	    Npfcan_pt_[n_Npfcand_] = PackedCandidate_->pt();
-	    Npfcan_phirel_[n_Npfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
-	    Npfcan_etarel_[n_Npfcand_] = etasign*(PackedCandidate_->eta()-jet.eta());
+	    Npfcan_phirel_[n_Npfcand_] = reco::deltaPhi(PackedCandidate_->phi(),itJet->phi());
+	    Npfcan_etarel_[n_Npfcand_] = etasign*(PackedCandidate_->eta()-itJet->eta());
 	    Npfcan_isGamma_[n_Npfcand_] = 0;
 	    if(fabs(PackedCandidate_->pdgId())==22)  Npfcan_isGamma_[n_Npfcand_] = 1;
 	      Npfcan_HadFrac_[n_Npfcand_] = PackedCandidate_->hcalFraction();
 	      n_Npfcand_++;
 	  }
 	  
-	} // end loop over jet.numberOfDaughters()
+	} // end loop over itJet->numberOfDaughters()
 
 
     tree_->Fill();
