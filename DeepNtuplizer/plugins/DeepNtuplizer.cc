@@ -60,10 +60,18 @@ private:
   float vertexDdotP(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
 
 
-  // ----------member data --------------------------- 
+  // ----------member data ---------------------------
   edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
   edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> svToken_;
   edm::EDGetTokenT<pat::JetCollection>     jetToken_;
+  edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> SVToken_;
+
+  //Quark gluon likelihood
+  edm::EDGetTokenT<edm::ValueMap<float>>   qglToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>>   ptDToken_;
+  edm::EDGetTokenT<edm::ValueMap<float>>   axis2Token_;
+  edm::EDGetTokenT<edm::ValueMap<int>>     multToken_;
+
   const double                    jetPtMin_;
   const double                    jetPtMax_;
   const double                    jetAbsEtaMin_;
@@ -71,26 +79,32 @@ private:
   const double                    gluonReduction_;
   TRandom TRandom_;
 
-
-
   TFile *file_ = new TFile("output.root","recreate");
   TTree *tree_ = new TTree("tree","tree");
 
  // labels (MC truth)
   // regressions pt, Deta, Dphi
   float gen_pt_;
+  float Delta_gen_pt_;
   //classification
   int isB_;
   int isC_;
   int isUDS_;
   int isG_;
 
-  // global variables 
+  // global variables
   unsigned int npv_;
 
   // jet variables
   float jet_pt_;
   float  jet_eta_;
+
+  // quark/gluon
+  float jet_qgl_;
+  float jet_ptD_;
+  float jet_axis2_;
+  int   jet_mult_;
+
 
   // variables with own  coordinates (eta phi)
 
@@ -113,16 +127,17 @@ private:
   float  Cpfcan_dxydz_[100];
   float  Cpfcan_dphidxy_[100];
   float  Cpfcan_dlambdadz_[100];
- 
+
   // ID, skipped "charged hadron" as that is true if now the other
+  // TODO (comment of Markus Stoye) add reco information
   int Cpfcan_isMu_[100]; // pitty that the quality is missing
   int Cpfcan_isEl_[100]; // pitty that the quality is missing
   int Cpfcan_charge_[100];
 
   // track quality
-  int Cpfcan_lostInnerHits_[100]; 
-  float Cpfcan_chi2_[100]; 
-  int Cpfcan_highPurity_[100]; 
+  int Cpfcan_lostInnerHits_[100];
+  float Cpfcan_chi2_[100];
+  int Cpfcan_highPurity_[100];
 
   //Neutral Pf candidates
   int n_Npfcand_;
@@ -138,6 +153,8 @@ private:
   float sv_eta_[100];
   float sv_phi_[100];
   float sv_mass_[100];
+  //  float sv_phirel_[100];
+  //  float sv_etarel_[100];
   int   sv_ntracks_[100];
   float sv_chi2_[100];
   float sv_ndf_[100];
@@ -146,7 +163,9 @@ private:
   float sv_d3d_[100];
   float sv_d3derr_[100];
   float sv_costhetasvpv_[100];
-  
+  // TODO (comment of Markus Stoye) add information to PF candidates on which tracks were used !!!
+  // this will come later LG
+
 };
 
 
@@ -154,6 +173,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
   svToken_(consumes<reco::VertexCompositePtrCandidateCollection>(iConfig.getParameter<edm::InputTag>("secVertices"))),
   jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
+  SVToken_(consumes<reco::VertexCompositePtrCandidateCollection>(iConfig.getParameter<edm::InputTag>("SVs"))),
   jetPtMin_(iConfig.getParameter<double>("jetPtMin")),
   jetPtMax_(iConfig.getParameter<double>("jetPtMax")),
   jetAbsEtaMin_(iConfig.getParameter<double>("jetAbsEtaMin")),
@@ -165,6 +185,8 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   usesResource("TFileService");
   // truthe labels
   tree_->Branch("gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
+  tree_->Branch("Delta_gen_pt"    ,&Delta_gen_pt_,"Delta_gen_pt_/f"    );
+  tree_->Branch("Delta_gen_pt"    ,&Delta_gen_pt_    ,"Delta_gen_pt_/f"    );
   tree_->Branch("isB",&isB_, "isB_/i");
   tree_->Branch("isC",&isC_, "isC_/i");
   tree_->Branch("isUDS",&isUDS_, "isUDS_/i");
@@ -175,6 +197,16 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   // jet variables
   tree_->Branch("jet_pt", &jet_pt_);
   tree_->Branch("jet_eta", &jet_eta_);
+
+  // quark gluon
+  qglToken_ = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood"));
+  ptDToken_ = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "ptD"));
+  axis2Token_ = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2"));
+  multToken_ = consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult"));
+  tree_->Branch("jet_qgl",   &jet_qgl_);
+  tree_->Branch("jet_ptD",   &jet_ptD_);
+  tree_->Branch("jet_axis2", &jet_axis2_);
+  tree_->Branch("jet_mult",  &jet_mult_);
 
   // Cpfcanditates per jet
   tree_->Branch("n_Cpfcand", &n_Cpfcand_,"n_Cpfcand_/i");
@@ -204,13 +236,14 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   // did not give integers !!
   //  tree_->Branch("Cpfcan_charge",&Cpfcan_charge_,"Cpfcan_charge_[n_Cpfcand_]/i");
 
-  //Neutral Pf candidates 
+  //Neutral Pf candidates
   tree_->Branch("n_Npfcand", &n_Npfcand_,"n_Npfcand_/i");
   tree_->Branch("Npfcan_pt", &Npfcan_pt_,"Npfcan_pt_[n_Npfcand_]/f");
   tree_->Branch("Npfcan_phirel",&Npfcan_phirel_,"Npfcan_phirel_[n_Npfcand_]/f");
   tree_->Branch("Npfcan_etarel",&Npfcan_etarel_,"Npfcan_etarel_[n_Npfcand_]/f");
   tree_->Branch("Npfcan_isGamma",&Npfcan_isGamma_,"Npfcan_isGamma_[n_Npfcand_]/i");
   tree_->Branch("Npfcan_HadFrac",&Npfcan_HadFrac_,"Npfcan_HadFrac_[n_Npfcand_]/f");
+
   
   // SV candidates
   tree_->Branch("sv_num"         ,&sv_num_         ,"sv_num_/i"                  );
@@ -226,7 +259,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
   tree_->Branch("sv_d3d"         ,&sv_d3d_         ,"sv_d3d_[sv_num_]/f"         );
   tree_->Branch("sv_d3derr"      ,&sv_d3derr_      ,"sv_d3err_[sv_num_]/f"       );
   tree_->Branch("sv_costhetasvpv",&sv_costhetasvpv_,"sv_costhetasvpv_[sv_num_]/f");
-  
+
 }
 
 
@@ -248,33 +281,56 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
   edm::Handle<pat::JetCollection> jets;
   iEvent.getByToken(jetToken_, jets);
 
+
   edm::Handle<reco::VertexCompositePtrCandidateCollection> secVertices;
   iEvent.getByToken(svToken_, secVertices);
 
+  // qgl
+  edm::Handle<edm::ValueMap<float>> qglHandle; iEvent.getByToken(qglToken_, qglHandle);
+  edm::Handle<edm::ValueMap<float>> ptDHandle; iEvent.getByToken(ptDToken_, ptDHandle);
+  edm::Handle<edm::ValueMap<float>> axis2Handle; iEvent.getByToken(axis2Token_, axis2Handle);
+  edm::Handle<edm::ValueMap<int>> multHandle; iEvent.getByToken(multToken_, multHandle);
 
+  // clear vectors
   npv_ = vertices->size();
-
+  
 
   // loop over the jets
-  for (const pat::Jet &jet : *jets) {
+  for (auto jetIter = jets->begin(); jetIter != jets->end(); ++jetIter) {
+    const auto& jet = *jetIter;
 
     if (npv_==0) { continue; } // we need a vertex
 
-   // some cuts to contrin training region 
+   // some cuts to contrin training region
     if ( jet.pt() < jetPtMin_ ||  jet.pt() > jetPtMax_ ) continue;                  // apply jet pT cut
     if ( jet.eta() < fabs(jetAbsEtaMin_) ||jet.eta() > fabs(jetAbsEtaMax_) ) continue; // apply jet eta cut
     // often we have way to many gluons that we do not need. This randomply reduces the gluons
     if (gluonReduction_>0)
+    {
+      if(jet.partonFlavour()==21)
       {
-	if(jet.partonFlavour()==21)
-	  {
-	    if(TRandom_.Uniform()>gluonReduction_) continue; 
-	  }
+        if(TRandom_.Uniform()>gluonReduction_) continue;
       }
+    }
+
+    // quark/gluon
+    const auto jetRef = reco::CandidatePtr(jets, jetIter - jets->begin());
+    jet_qgl_ = (*qglHandle)[jetRef];
+    jet_ptD_ = (*ptDHandle)[jetRef];
+    jet_axis2_ = (*axis2Handle)[jetRef];
+    jet_mult_ = (*multHandle)[jetRef];
 
     // truth labels
-    gen_pt_ = 0.;
-    if(jet.genJet()!=NULL)   gen_pt_ =  jet.genJet()->pt();
+    //gen_pt_ = 0.;
+    //Delta_gen_pt_ = 0.;
+
+    if(jet.genJet()!=NULL) {
+      gen_pt_ =  jet.genJet()->pt();
+      Delta_gen_pt_ =  jet.genJet()->pt()- jet.pt();
+    }
+    else continue;// bad for regression if PT not defined
+
+
     isB_= int(abs(jet.partonFlavour())==5);
     isC_= int(abs(jet.partonFlavour())==4);
     isUDS_= int( (abs(jet.partonFlavour())>0) && (abs(jet.partonFlavour())<4 ));
@@ -288,7 +344,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
       // counts neutral and charged candicates
       n_Cpfcand_ = 0;
       n_Npfcand_ = 0;
-   
+
       for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++)
 	{
 
@@ -307,7 +363,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	      Cpfcan_dz_[n_Cpfcand_] = PackedCandidate_->dz();
 	      Cpfcan_VTX_ass_[n_Cpfcand_] = PackedCandidate_->pvAssociationQuality();
 	      Cpfcan_puppiw_[n_Cpfcand_] = PackedCandidate_->puppiWeight();
-	      
+
 	      const reco::Track & PseudoTrack =  PackedCandidate_->pseudoTrack();
 	      reco::Track::CovarianceMatrix myCov = PseudoTrack.covariance ();
 	      //https://github.com/cms-sw/cmssw/blob/CMSSW_9_0_X/DataFormats/PatCandidates/interface/PackedCandidate.h#L394
@@ -321,7 +377,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	      Cpfcan_dlambdadz_[n_Cpfcand_] =  myCov[1][4]; //zero if pvAssociationQuality ==7 ?
 
 	      // TO DO: we can do better than that by including reco::muon informations
-	      Cpfcan_isMu_[n_Cpfcand_] = 0; 
+	      Cpfcan_isMu_[n_Cpfcand_] = 0;
 	      if(abs(PackedCandidate_->pdgId())==13)    Cpfcan_isMu_[n_Cpfcand_] = 1;
 
 	      // TO DO: we can do better than that by including reco::electron informations
@@ -343,10 +399,9 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	      Npfcan_HadFrac_[n_Npfcand_] = PackedCandidate_->hcalFraction();
 	      n_Npfcand_++;
 	  }
-	  
+
 	} // end loop over jet.numberOfDaughters()
-
-
+      
       // get the SV that are in cone DR<0.4 of the jet
       const reco::Vertex & pv = (*vertices)[0];
       sv_num_ = 0; 
@@ -371,12 +426,8 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
       } // end of looping over the secondary vertices
 
-
-
-
-
     tree_->Fill();
-  }
+  } // end of looping over the jets
 }
 
 
