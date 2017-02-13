@@ -5,6 +5,11 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "../interface/ntuple_content.h"
+#include "../interface/ntuple_SV.h"
+#include "../interface/ntuple_JetInfo.h"
+#include "../interface/ntuple_pfCands.h"
+
 //ROOT includes
 #include "TTree.h"
 #include <TFile.h>
@@ -19,14 +24,8 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-#include "DataFormats/VertexReco/interface/VertexFwd.h"
-#include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
-#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
-#include "DataFormats/Math/interface/deltaR.h"
-#include "TrackingTools/IPTools/interface/IPTools.h"
-#include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
 
 // for ivf
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -34,6 +33,18 @@
 #include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "TLorentzVector.h"
+
+//trash?
+
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
+#include "DataFormats/TrackReco/interface/Track.h"
+#include "TLorentzVector.h"
+#include "DataFormats/Math/interface/deltaR.h"
+#include "TrackingTools/IPTools/interface/IPTools.h"
+#include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
+
 
 #if defined( __GXX_EXPERIMENTAL_CXX0X__)
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
@@ -44,228 +55,95 @@ struct MagneticField;
 
 class DeepNtuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 public:
-  explicit DeepNtuplizer(const edm::ParameterSet&);
-  ~DeepNtuplizer();
+	explicit DeepNtuplizer(const edm::ParameterSet&);
+	~DeepNtuplizer();
 
-  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 
 private:
-  virtual void beginJob() override;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-  virtual void endJob() override;
-  
-  Measurement1D vertexDxy(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv) const;
-  Measurement1D vertexD3d(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
-  float vertexDdotP(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
+	virtual void beginJob() override;
+	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+	virtual void endJob() override;
+
+	Measurement1D vertexDxy(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv) const;
+	Measurement1D vertexD3d(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
+	float vertexDdotP(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
 
 
-  // ----------member data ---------------------------
-  edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
-  edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> svToken_;
-  edm::EDGetTokenT<pat::JetCollection>     jetToken_;
-  edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> SVToken_;
-
-  //Quark gluon likelihood
-  edm::EDGetTokenT<edm::ValueMap<float>>   qglToken_;
-  edm::EDGetTokenT<edm::ValueMap<float>>   ptDToken_;
-  edm::EDGetTokenT<edm::ValueMap<float>>   axis2Token_;
-  edm::EDGetTokenT<edm::ValueMap<int>>     multToken_;
-
-  const double                    jetPtMin_;
-  const double                    jetPtMax_;
-  const double                    jetAbsEtaMin_;
-  const double                    jetAbsEtaMax_;
-  const double                    gluonReduction_;
-  TRandom TRandom_;
-
-  TFile *file_ = new TFile("output.root","recreate");
-  TTree *tree_ = new TTree("tree","tree");
-
- // labels (MC truth)
-  // regressions pt, Deta, Dphi
-  float gen_pt_;
-  float Delta_gen_pt_;
-  //classification
-  int isB_;
-  int isC_;
-  int isUDS_;
-  int isG_;
-
-  // global variables
-  unsigned int npv_;
-
-  // jet variables
-  float jet_pt_;
-  float  jet_eta_;
-
-  // quark/gluon
-  float jet_qgl_;
-  float jet_ptD_;
-  float jet_axis2_;
-  int   jet_mult_;
+	// ----------member data ---------------------------
+	edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
+	edm::EDGetTokenT<edm::View<pat::Jet> >      jetToken_;
 
 
-  // variables with own  coordinates (eta phi)
+	edm::Service<TFileService> fs;
+	TTree *tree_;
 
-  // CPF charged candidate variables
-  unsigned int n_Cpfcand_;
-  float  Cpfcan_pt_[100];
-  float  Cpfcan_phirel_[100];
-  float  Cpfcan_etarel_[100];
-  float  Cpfcan_puppiw_[100];
-  int   Cpfcan_VTX_ass_[100];
 
-  // covariance
-  float  Cpfcan_dz_[100];
-  float  Cpfcan_dxy_[100];
-  float  Cpfcan_dptdpt_[100];
-  float  Cpfcan_detadeta_[100];
-  float  Cpfcan_dphidphi_[100];
-  float  Cpfcan_dxydxy_[100];
-  float  Cpfcan_dzdz_[100];
-  float  Cpfcan_dxydz_[100];
-  float  Cpfcan_dphidxy_[100];
-  float  Cpfcan_dlambdadz_[100];
-
-  // ID, skipped "charged hadron" as that is true if now the other
-  // TODO (comment of Markus Stoye) add reco information
-  int Cpfcan_isMu_[100]; // pitty that the quality is missing
-  int Cpfcan_isEl_[100]; // pitty that the quality is missing
-  int Cpfcan_charge_[100];
-
-  // track quality
-  int Cpfcan_lostInnerHits_[100];
-  float Cpfcan_chi2_[100];
-  int Cpfcan_highPurity_[100];
-
-  //Neutral Pf candidates
-  int n_Npfcand_;
-  float  Npfcan_pt_[100]; 
-  float  Npfcan_phirel_[100]; 
-  float  Npfcan_etarel_[100]; 
-  int  Npfcan_isGamma_[100]; 
-  float  Npfcan_HadFrac_[100]; 
-  
-  // SV candidates
-  int   sv_num_;
-  float sv_pt_[100];
-  float sv_eta_[100];
-  float sv_phi_[100];
-  float sv_mass_[100];
-  //  float sv_phirel_[100];
-  //  float sv_etarel_[100];
-  int   sv_ntracks_[100];
-  float sv_chi2_[100];
-  float sv_ndf_[100];
-  float sv_dxy_[100];
-  float sv_dxyerr_[100];
-  float sv_d3d_[100];
-  float sv_d3derr_[100];
-  float sv_costhetasvpv_[100];
-  // TODO (comment of Markus Stoye) add information to PF candidates on which tracks were used !!!
-  // this will come later LG
+	ntuple_content * addModule(ntuple_content *m){
+		modules_.push_back(m);
+		return m;
+	}
+	std::vector<ntuple_content* > modules_;
 
 };
 
 
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
-  vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
-  svToken_(consumes<reco::VertexCompositePtrCandidateCollection>(iConfig.getParameter<edm::InputTag>("secVertices"))),
-  jetToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
-  SVToken_(consumes<reco::VertexCompositePtrCandidateCollection>(iConfig.getParameter<edm::InputTag>("SVs"))),
-  jetPtMin_(iConfig.getParameter<double>("jetPtMin")),
-  jetPtMax_(iConfig.getParameter<double>("jetPtMax")),
-  jetAbsEtaMin_(iConfig.getParameter<double>("jetAbsEtaMin")),
-  jetAbsEtaMax_(iConfig.getParameter<double>("jetAbsEtaMax")),
-  gluonReduction_(iConfig.getParameter<double>("gluonReduction"))
+										  vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
+										  jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets")))
+
 
 {
-  //now do what ever initialization is needed
-  usesResource("TFileService");
-  // truthe labels
-  tree_->Branch("gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
-  tree_->Branch("Delta_gen_pt"    ,&Delta_gen_pt_,"Delta_gen_pt_/f"    );
-  tree_->Branch("Delta_gen_pt"    ,&Delta_gen_pt_    ,"Delta_gen_pt_/f"    );
-  tree_->Branch("isB",&isB_, "isB_/i");
-  tree_->Branch("isC",&isC_, "isC_/i");
-  tree_->Branch("isUDS",&isUDS_, "isUDS_/i");
-  tree_->Branch("isG",&isG_, "isG_/i");
+	/*
+	 *  Initialise the modules here
+	 *  Everything else does not need to be changed if
+	 *  modules don't interact.
+	 */
 
-  tree_->Branch("npv"    ,&npv_    ,"npv/i"    );
+	ntuple_SV* svmodule=new ntuple_SV();
+	svmodule->setSVToken(
+			consumes<reco::VertexCompositePtrCandidateCollection>(
+					iConfig.getParameter<edm::InputTag>("secVertices")));
+	addModule(svmodule);
 
-  // jet variables
-  tree_->Branch("jet_pt", &jet_pt_);
-  tree_->Branch("jet_eta", &jet_eta_);
+	ntuple_JetInfo* jetinfo=new ntuple_JetInfo();
+	jetinfo->setQglToken(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood")));
+	jetinfo->setPtDToken(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood")));
+	jetinfo->setAxis2Token(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2")));
+	jetinfo->setMultToken(consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult")));
 
-  // quark gluon
-  qglToken_ = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood"));
-  ptDToken_ = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "ptD"));
-  axis2Token_ = consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2"));
-  multToken_ = consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult"));
-  tree_->Branch("jet_qgl",   &jet_qgl_);
-  tree_->Branch("jet_ptD",   &jet_ptD_);
-  tree_->Branch("jet_axis2", &jet_axis2_);
-  tree_->Branch("jet_mult",  &jet_mult_);
+	jetinfo->setGenJetMatchReclusterToken(
+			consumes<edm::Association<reco::GenJetCollection> >(
+					iConfig.getParameter<edm::InputTag>( "genJetMatchRecluster" )));
+	jetinfo->setGenJetMatchWithNuToken(
+			consumes<edm::Association<reco::GenJetCollection> >(
+					iConfig.getParameter<edm::InputTag>( "genJetMatchWithNu" )));
+	addModule(jetinfo);
 
-  // Cpfcanditates per jet
-  tree_->Branch("n_Cpfcand", &n_Cpfcand_,"n_Cpfcand_/i");
-  tree_->Branch("Cpfcan_pt", &Cpfcan_pt_,"Cpfcan_pt_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_phirel",&Cpfcan_phirel_,"Cpfcan_phirel_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_etarel",&Cpfcan_etarel_,"Cpfcan_etarel_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_puppiw",&Cpfcan_puppiw_,"Cpfcan_puppiw_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_dxy",&Cpfcan_dxy_,"Cpfcan_dxy_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_dz",&Cpfcan_dz_,"Cpfcan_dz_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_VTX_ass",&Cpfcan_VTX_ass_,"Cpfcan_VTX_ass_[n_Cpfcand_]/i");
-  tree_->Branch("Cpfcan_dptdpt",&Cpfcan_dptdpt_,"Cpfcan_dptdpt_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_detadeta",&Cpfcan_detadeta_,"Cpfcan_detadeta_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_dphidphi",&Cpfcan_dphidphi_,"Cpfcan_dphidphi_[n_Cpfcand_]/f");
 
-  // FIXME gave INFs?
-  //  tree_->Branch("Cpfcan_dxydxy",&Cpfcan_dxydxy_,"Cpfcan_dxydxy_[n_Cpfcand_]/f");
-  //  tree_->Branch("Cpfcan_dzdz",&Cpfcan_dzdz_,"Cpfcan_dzdz_[n_Cpfcand_]/f");
-  // tree_->Branch("Cpfcan_dxydz",&Cpfcan_dxydz_,"Cpfcan_dxydz_[n_Cpfcand_]/f");
-  // tree_->Branch("Cpfcan_dphidxy",&Cpfcan_dphidxy_,"Cpfcan_dphidxy_[n_Cpfcand_]/f");
-  // tree_->Branch("Cpfcan_dlambdadz",&Cpfcan_dlambdadz_,"Cpfcan_dlambdadz_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_isMu",&Cpfcan_isMu_,"Cpfcan_isMu_[n_Cpfcand_]/i");
-  tree_->Branch("Cpfcan_isEl",&Cpfcan_isEl_,"Cpfcan_isEl_[n_Cpfcand_]/i");
-  // tree_->Branch("Cpfcan_lostInnerHits",&Cpfcan_lostInnerHits_,"Cpfcan_lostInnerHits_[n_Cpfcand_]/i");
-  tree_->Branch("Cpfcan_chi2",&Cpfcan_chi2_,"Cpfcan_chi2_[n_Cpfcand_]/f");
-  tree_->Branch("Cpfcan_highPurity",&Cpfcan_highPurity_,"Cpfcan_highPurity_[n_Cpfcand_]/i");
+	ntuple_pfCands * pfcands = new ntuple_pfCands();
+	addModule(pfcands);
 
-  // did not give integers !!
-  //  tree_->Branch("Cpfcan_charge",&Cpfcan_charge_,"Cpfcan_charge_[n_Cpfcand_]/i");
 
-  //Neutral Pf candidates
-  tree_->Branch("n_Npfcand", &n_Npfcand_,"n_Npfcand_/i");
-  tree_->Branch("Npfcan_pt", &Npfcan_pt_,"Npfcan_pt_[n_Npfcand_]/f");
-  tree_->Branch("Npfcan_phirel",&Npfcan_phirel_,"Npfcan_phirel_[n_Npfcand_]/f");
-  tree_->Branch("Npfcan_etarel",&Npfcan_etarel_,"Npfcan_etarel_[n_Npfcand_]/f");
-  tree_->Branch("Npfcan_isGamma",&Npfcan_isGamma_,"Npfcan_isGamma_[n_Npfcand_]/i");
-  tree_->Branch("Npfcan_HadFrac",&Npfcan_HadFrac_,"Npfcan_HadFrac_[n_Npfcand_]/f");
 
-  
-  // SV candidates
-  tree_->Branch("sv_num"         ,&sv_num_         ,"sv_num_/i"                  );
-  tree_->Branch("sv_pt"          ,&sv_pt_          ,"sv_pt_[sv_num_]/f"          );
-  tree_->Branch("sv_eta"         ,&sv_eta_         ,"sv_eta_[sv_num_]/f"         );
-  tree_->Branch("sv_phi"         ,&sv_phi_         ,"sv_phi_[sv_num_]/f"         );
-  tree_->Branch("sv_mass"        ,&sv_mass_        ,"sv_mass_[sv_num_]/f"        );
-  tree_->Branch("sv_ntracks"     ,&sv_ntracks_     ,"sv_ntracks_[sv_num_]/i"     );
-  tree_->Branch("sv_chi2"        ,&sv_chi2_        ,"sv_chi2_[sv_num_]/f"        );
-  tree_->Branch("sv_ndf"         ,&sv_ndf_         ,"sv_ndf_[sv_num_]/f"         );
-  tree_->Branch("sv_dxy"         ,&sv_dxy_         ,"sv_dxy_[sv_num_]/f"         );
-  tree_->Branch("sv_dxyerr"      ,&sv_dxyerr_      ,"sv_dxyerr_[sv_num_]/f"      );
-  tree_->Branch("sv_d3d"         ,&sv_d3d_         ,"sv_d3d_[sv_num_]/f"         );
-  tree_->Branch("sv_d3derr"      ,&sv_d3derr_      ,"sv_d3err_[sv_num_]/f"       );
-  tree_->Branch("sv_costhetasvpv",&sv_costhetasvpv_,"sv_costhetasvpv_[sv_num_]/f");
+
+	/*
+	 *
+	 * Modules initialized
+	 *
+	 * parse the input parameters (if any)
+	 */
+	for(auto& m: modules_)
+		m->getInput(iConfig);
 
 }
 
 
 DeepNtuplizer::~DeepNtuplizer()
 {
-  file_->Close();
+	for(auto& m:modules_)
+		delete m;
 }
 
 
@@ -273,182 +151,37 @@ DeepNtuplizer::~DeepNtuplizer()
 void
 DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  edm::Handle<reco::VertexCollection> vertices;
-  iEvent.getByToken(vtxToken_, vertices);
-  if (vertices->empty()) return; // skip the event if no PV found
-  const reco::Vertex &PV = vertices->front();
 
-  edm::Handle<pat::JetCollection> jets;
-  iEvent.getByToken(jetToken_, jets);
+	//global info
 
-
-  edm::Handle<reco::VertexCompositePtrCandidateCollection> secVertices;
-  iEvent.getByToken(svToken_, secVertices);
-
-  // qgl
-  edm::Handle<edm::ValueMap<float>> qglHandle; iEvent.getByToken(qglToken_, qglHandle);
-  edm::Handle<edm::ValueMap<float>> ptDHandle; iEvent.getByToken(ptDToken_, ptDHandle);
-  edm::Handle<edm::ValueMap<float>> axis2Handle; iEvent.getByToken(axis2Token_, axis2Handle);
-  edm::Handle<edm::ValueMap<int>> multHandle; iEvent.getByToken(multToken_, multHandle);
-
-  // clear vectors
-  npv_ = vertices->size();
-  
-
-  // loop over the jets
-  for (auto jetIter = jets->begin(); jetIter != jets->end(); ++jetIter) {
-    const auto& jet = *jetIter;
-
-    if (npv_==0) { continue; } // we need a vertex
-
-   // some cuts to contrin training region
-    if ( jet.pt() < jetPtMin_ ||  jet.pt() > jetPtMax_ ) continue;                  // apply jet pT cut
-    if ( jet.eta() < fabs(jetAbsEtaMin_) ||jet.eta() > fabs(jetAbsEtaMax_) ) continue; // apply jet eta cut
-    // often we have way to many gluons that we do not need. This randomply reduces the gluons
-    if (gluonReduction_>0)
-    {
-      if(jet.partonFlavour()==21)
-      {
-        if(TRandom_.Uniform()>gluonReduction_) continue;
-      }
-    }
-
-    // quark/gluon
-    const auto jetRef = reco::CandidatePtr(jets, jetIter - jets->begin());
-    jet_qgl_ = (*qglHandle)[jetRef];
-    jet_ptD_ = (*ptDHandle)[jetRef];
-    jet_axis2_ = (*axis2Handle)[jetRef];
-    jet_mult_ = (*multHandle)[jetRef];
-
-    // truth labels
-    //gen_pt_ = 0.;
-    //Delta_gen_pt_ = 0.;
-
-    if(jet.genJet()!=NULL) {
-      gen_pt_ =  jet.genJet()->pt();
-      Delta_gen_pt_ =  jet.genJet()->pt()- jet.pt();
-    }
-    else continue;// bad for regression if PT not defined
+	edm::Handle<reco::VertexCollection> vertices;
+	iEvent.getByToken(vtxToken_, vertices);
+	if (vertices->empty()) return; // skip the event if no PV found
 
 
-    isB_= int(abs(jet.partonFlavour())==5);
-    isC_= int(abs(jet.partonFlavour())==4);
-    isUDS_= int( (abs(jet.partonFlavour())>0) && (abs(jet.partonFlavour())<4 ));
-    isG_= int(jet.partonFlavour()==21);
-
-    jet_pt_ = jet.pt();
-    jet_eta_ = jet.eta();
-      float etasign = 1.;
-      if (jet.eta()<0) etasign =-1.;
-
-      // counts neutral and charged candicates
-      n_Cpfcand_ = 0;
-      n_Npfcand_ = 0;
-
-      for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++)
-	{
-
-	  /// This might include more than PF candidates, e.g. Reco muons and could
-	  /// be double counting. Needs to be checked.!!!!
-	  ///
-	  /// Split to charged and neutral candidates
-
-	  const pat::PackedCandidate* PackedCandidate_ = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
-	  if(PackedCandidate_->charge()!=0)
-	    {
-	      Cpfcan_pt_[n_Cpfcand_] = PackedCandidate_->pt();
-	      Cpfcan_phirel_[n_Cpfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
-	      Cpfcan_etarel_[n_Cpfcand_] = etasign*(PackedCandidate_->eta()-jet.eta());
-	      Cpfcan_dxy_[n_Cpfcand_] = PackedCandidate_->dxy();
-	      Cpfcan_dz_[n_Cpfcand_] = PackedCandidate_->dz();
-	      Cpfcan_VTX_ass_[n_Cpfcand_] = PackedCandidate_->pvAssociationQuality();
-	      Cpfcan_puppiw_[n_Cpfcand_] = PackedCandidate_->puppiWeight();
-
-	      const reco::Track & PseudoTrack =  PackedCandidate_->pseudoTrack();
-	      reco::Track::CovarianceMatrix myCov = PseudoTrack.covariance ();
-	      //https://github.com/cms-sw/cmssw/blob/CMSSW_9_0_X/DataFormats/PatCandidates/interface/PackedCandidate.h#L394
-	      Cpfcan_dptdpt_[n_Cpfcand_] = myCov[0][0];
-	      Cpfcan_detadeta_[n_Cpfcand_]= myCov[1][1];
-	      Cpfcan_dphidphi_[n_Cpfcand_]= myCov[2][2];
-	      Cpfcan_dxydxy_[n_Cpfcand_] =  myCov[3][3]; //zero if pvAssociationQuality ==7 ?
-	      Cpfcan_dzdz_[n_Cpfcand_] =  myCov[4][4]; //zero if pvAssociationQuality ==7 ?
-	      Cpfcan_dxydz_[n_Cpfcand_] =  myCov[3][4]; //zero if pvAssociationQuality ==7 ?
-	      Cpfcan_dphidxy_[n_Cpfcand_] =  myCov[2][3]; //zero if pvAssociationQuality ==7 ?
-	      Cpfcan_dlambdadz_[n_Cpfcand_] =  myCov[1][4]; //zero if pvAssociationQuality ==7 ?
-
-	      // TO DO: we can do better than that by including reco::muon informations
-	      Cpfcan_isMu_[n_Cpfcand_] = 0;
-	      if(abs(PackedCandidate_->pdgId())==13)    Cpfcan_isMu_[n_Cpfcand_] = 1;
-
-	      // TO DO: we can do better than that by including reco::electron informations
-	      Cpfcan_isEl_[n_Cpfcand_] = 0;
-	      if(abs(PackedCandidate_->pdgId())==11)    Cpfcan_isEl_[n_Cpfcand_] = 1;
-
-	      Cpfcan_charge_[n_Cpfcand_] = PackedCandidate_->charge();
-	      Cpfcan_lostInnerHits_[n_Cpfcand_] = PackedCandidate_->lostInnerHits();
-	      Cpfcan_chi2_[n_Cpfcand_] = PseudoTrack.normalizedChi2();
-	      Cpfcan_highPurity_[n_Cpfcand_] = PseudoTrack.highPurity;
-	      n_Cpfcand_++;
+	for(auto& m:modules_){
+		m->setPrimaryVertices(vertices.product());
+		m->readEvent(iEvent);
 	}
-	  else{// neutral candidates
-	    Npfcan_pt_[n_Npfcand_] = PackedCandidate_->pt();
-	    Npfcan_phirel_[n_Npfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
-	    Npfcan_etarel_[n_Npfcand_] = etasign*(PackedCandidate_->eta()-jet.eta());
-	    Npfcan_isGamma_[n_Npfcand_] = 0;
-	    if(fabs(PackedCandidate_->pdgId())==22)  Npfcan_isGamma_[n_Npfcand_] = 1;
-	      Npfcan_HadFrac_[n_Npfcand_] = PackedCandidate_->hcalFraction();
-	      n_Npfcand_++;
-	  }
-
-	} // end loop over jet.numberOfDaughters()
-      
-      // get the SV that are in cone DR<0.4 of the jet
-      const reco::Vertex & pv = (*vertices)[0];
-      sv_num_ = 0; 
-      for (const reco::VertexCompositePtrCandidate &sv : *secVertices) {
-	
-	if (reco::deltaR(sv,jet)>0.4) { continue; }
-
-	sv_pt_[sv_num_]           = sv.pt();
-	sv_eta_[sv_num_]          = sv.eta();
-	sv_phi_[sv_num_]          = sv.phi();
-	sv_mass_[sv_num_]         = sv.mass();
-	sv_ntracks_[sv_num_]      = sv.numberOfDaughters();
-	sv_chi2_[sv_num_]         = sv.vertexChi2();
-	sv_ndf_[sv_num_]          = sv.vertexNdof();
-	sv_dxy_[sv_num_]          = vertexDxy(sv,pv).value();
-	sv_dxyerr_[sv_num_]       = vertexDxy(sv,pv).error();
-	sv_d3d_[sv_num_]          = vertexD3d(sv,pv).value();
-	sv_d3derr_[sv_num_]       = vertexD3d(sv,pv).error();
-	sv_costhetasvpv_[sv_num_] = vertexDdotP(sv,pv); // the pointing angle (i.e. the angle between the sum of the momentum
-	                                                // of the tracks in the SV and the flight direction betwen PV and SV)
-	sv_num_++;
-
-      } // end of looping over the secondary vertices
-
-    tree_->Fill();
-  } // end of looping over the jets
-}
+	edm::Handle<edm::View<pat::Jet> > jets;
+	iEvent.getByToken(jetToken_, jets);
 
 
-Measurement1D DeepNtuplizer::vertexDxy(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv) const {
-  VertexDistanceXY dist;
-  reco::Vertex::CovarianceMatrix csv; svcand.fillVertexCovariance(csv);
-  reco::Vertex svtx(svcand.vertex(), csv);
-  return dist.distance(svtx, pv);
-}
 
-Measurement1D DeepNtuplizer::vertexD3d(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv) const {
-  VertexDistance3D dist;
-  reco::Vertex::CovarianceMatrix csv; svcand.fillVertexCovariance(csv);
-  reco::Vertex svtx(svcand.vertex(), csv);
-  return dist.distance(svtx, pv);
-}
+	// loop over the jets
+	for (edm::View<pat::Jet>::const_iterator jetIter = jets->begin(); jetIter != jets->end(); ++jetIter) {
+		const pat::Jet& jet = *jetIter;
+		size_t jetidx=jetIter-jets->begin();
 
-float DeepNtuplizer::vertexDdotP(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const {
-  reco::Candidate::Vector p = sv.momentum();
-  reco::Candidate::Vector d(sv.vx() - pv.x(), sv.vy() - pv.y(), sv.vz() - pv.z());
-  return p.Unit().Dot(d.Unit());
+
+		bool writejet=true;
+		for(auto& m:modules_){
+			if(! m->fillBranches(jet, jetidx, jets.product()))
+				writejet=false;
+		}
+		if(writejet)
+			tree_->Fill();
+	} // end of looping over the jets
 }
 
 
@@ -456,25 +189,31 @@ float DeepNtuplizer::vertexDdotP(const reco::VertexCompositePtrCandidate &sv, co
 void
 DeepNtuplizer::beginJob()
 {
+	if( !fs ){
+		throw edm::Exception( edm::errors::Configuration,
+				"TFile Service is not registered in cfg file" );
+	}
+	tree_=(fs->make<TTree>("tree" ,"tree" ));
+
+	for(auto& m:modules_)
+		m->initBranches(tree_);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void
 DeepNtuplizer::endJob()
 {
-  file_->cd();
-  tree_->Write();
-  file_->Write();
+
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
 DeepNtuplizer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  //The following says we do not know what parameters are allowed so do no validation
-  // Please change this to state exactly what you do use, even if it is no parameters
-  edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
+	//The following says we do not know what parameters are allowed so do no validation
+	// Please change this to state exactly what you do use, even if it is no parameters
+	edm::ParameterSetDescription desc;
+	desc.setUnknown();
+	descriptions.addDefault(desc);
 }
 
 //define this as a plug-in
