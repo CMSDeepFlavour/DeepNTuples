@@ -1,12 +1,15 @@
 import FWCore.ParameterSet.Config as cms
+import os
 
 qgDatabaseVersion = 'cmssw8020_v2'
+
+databasepath=os.environ['CMSSW_BASE']+'/src/DeepNTuples/DeepNtuplizer/data/QGL_cmssw8020_v2.db'
 
 from CondCore.CondDB.CondDB_cfi import *
 QGPoolDBESSource = cms.ESSource("PoolDBESSource",
       CondDB.DBParameters,
       toGet = cms.VPSet(),
-      connect = cms.string('sqlite:QGL_cmssw8020_v2.db'),
+      connect = cms.string('sqlite_file:'+databasepath),
 )
 
 for type in ['AK4PFchs','AK4PFchs_antib']:
