@@ -12,4 +12,6 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                jetAbsEtaMin = cms.double(0.0),
                                jetAbsEtaMax = cms.double(2.4),
                                gluonReduction = cms.double(0.0),
+															 tagInfoName = cms.string('deepNN'),
+															 bDiscriminators = cms.vstring(),
                                )
