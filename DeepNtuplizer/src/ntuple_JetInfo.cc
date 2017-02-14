@@ -23,7 +23,7 @@ void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
 void ntuple_JetInfo::initBranches(TTree* tree){
 
 	//more general event info, here applied per jet
-	tree->Branch("npv"    ,&npv_    ,"npv/i"    );
+	tree->Branch("npv"    ,&npv_    ,"npv/f"    );
 	tree->Branch("event_no"    ,&event_no_    ,"npv/i"    );
 	tree->Branch("jet_no"    ,&jet_no_    ,"npv/i"    );
 

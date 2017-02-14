@@ -95,7 +95,7 @@ private:
 	int isG_;
 
 	// global variables
-	unsigned int npv_;
+	float npv_;
 	unsigned int event_no_;
 	unsigned int jet_no_;
 
@@ -107,7 +107,7 @@ private:
 	float jet_qgl_;
 	float QG_ptD_;
 	float QG_axis2_;
-	int   QG_mult_;
+	float QG_mult_;
 
 	float gen_pt_Recluster_;
 	float gen_pt_WithNu_;

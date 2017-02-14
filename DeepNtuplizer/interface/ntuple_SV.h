@@ -39,7 +39,7 @@ private:
 	float sv_mass_[100];
 	//  float sv_phirel_[100];
 	//  float sv_etarel_[100];
-	int   sv_ntracks_[100];
+	float sv_ntracks_[100];
 	float sv_chi2_[100];
 	float sv_ndf_[100];
 	float sv_dxy_[100];

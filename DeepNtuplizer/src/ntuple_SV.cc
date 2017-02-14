@@ -32,7 +32,7 @@ void ntuple_SV::initBranches(TTree* tree){
 	tree->Branch("sv_eta"         ,&sv_eta_         ,"sv_eta_[sv_num_]/f"         );
 	tree->Branch("sv_phi"         ,&sv_phi_         ,"sv_phi_[sv_num_]/f"         );
 	tree->Branch("sv_mass"        ,&sv_mass_        ,"sv_mass_[sv_num_]/f"        );
-	tree->Branch("sv_ntracks"     ,&sv_ntracks_     ,"sv_ntracks_[sv_num_]/i"     );
+	tree->Branch("sv_ntracks"     ,&sv_ntracks_     ,"sv_ntracks_[sv_num_]/f"     );
 	tree->Branch("sv_chi2"        ,&sv_chi2_        ,"sv_chi2_[sv_num_]/f"        );
 	tree->Branch("sv_ndf"         ,&sv_ndf_         ,"sv_ndf_[sv_num_]/f"         );
 	tree->Branch("sv_dxy"         ,&sv_dxy_         ,"sv_dxy_[sv_num_]/f"         );
