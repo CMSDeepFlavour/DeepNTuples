@@ -27,7 +27,7 @@ void ntuple_SV::getInput(const edm::ParameterSet& iConfig){
 }
 void ntuple_SV::initBranches(TTree* tree){
 	// SV candidates
-	tree->Branch("sv_num"         ,&sv_num_         ,"sv_num_/i"                  );
+	tree->Branch("n_sv"         ,&sv_num_         ,"sv_num_/i"                  );
 	tree->Branch("sv_pt"          ,&sv_pt_          ,"sv_pt_[sv_num_]/f"          );
 	tree->Branch("sv_eta"         ,&sv_eta_         ,"sv_eta_[sv_num_]/f"         );
 	tree->Branch("sv_phi"         ,&sv_phi_         ,"sv_phi_[sv_num_]/f"         );
