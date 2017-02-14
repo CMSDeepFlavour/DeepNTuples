@@ -111,6 +111,8 @@ private:
 
 	float gen_pt_Recluster_;
 	float gen_pt_WithNu_;
+	float Delta_gen_pt_Recluster_;
+	float Delta_gen_pt_WithNu_;
 
 };
 

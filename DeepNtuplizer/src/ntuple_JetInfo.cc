@@ -46,11 +46,14 @@ void ntuple_JetInfo::initBranches(TTree* tree){
 	tree->Branch("QG_ptD",   &QG_ptD_);   // momentum fraction per jet constituent 
 	tree->Branch("QG_axis2", &QG_axis2_); // jet shape i.e. gluon are wider than quarks
 	tree->Branch("QG_mult",  &QG_mult_);  // multiplicity i.e. total num of PFcands reconstructed
-	                                       // in the jet
+	// in the jet
 
 
 	tree->Branch("gen_pt_Recluster"    ,&gen_pt_Recluster_    ,"gen_pt_Recluster_/f"    );
 	tree->Branch("gen_pt_WithNu"    ,&gen_pt_WithNu_    ,"gen_pt_WithNu_/f"    );
+	tree->Branch("Delta_gen_pt_Recluster"    ,&Delta_gen_pt_Recluster_    ,"Delta_gen_pt_Recluster_/f"    );
+	tree->Branch("Delta_gen_pt_WithNu"    ,&Delta_gen_pt_WithNu_    ,"Delta_gen_pt_WithNu_/f"    );
+
 
 }
 void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
@@ -102,13 +105,14 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 	//std::vector<Ptr<pat::Jet> > p= coll->ptrs();
 
 
-	///re check! FIXME
+
 	isB_= int(abs(jet.partonFlavour())==5);
 	isC_= int(abs(jet.partonFlavour())==4);
 	isUDS_= int( (abs(jet.partonFlavour())>0) && (abs(jet.partonFlavour())<4 ));
 	isG_= int(jet.partonFlavour()==21);
 
-	// check for sumP = 1 if() return false;
+	if(!isB_ && !isC_ && !isUDS_ && !isG_) return false;
+
 	pat::JetCollection h;
 
 	jet_pt_ = jet.pt();
@@ -133,7 +137,8 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 		gen_pt_WithNu_ = genjetWithNu->pt();
 	}
 
-
+	Delta_gen_pt_Recluster_=gen_pt_Recluster_-jet.pt();
+	Delta_gen_pt_WithNu_=gen_pt_WithNu_-jet.pt();
 
 
 	return true;

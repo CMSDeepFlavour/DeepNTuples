@@ -7,10 +7,9 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                SVs  = cms.InputTag("slimmedSecondaryVertices"),
                                genJetMatchWithNu = cms.InputTag("patGenJetMatchWithNu"),
                                genJetMatchRecluster = cms.InputTag("patGenJetMatchRecluster"),
-                               jetPtMin     = cms.double(0.0),
-                               jetPtMax     = cms.double(10000),
+                               jetPtMin     = cms.double(20.0),
+                               jetPtMax     = cms.double(100),
                                jetAbsEtaMin = cms.double(0.0),
-                               jetAbsEtaMax = cms.double(5),
+                               jetAbsEtaMax = cms.double(2.4),
                                gluonReduction = cms.double(0.0),
-
                                )
