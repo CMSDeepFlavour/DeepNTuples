@@ -20,6 +20,10 @@ if hasattr(sys, "argv"):
 
 
 process = cms.Process("DNNFiller")
+process.options = cms.untracked.PSet( 
+    wantSummary = cms.untracked.bool(True),
+    allowUnscheduled = cms.untracked.bool(True) 
+    )
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("Configuration.EventContent.EventContent_cff")
@@ -35,7 +39,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
-
+process.MessageLogger.cerr.threshold = 'INFO'
 
 
 from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM

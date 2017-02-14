@@ -33,7 +33,7 @@ os.mkdir(args.jobdir)
 configFile=os.path.abspath(args.configfile)
 shutil.copy(configFile, args.jobdir)
 configFile=os.path.abspath(os.path.join(args.jobdir, os.path.basename(configFile)))
-print (configFile)
+print ('submitting jobs for '+configFile)
 
 samplesdir='DeepNTuples.DeepNtuplizer.samples.'
 

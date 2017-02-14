@@ -22,6 +22,12 @@ void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
 }
 void ntuple_JetInfo::initBranches(TTree* tree){
 
+	//more general event info, here applied per jet
+	tree->Branch("npv"    ,&npv_    ,"npv/i"    );
+	tree->Branch("event_no"    ,&event_no_    ,"npv/i"    );
+	tree->Branch("jet_no"    ,&jet_no_    ,"npv/i"    );
+
+
 	// truthe labels
 	tree->Branch("gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
 	tree->Branch("Delta_gen_pt"    ,&Delta_gen_pt_,"Delta_gen_pt_/f"    );
@@ -30,7 +36,6 @@ void ntuple_JetInfo::initBranches(TTree* tree){
 	tree->Branch("isUDS",&isUDS_, "isUDS_/i");
 	tree->Branch("isG",&isG_, "isG_/i");
 
-	tree->Branch("npv"    ,&npv_    ,"npv/i"    );
 
 	// jet variables
 	tree->Branch("jet_pt", &jet_pt_);
@@ -58,6 +63,9 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
 
 	iEvent.getByToken(genJetMatchReclusterToken_, genJetMatchRecluster);
 	iEvent.getByToken(genJetMatchWithNuToken_, genJetMatchWithNu);
+
+	//technically a branch fill but per event, therefore here
+	event_no_=iEvent.id().event();
 }
 
 //use either of these functions
@@ -82,6 +90,8 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 	//branch fills
 
 	npv_ = vertices()->size();
+	jet_no_=jetidx;
+
 
 	const auto jetRef = reco::CandidatePtr(coll->ptrs().at( jetidx));
 	jet_qgl_ = (*qglHandle)[jetRef];

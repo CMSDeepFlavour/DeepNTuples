@@ -96,6 +96,8 @@ private:
 
 	// global variables
 	unsigned int npv_;
+	unsigned int event_no_;
+	unsigned int jet_no_;
 
 	// jet variables
 	float jet_pt_;
