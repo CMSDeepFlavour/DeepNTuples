@@ -10,6 +10,8 @@
 
 #include "ntuple_content.h"
 #include "TRandom3.h"
+#include <map>
+#include <string>
 
 /*
  * For global jet info such as eta, pt, gen info
@@ -113,7 +115,7 @@ private:
 	float gen_pt_WithNu_;
 	float Delta_gen_pt_Recluster_;
 	float Delta_gen_pt_WithNu_;
-
+	std::map<std::string, float> discriminators_;
 };
 
 

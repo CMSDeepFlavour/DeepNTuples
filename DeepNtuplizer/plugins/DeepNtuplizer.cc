@@ -9,6 +9,7 @@
 #include "../interface/ntuple_SV.h"
 #include "../interface/ntuple_JetInfo.h"
 #include "../interface/ntuple_pfCands.h"
+#include "../interface/ntuple_bTagVars.h"
 
 //ROOT includes
 #include "TTree.h"
@@ -125,8 +126,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
 	ntuple_pfCands * pfcands = new ntuple_pfCands();
 	addModule(pfcands);
 
-
-
+	addModule(new ntuple_bTagVars());
 
 	/*
 	 *

@@ -9,8 +9,8 @@
 
 
 #include "../interface/ntuple_JetInfo.h"
-
-
+#include <vector>
+using namespace std;
 
 void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
 
@@ -19,6 +19,11 @@ void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
 	jetPtMax_=(iConfig.getParameter<double>("jetPtMax"));
 	jetAbsEtaMin_=(iConfig.getParameter<double>("jetAbsEtaMin"));
 	jetAbsEtaMax_=(iConfig.getParameter<double>("jetAbsEtaMax"));
+
+	vector<string> disc_names = iConfig.getParameter<vector<string> >("bDiscriminators");
+	for(auto& name : disc_names) {
+		discriminators_[name] = 0.;
+	}
 }
 void ntuple_JetInfo::initBranches(TTree* tree){
 
@@ -55,6 +60,9 @@ void ntuple_JetInfo::initBranches(TTree* tree){
 	tree->Branch("Delta_gen_pt_WithNu"    ,&Delta_gen_pt_WithNu_    ,"Delta_gen_pt_WithNu_/f"    );
 
 
+	for(auto& entry : discriminators_) {
+		tree->Branch(entry.first.c_str(), &entry.second, (entry.first+"/F").c_str());
+	}
 }
 void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
 
@@ -91,6 +99,9 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 
 	//branch fills
+	for(auto& entry : discriminators_) {
+		entry.second = jet.bDiscriminator(entry.first);
+	}
 
 	npv_ = vertices()->size();
 	jet_no_=jetidx;
@@ -115,12 +126,12 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 	pat::JetCollection h;
 
-	jet_pt_ = jet.pt();
+	jet_pt_ = jet.correctedJet("Uncorrected").pt();
 	jet_eta_ = jet.eta();
 
 
 	gen_pt_ =  jet.genJet()->pt();
-	Delta_gen_pt_ =  jet.genJet()->pt()- jet.pt();
+	Delta_gen_pt_ =  jet.genJet()->pt()- jet_pt_;
 
 
 	const edm::RefToBase<pat::Jet> patJetRef = coll->refAt(jetidx);
