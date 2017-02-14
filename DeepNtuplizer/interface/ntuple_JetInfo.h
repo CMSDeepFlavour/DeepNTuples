@@ -103,9 +103,9 @@ private:
 
 	// quark/gluon
 	float jet_qgl_;
-	float jet_ptD_;
-	float jet_axis2_;
-	int   jet_mult_;
+	float QG_ptD_;
+	float QG_axis2_;
+	int   QG_mult_;
 
 	float gen_pt_Recluster_;
 	float gen_pt_WithNu_;
