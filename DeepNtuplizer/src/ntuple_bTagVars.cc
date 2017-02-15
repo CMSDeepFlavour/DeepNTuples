@@ -34,12 +34,12 @@ void ntuple_bTagVars::initBranches(TTree* tree){
 	tree->Branch("TagVarCSVTrk_trackSip3dSig"   , &trackSip3dSig_   , "trackSip3dSig_[jetNSelectedTracks_]/f"   );
 	tree->Branch("TagVarCSVTrk_trackSip2dSig"   , &trackSip2dSig_   , "trackSip2dSig_[jetNSelectedTracks_]/f"   );
 	tree->Branch("TagVarCSVTrk_trackDecayLenVal", &trackDecayLenVal_, "trackDecayLenVal_[jetNSelectedTracks_]/f");
+	tree->Branch("TagVarCSVTrk_trackJetDistVal" , &trackJetDistVal_ , "trackJetDistVal_[jetNSelectedTracks_]/f" );
 	tree->Branch("TagVarCSV_jetNTracksEtaRel", &jetNTracksEtaRel_, "jetNTracksEtaRel_/i"                );
 	tree->Branch("TagVarCSV_trackEtaRel"     , &trackEtaRel_     , "trackEtaRel_[jetNTracksEtaRel_]/f"  );
 	tree->Branch("trackPParRatio"  , &trackPParRatio_  , "trackPParRatio_[jetNSelectedTracks_]/f"  );
 	tree->Branch("trackSip2dVal"   , &trackSip2dVal_   , "trackSip2dVal_[jetNSelectedTracks_]/f"   );
 	tree->Branch("trackSip3dVal"   , &trackSip3dVal_   , "trackSip3dVal_[jetNSelectedTracks_]/f"   );
-	tree->Branch("trackJetDistVal" , &trackJetDistVal_ , "trackJetDistVal_[jetNSelectedTracks_]/f" );
 	tree->Branch("trackMomentum"   , &trackMomentum_   , "trackMomentum_[jetNSelectedTracks_]/f"   );
 	tree->Branch("trackEta"        , &trackEta_        , "trackEta_[jetNSelectedTracks_]/f"        );
 	tree->Branch("trackPPar"       , &trackPPar_       , "trackPPar_[jetNSelectedTracks_]/f"       );
