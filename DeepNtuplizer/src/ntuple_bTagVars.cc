@@ -18,41 +18,41 @@ void ntuple_bTagVars::initBranches(TTree* tree){
 	//jet general
 	tree->Branch("trackJetPt"             , &trackJetPt_             , "trackJetPt_/F"             );
 	tree->Branch("jetNTracks"             , &jetNTracks_             , "jetNTracks_/F"             );
-	tree->Branch("jetNTracksEtaRel"       , &jetNTracksEtaRel_       , "jetNTracksEtaRel_/F"       );
-	tree->Branch("jetNSecondaryVertices"  , &jetNSecondaryVertices_  , "jetNSecondaryVertices_/F"  );
-	tree->Branch("trackSumJetEtRatio"     , &trackSumJetEtRatio_     , "trackSumJetEtRatio_/F"     );
-	tree->Branch("trackSumJetDeltaR"      , &trackSumJetDeltaR_      , "trackSumJetDeltaR_/F"      );
-	tree->Branch("vertexCategory"         , &vertexCategory_         , "vertexCategory_/F"         );
-	tree->Branch("trackSip2dValAboveCharm", &trackSip2dValAboveCharm_, "trackSip2dValAboveCharm_/F");
-	tree->Branch("trackSip2dSigAboveCharm", &trackSip2dSigAboveCharm_, "trackSip2dSigAboveCharm_/F");
-	tree->Branch("trackSip3dValAboveCharm", &trackSip3dValAboveCharm_, "trackSip3dValAboveCharm_/F");
-	tree->Branch("trackSip3dSigAboveCharm", &trackSip3dSigAboveCharm_, "trackSip3dSigAboveCharm_/F");
+	tree->Branch("TagVarCSV_jetNSecondaryVertices"  , &jetNSecondaryVertices_  , "jetNSecondaryVertices_/F"  );
+	tree->Branch("TagVarCSV_trackSumJetEtRatio"     , &trackSumJetEtRatio_     , "trackSumJetEtRatio_/F"     );
+	tree->Branch("TagVarCSV_trackSumJetDeltaR"      , &trackSumJetDeltaR_      , "trackSumJetDeltaR_/F"      );
+	tree->Branch("TagVarCSV_vertexCategory"         , &vertexCategory_         , "vertexCategory_/F"         );
+	tree->Branch("TagVarCSV_trackSip2dValAboveCharm", &trackSip2dValAboveCharm_, "trackSip2dValAboveCharm_/F");
+	tree->Branch("TagVarCSV_trackSip2dSigAboveCharm", &trackSip2dSigAboveCharm_, "trackSip2dSigAboveCharm_/F");
+	tree->Branch("TagVarCSV_trackSip3dValAboveCharm", &trackSip3dValAboveCharm_, "trackSip3dValAboveCharm_/F");
+	tree->Branch("TagVarCSV_trackSip3dSigAboveCharm", &trackSip3dSigAboveCharm_, "trackSip3dSigAboveCharm_/F");
 	//track info
-	tree->Branch("nStoredTracks"   , &nStoredTracks_   , "nStoredTracks_/i");
-	tree->Branch("trackMomentum"   , &trackMomentum_   , "trackMomentum_[nStoredTracks_]/f"   );
-	tree->Branch("trackEta"        , &trackEta_        , "trackEta_[nStoredTracks_]/f"        );
-	tree->Branch("trackPtRel"      , &trackPtRel_      , "trackPtRel_[nStoredTracks_]/f"      );
-	tree->Branch("trackPPar"       , &trackPPar_       , "trackPPar_[nStoredTracks_]/f"       );
-	tree->Branch("trackDeltaR"     , &trackDeltaR_     , "trackDeltaR_[nStoredTracks_]/f"     );
-	tree->Branch("trackPtRatio"    , &trackPtRatio_    , "trackPtRatio_[nStoredTracks_]/f"    );
-	tree->Branch("trackPParRatio"  , &trackPParRatio_  , "trackPParRatio_[nStoredTracks_]/f"  );
-	tree->Branch("trackSip2dVal"   , &trackSip2dVal_   , "trackSip2dVal_[nStoredTracks_]/f"   );
-	tree->Branch("trackSip2dSig"   , &trackSip2dSig_   , "trackSip2dSig_[nStoredTracks_]/f"   );
-	tree->Branch("trackSip3dVal"   , &trackSip3dVal_   , "trackSip3dVal_[nStoredTracks_]/f"   );
-	tree->Branch("trackSip3dSig"   , &trackSip3dSig_   , "trackSip3dSig_[nStoredTracks_]/f"   );
-	tree->Branch("trackDecayLenVal", &trackDecayLenVal_, "trackDecayLenVal_[nStoredTracks_]/f");
-	tree->Branch("trackJetDistVal" , &trackJetDistVal_ , "trackJetDistVal_[nStoredTracks_]/f" );
-	tree->Branch("trackEtaRel"     , &trackEtaRel_     , "trackEtaRel_[nStoredTracks_]/f"     );
+	tree->Branch("TagVarCSV_jetNSelectedTracks", &jetNSelectedTracks_, "jetNSelectedTracks_/i");
+	tree->Branch("TagVarCSVTrk_trackPtRel"      , &trackPtRel_      , "trackPtRel_[jetNSelectedTracks_]/f"      );
+	tree->Branch("TagVarCSVTrk_trackDeltaR"     , &trackDeltaR_     , "trackDeltaR_[jetNSelectedTracks_]/f"     );
+	tree->Branch("TagVarCSVTrk_trackPtRatio"    , &trackPtRatio_    , "trackPtRatio_[jetNSelectedTracks_]/f"    );
+	tree->Branch("TagVarCSVTrk_trackSip3dSig"   , &trackSip3dSig_   , "trackSip3dSig_[jetNSelectedTracks_]/f"   );
+	tree->Branch("TagVarCSVTrk_trackSip2dSig"   , &trackSip2dSig_   , "trackSip2dSig_[jetNSelectedTracks_]/f"   );
+	tree->Branch("TagVarCSVTrk_trackDecayLenVal", &trackDecayLenVal_, "trackDecayLenVal_[jetNSelectedTracks_]/f");
+	tree->Branch("TagVarCSV_jetNTracksEtaRel", &jetNTracksEtaRel_, "jetNTracksEtaRel_/i"                );
+	tree->Branch("TagVarCSV_trackEtaRel"     , &trackEtaRel_     , "trackEtaRel_[jetNTracksEtaRel_]/f"  );
+	tree->Branch("trackPParRatio"  , &trackPParRatio_  , "trackPParRatio_[jetNSelectedTracks_]/f"  );
+	tree->Branch("trackSip2dVal"   , &trackSip2dVal_   , "trackSip2dVal_[jetNSelectedTracks_]/f"   );
+	tree->Branch("trackSip3dVal"   , &trackSip3dVal_   , "trackSip3dVal_[jetNSelectedTracks_]/f"   );
+	tree->Branch("trackJetDistVal" , &trackJetDistVal_ , "trackJetDistVal_[jetNSelectedTracks_]/f" );
+	tree->Branch("trackMomentum"   , &trackMomentum_   , "trackMomentum_[jetNSelectedTracks_]/f"   );
+	tree->Branch("trackEta"        , &trackEta_        , "trackEta_[jetNSelectedTracks_]/f"        );
+	tree->Branch("trackPPar"       , &trackPPar_       , "trackPPar_[jetNSelectedTracks_]/f"       );
 	//SV info
-	tree->Branch("nStoredVertices"    , &nStoredVertices_    , "nStoredVertices_/i"  );
-	tree->Branch("vertexMass"         , &vertexMass_         , "vertexMass_[nStoredVertices_]/f"         );
-	tree->Branch("vertexNTracks"      , &vertexNTracks_      , "vertexNTracks_[nStoredVertices_]/f"      );
-	tree->Branch("vertexEnergyRatio"  , &vertexEnergyRatio_  , "vertexEnergyRatio_[nStoredVertices_]/f"  );
-	tree->Branch("vertexJetDeltaR"    , &vertexJetDeltaR_    , "vertexJetDeltaR_[nStoredVertices_]/f"    );
-	tree->Branch("flightDistance2dVal", &flightDistance2dVal_, "flightDistance2dVal_[nStoredVertices_]/f");
-	tree->Branch("flightDistance2dSig", &flightDistance2dSig_, "flightDistance2dSig_[nStoredVertices_]/f");
-	tree->Branch("flightDistance3dVal", &flightDistance3dVal_, "flightDistance3dVal_[nStoredVertices_]/f");
-	tree->Branch("flightDistance3dSig", &flightDistance3dSig_, "flightDistance3dSig_[nStoredVertices_]/f");	
+	tree->Branch("n_StoredVertices"    , &nStoredVertices_    , "nStoredVertices_/i"  );
+	tree->Branch("TagVarCSV_vertexMass"         , &vertexMass_         , "vertexMass_[nStoredVertices_]/f"         );
+	tree->Branch("TagVarCSV_vertexNTracks"      , &vertexNTracks_      , "vertexNTracks_[nStoredVertices_]/f"      );
+	tree->Branch("TagVarCSV_vertexEnergyRatio"  , &vertexEnergyRatio_  , "vertexEnergyRatio_[nStoredVertices_]/f"  );
+	tree->Branch("TagVarCSV_vertexJetDeltaR"    , &vertexJetDeltaR_    , "vertexJetDeltaR_[nStoredVertices_]/f"    );
+	tree->Branch("TagVarCSV_flightDistance2dVal", &flightDistance2dVal_, "flightDistance2dVal_[nStoredVertices_]/f");
+	tree->Branch("TagVarCSV_flightDistance2dSig", &flightDistance2dSig_, "flightDistance2dSig_[nStoredVertices_]/f");
+	tree->Branch("TagVarCSV_flightDistance3dVal", &flightDistance3dVal_, "flightDistance3dVal_[nStoredVertices_]/f");
+	tree->Branch("TagVarCSV_flightDistance3dSig", &flightDistance3dSig_, "flightDistance3dSig_[nStoredVertices_]/f");	
 }
 
 //use either of these functions
@@ -90,21 +90,20 @@ bool ntuple_bTagVars::fillBranches(const pat::Jet & jet, const size_t& jetidx, c
 	//  FIXME: right now there are no default values in the vectors... Is this something we want? or do we want fixed size vectors with zero padding in the end?
 	//
 	//*******************
-	nStoredTracks_ = 100;
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackMomentum_, reco::btau::trackMomentum)  );
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackEta_, reco::btau::trackEta)            );
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackPtRel_, reco::btau::trackPtRel)        );
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackPPar_, reco::btau::trackPPar)          );
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackDeltaR_, reco::btau::trackDeltaR)      );
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackPtRatio_, reco::btau::trackPtRatio)    );
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackPParRatio_, reco::btau::trackPParRatio));
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackSip2dVal_, reco::btau::trackSip2dVal)  );
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackSip2dSig_, reco::btau::trackSip2dSig)  );
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackSip3dVal_, reco::btau::trackSip3dVal)  );
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackSip3dSig_, reco::btau::trackSip3dSig)  );
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackDecayLenVal_, reco::btau::trackDecayLenVal));
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackJetDistVal_, reco::btau::trackJetDistVal));
-	nStoredTracks_ = min(nStoredTracks_ , dump_vector(vars, trackEtaRel_, reco::btau::trackEtaRel));
+	jetNSelectedTracks_ = dump_vector(vars, trackMomentum_, reco::btau::trackMomentum);
+	dump_vector(vars, trackEta_, reco::btau::trackEta)            ;
+	dump_vector(vars, trackPtRel_, reco::btau::trackPtRel)        ;
+	dump_vector(vars, trackPPar_, reco::btau::trackPPar)          ;
+	dump_vector(vars, trackDeltaR_, reco::btau::trackDeltaR)      ;
+	dump_vector(vars, trackPtRatio_, reco::btau::trackPtRatio)    ;
+	dump_vector(vars, trackPParRatio_, reco::btau::trackPParRatio);
+	dump_vector(vars, trackSip2dVal_, reco::btau::trackSip2dVal)  ;
+	dump_vector(vars, trackSip2dSig_, reco::btau::trackSip2dSig)  ;
+	dump_vector(vars, trackSip3dVal_, reco::btau::trackSip3dVal)  ;
+	dump_vector(vars, trackSip3dSig_, reco::btau::trackSip3dSig)  ;
+	dump_vector(vars, trackDecayLenVal_, reco::btau::trackDecayLenVal);
+	dump_vector(vars, trackJetDistVal_, reco::btau::trackJetDistVal);
+	dump_vector(vars, trackEtaRel_, reco::btau::trackEtaRel);
 
 	//*******************
 	//

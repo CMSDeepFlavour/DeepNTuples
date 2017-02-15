@@ -40,7 +40,6 @@ private:
 	//jet general
 	float trackJetPt_;              // track-based jet transverse momentum
 	float jetNTracks_;              // tracks associated to jet
-	float jetNTracksEtaRel_;        // tracks associated to jet for which trackEtaRel is calculated
 	float jetNSecondaryVertices_;   // number of secondary vertices associated to the jet
 	float trackSumJetEtRatio_;      // ratio of track sum transverse energy over jet energy
 	float trackSumJetDeltaR_;       // pseudoangular distance between jet axis and track fourvector sum
@@ -50,7 +49,8 @@ private:
 	float trackSip3dSigAboveCharm_; // track 3D signed impact parameter significance of first track lifting mass above charm
 	float vertexCategory_;          // category of secondary vertex (Reco, Pseudo, No)
 	//track info
-	int   nStoredTracks_;
+	int   jetNTracksEtaRel_;        // tracks associated to jet for which trackEtaRel is calculated
+	int   jetNSelectedTracks_;
 	float trackMomentum_[100];    // track momentum
 	float trackEta_[100];         // track pseudorapidity
 	float trackPhi_[100];         // track polar angle
