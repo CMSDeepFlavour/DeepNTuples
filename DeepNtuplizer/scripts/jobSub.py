@@ -51,6 +51,8 @@ for sampledescription in lines:
         
     nJobs=entries[0]
     sample=samplesdir+entries[1]
+    print('preparing '+sample)
+    
     outputFile=entries[2]
     jobargs=''
     if len(entries) >3:
@@ -73,11 +75,11 @@ for sampledescription in lines:
     #link to ntupleOutDir
     os.symlink(ntupleOutDir,jobpath+'/output')
        
-    condorfile ="""executable            = batchscript.sh
+    condorfile ="""executable            = {batchscriptpath}
 arguments             = {configfile} inputScript={sample} outputFile={ntupledir}{outputfile} nJobs={njobs} job=$(ProcId) {options}
-output                = batch/con_$(ClusterId).$(ProcId).out
-error                 = batch/con_$(ClusterId).$(ProcId).err
-log                   = batch/con_$(ClusterId).$(ProcId).log
+output                = batch/con_out.$(ProcId).out
+error                 = batch/con_out.$(ProcId).err
+log                   = batch/con_out.$(ProcId).log
 send_credential        = True
 use_x509userproxy = True
 queue {njobs}
@@ -97,7 +99,31 @@ queue {njobs}
     print("wrote condor file for "+outputFile)
     os.mkdir(jobpath+'/batch')
     
-    
+    #create individual condor files for resubmission
+    for job in range(0,int(nJobs)):
+         jobcondorfile ="""executable            = {batchscriptpath}
+arguments             = {configfile} inputScript={sample} outputFile={ntupledir}{outputfile} nJobs={njobs} job={job} {options}
+output                = batch/con_out.{job}.out
+error                 = batch/con_out.{job}.err
+log                   = batch/con_out.{job}.log
+send_credential        = True
+use_x509userproxy = True
+queue 1
+         """.format(
+              batchscriptpath=sheelscp,
+              configfile=configFile, 
+              sample=sample,
+              ntupledir=ntupleOutDir,
+              outputfile=outputFile,
+              njobs=nJobs, 
+              options=jobargs,
+              job=str(job)
+          )
+         jconf = open(os.path.join(jobpath+'/batch', 'condor_'+str(job)+'.sub'), 'w')
+         jconf.write(jobcondorfile)
+         jconf.close()
+         
+         
     #create script
     shellscript = """#!/bin/bash
 echo "JOBSUB::RUN job running"
@@ -105,7 +131,7 @@ trap "echo JOBSUB::FAIL job killed" SIGTERM
 cd {basedir}
 eval `scramv1 runtime -sh`
 cd {jobdir}
-cmsRun "$@"
+cmsRun "$@" 2>&1
 exitstatus=$?
 if [ $exitstatus != 0 ]
 then
@@ -122,6 +148,9 @@ fi
     shellsc.write(shellscript)
     shellsc.close()
     os.system('chmod +x '+sheelscp)
+    
+    #add a 'touch for the .out file to make the check realise it is there
+    
     if not args.nosubmit:
          os.system('cd ' + jobpath + ' && condor_submit condor.sub') # gives back submitted to cluster XXX message - use
 

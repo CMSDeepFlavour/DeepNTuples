@@ -80,7 +80,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 		/// Split to charged and neutral candidates
 
 		const pat::PackedCandidate* PackedCandidate_ = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
-		if(PackedCandidate_->charge()!=0)
+		if(PackedCandidate_->charge()!=0 && max_pfcand_>n_Cpfcand_)
 		{
 			Cpfcan_pt_[n_Cpfcand_] = PackedCandidate_->pt();
 			Cpfcan_phirel_[n_Cpfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
@@ -116,7 +116,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 			Cpfcan_highPurity_[n_Cpfcand_] = PseudoTrack.highPurity;
 			n_Cpfcand_++;
 		}
-		else{// neutral candidates
+		else if(max_pfcand_>n_Npfcand_){// neutral candidates
 			Npfcan_pt_[n_Npfcand_] = PackedCandidate_->pt();
 			Npfcan_phirel_[n_Npfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
 			Npfcan_etarel_[n_Npfcand_] = etasign*(PackedCandidate_->eta()-jet.eta());

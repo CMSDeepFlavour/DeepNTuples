@@ -59,10 +59,10 @@ void ntuple_JetInfo::initBranches(TTree* tree){
 	tree->Branch("Delta_gen_pt_Recluster"    ,&Delta_gen_pt_Recluster_    ,"Delta_gen_pt_Recluster_/f"    );
 	tree->Branch("Delta_gen_pt_WithNu"    ,&Delta_gen_pt_WithNu_    ,"Delta_gen_pt_WithNu_/f"    );
 
-
-	for(auto& entry : discriminators_) {
-		tree->Branch(entry.first.c_str(), &entry.second, (entry.first+"/F").c_str());
-	}
+	if(1) // discriminators might need to be filled differently. FIXME
+		for(auto& entry : discriminators_) {
+			tree->Branch(entry.first.c_str(), &entry.second, (entry.first+"/F").c_str());
+		}
 }
 void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
 

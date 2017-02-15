@@ -58,22 +58,24 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
 	for (const reco::VertexCompositePtrCandidate &sv : *secVertices) {
 
 		if (reco::deltaR(sv,jet)>0.4) { continue; }
+		if((int)max_sv>sv_num_){
 
-		sv_pt_[sv_num_]           = sv.pt();
-		sv_eta_[sv_num_]          = sv.eta();
-		sv_phi_[sv_num_]          = sv.phi();
-		sv_mass_[sv_num_]         = sv.mass();
-		sv_ntracks_[sv_num_]      = sv.numberOfDaughters();
-		sv_chi2_[sv_num_]         = sv.vertexChi2();
-		sv_ndf_[sv_num_]          = sv.vertexNdof();
-		sv_dxy_[sv_num_]          = vertexDxy(sv,pv).value();
-		sv_dxyerr_[sv_num_]       = vertexDxy(sv,pv).error();
-		sv_d3d_[sv_num_]          = vertexD3d(sv,pv).value();
-		sv_d3derr_[sv_num_]       = vertexD3d(sv,pv).error();
-		sv_costhetasvpv_[sv_num_] = vertexDdotP(sv,pv); // the pointing angle (i.e. the angle between the sum of the momentum
-		// of the tracks in the SV and the flight direction betwen PV and SV)
-		sv_num_++;
+			sv_pt_[sv_num_]           = sv.pt();
+			sv_eta_[sv_num_]          = sv.eta();
+			sv_phi_[sv_num_]          = sv.phi();
+			sv_mass_[sv_num_]         = sv.mass();
+			sv_ntracks_[sv_num_]      = sv.numberOfDaughters();
+			sv_chi2_[sv_num_]         = sv.vertexChi2();
+			sv_ndf_[sv_num_]          = sv.vertexNdof();
+			sv_dxy_[sv_num_]          = vertexDxy(sv,pv).value();
+			sv_dxyerr_[sv_num_]       = vertexDxy(sv,pv).error();
+			sv_d3d_[sv_num_]          = vertexD3d(sv,pv).value();
+			sv_d3derr_[sv_num_]       = vertexD3d(sv,pv).error();
+			sv_costhetasvpv_[sv_num_] = vertexDdotP(sv,pv); // the pointing angle (i.e. the angle between the sum of the momentum
+			// of the tracks in the SV and the flight direction betwen PV and SV)
 
+			sv_num_++;
+		}
 	} // end of looping over the secondary vertices
 
 	return true;

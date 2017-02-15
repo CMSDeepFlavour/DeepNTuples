@@ -27,42 +27,46 @@ public:
 
 private:
 	unsigned int n_Cpfcand_;
-	float  Cpfcan_pt_[100];
-	float  Cpfcan_phirel_[100];
-	float  Cpfcan_etarel_[100];
-	float  Cpfcan_puppiw_[100];
-	float   Cpfcan_VTX_ass_[100];
+
+
+	static constexpr size_t max_pfcand_=100;
+
+	float  Cpfcan_pt_[max_pfcand_];
+	float  Cpfcan_phirel_[max_pfcand_];
+	float  Cpfcan_etarel_[max_pfcand_];
+	float  Cpfcan_puppiw_[max_pfcand_];
+	float   Cpfcan_VTX_ass_[max_pfcand_];
 
 	// covariance
-	float  Cpfcan_dz_[100];
-	float  Cpfcan_dxy_[100];
-	float  Cpfcan_dptdpt_[100];
-	float  Cpfcan_detadeta_[100];
-	float  Cpfcan_dphidphi_[100];
-	float  Cpfcan_dxydxy_[100];
-	float  Cpfcan_dzdz_[100];
-	float  Cpfcan_dxydz_[100];
-	float  Cpfcan_dphidxy_[100];
-	float  Cpfcan_dlambdadz_[100];
+	float  Cpfcan_dz_[max_pfcand_];
+	float  Cpfcan_dxy_[max_pfcand_];
+	float  Cpfcan_dptdpt_[max_pfcand_];
+	float  Cpfcan_detadeta_[max_pfcand_];
+	float  Cpfcan_dphidphi_[max_pfcand_];
+	float  Cpfcan_dxydxy_[max_pfcand_];
+	float  Cpfcan_dzdz_[max_pfcand_];
+	float  Cpfcan_dxydz_[max_pfcand_];
+	float  Cpfcan_dphidxy_[max_pfcand_];
+	float  Cpfcan_dlambdadz_[max_pfcand_];
 
 	// ID, skipped "charged hadron" as that is true if now the other
 	// TODO (comment of Markus Stoye) add reco information
-	float Cpfcan_isMu_[100]; // pitty that the quality is missing
-	float Cpfcan_isEl_[100]; // pitty that the quality is missing
-	float Cpfcan_charge_[100];
+	float Cpfcan_isMu_[max_pfcand_]; // pitty that the quality is missing
+	float Cpfcan_isEl_[max_pfcand_]; // pitty that the quality is missing
+	float Cpfcan_charge_[max_pfcand_];
 
 	// track quality
-	float Cpfcan_lostInnerHits_[100];
-	float Cpfcan_chi2_[100];
-	float Cpfcan_highPurity_[100];
+	float Cpfcan_lostInnerHits_[max_pfcand_];
+	float Cpfcan_chi2_[max_pfcand_];
+	float Cpfcan_highPurity_[max_pfcand_];
 
 	//Neutral Pf candidates
-	int n_Npfcand_;
-	float  Npfcan_pt_[100];
-	float  Npfcan_phirel_[100];
-	float  Npfcan_etarel_[100];
-	float  Npfcan_isGamma_[100];
-	float  Npfcan_HadFrac_[100];
+	unsigned int n_Npfcand_;
+	float  Npfcan_pt_[max_pfcand_];
+	float  Npfcan_phirel_[max_pfcand_];
+	float  Npfcan_etarel_[max_pfcand_];
+	float  Npfcan_isGamma_[max_pfcand_];
+	float  Npfcan_HadFrac_[max_pfcand_];
 
 };
 

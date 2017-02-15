@@ -33,20 +33,23 @@ private:
 
 	// SV candidates
 	int   sv_num_;
-	float sv_pt_[100];
-	float sv_eta_[100];
-	float sv_phi_[100];
-	float sv_mass_[100];
-	//  float sv_phirel_[100];
-	//  float sv_etarel_[100];
-	float sv_ntracks_[100];
-	float sv_chi2_[100];
-	float sv_ndf_[100];
-	float sv_dxy_[100];
-	float sv_dxyerr_[100];
-	float sv_d3d_[100];
-	float sv_d3derr_[100];
-	float sv_costhetasvpv_[100];
+
+	static constexpr size_t max_sv=100;
+
+	float sv_pt_[max_sv];
+	float sv_eta_[max_sv];
+	float sv_phi_[max_sv];
+	float sv_mass_[max_sv];
+	//  float sv_phirel_[max_sv];
+	//  float sv_etarel_[max_sv];
+	float sv_ntracks_[max_sv];
+	float sv_chi2_[max_sv];
+	float sv_ndf_[max_sv];
+	float sv_dxy_[max_sv];
+	float sv_dxyerr_[max_sv];
+	float sv_d3d_[max_sv];
+	float sv_d3derr_[max_sv];
+	float sv_costhetasvpv_[max_sv];
 	// TODO (comment of Markus Stoye) add information to PF candidates on which tracks were used !!!
 	// this will come later LG
 

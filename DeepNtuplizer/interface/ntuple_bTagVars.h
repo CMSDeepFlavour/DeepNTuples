@@ -28,12 +28,14 @@ public:
 
 private:
 	template <typename T>
-	int dump_vector(reco::TaggingVariableList& from, T* to, reco::btau::TaggingVariableName name) {
+	int dump_vector(reco::TaggingVariableList& from, T* to, reco::btau::TaggingVariableName name, const size_t& max) {
 		std::vector<T> vals = from.getList(name ,false);
-		if(vals.size() > 0) 
-			std::copy(vals.begin(), vals.end(), to);
-		return vals.size();
+		size_t size=std::min(vals.size(),max);
+		if(size > 0)
+			std::copy(vals.begin(), vals.begin()+size, to);
+		return size;
 	}
+
 
 	std::string tagInfoName_;
 
@@ -51,33 +53,39 @@ private:
 	//track info
 	int   jetNTracksEtaRel_;        // tracks associated to jet for which trackEtaRel is calculated
 	int   jetNSelectedTracks_;
-	float trackMomentum_[100];    // track momentum
-	float trackEta_[100];         // track pseudorapidity
-	float trackPhi_[100];         // track polar angle
-	float trackPtRel_[100];       // track transverse momentum, relative to the jet axis
-	float trackPPar_[100];        // track parallel momentum, along the jet axis
-	float trackDeltaR_[100];      // track pseudoangular distance from the jet axis
-	float trackPtRatio_[100];     // track transverse momentum, relative to the jet axis, normalized to its energy
-	float trackPParRatio_[100];   // track parallel momentum, along the jet axis, normalized to its energy
-	float trackSip2dVal_[100];    // track 2D signed impact parameter
-	float trackSip2dSig_[100];    // track 2D signed impact parameter significance
-	float trackSip3dVal_[100];    // track 3D signed impact parameter
-	float trackSip3dSig_[100];    // track 3D signed impact parameter significance
-	float trackDecayLenVal_[100]; // track decay length
-	float trackDecayLenSig_[100]; // track decay length significance
-	float trackJetDistVal_[100];  // minimum track approach distance to jet axis
-	float trackJetDistSig_[100];  // minimum track approach distance to jet axis significance
-	float trackEtaRel_[100];      // track pseudorapidity, relative to the jet axis
+
+	static constexpr size_t max_jetNSelectedTracks_=100;
+
+	float trackMomentum_[max_jetNSelectedTracks_];    // track momentum
+	float trackEta_[max_jetNSelectedTracks_];         // track pseudorapidity
+	float trackPhi_[max_jetNSelectedTracks_];         // track polar angle
+	float trackPtRel_[max_jetNSelectedTracks_];       // track transverse momentum, relative to the jet axis
+	float trackPPar_[max_jetNSelectedTracks_];        // track parallel momentum, along the jet axis
+	float trackDeltaR_[max_jetNSelectedTracks_];      // track pseudoangular distance from the jet axis
+	float trackPtRatio_[max_jetNSelectedTracks_];     // track transverse momentum, relative to the jet axis, normalized to its energy
+	float trackPParRatio_[max_jetNSelectedTracks_];   // track parallel momentum, along the jet axis, normalized to its energy
+	float trackSip2dVal_[max_jetNSelectedTracks_];    // track 2D signed impact parameter
+	float trackSip2dSig_[max_jetNSelectedTracks_];    // track 2D signed impact parameter significance
+	float trackSip3dVal_[max_jetNSelectedTracks_];    // track 3D signed impact parameter
+	float trackSip3dSig_[max_jetNSelectedTracks_];    // track 3D signed impact parameter significance
+	float trackDecayLenVal_[max_jetNSelectedTracks_]; // track decay length
+	float trackDecayLenSig_[max_jetNSelectedTracks_]; // track decay length significance
+	float trackJetDistVal_[max_jetNSelectedTracks_];  // minimum track approach distance to jet axis
+	float trackJetDistSig_[max_jetNSelectedTracks_];  // minimum track approach distance to jet axis significance
+	float trackEtaRel_[max_jetNSelectedTracks_];      // track pseudorapidity, relative to the jet axis
 	//SV info
 	int   nStoredVertices_;
-	float vertexMass_[10];          // mass of track sum at secondary vertex
-	float vertexNTracks_[10];       // number of tracks at secondary vertex
-	float vertexEnergyRatio_[10];   // ratio of energy at secondary vertex over total energy
-	float vertexJetDeltaR_[10];     // pseudoangular distance between jet axis and secondary vertex direction
-	float flightDistance2dVal_[10]; // transverse distance between primary and secondary vertex
-	float flightDistance2dSig_[10]; // transverse distance significance between primary and secondary vertex
-	float flightDistance3dVal_[10]; // distance between primary and secondary vertex
-	float flightDistance3dSig_[10]; // distance significance between primary and secondary vertex
+
+	static constexpr size_t max_nStoredVertices_=10;
+
+	float vertexMass_[max_nStoredVertices_];          // mass of track sum at secondary vertex
+	float vertexNTracks_[max_nStoredVertices_];       // number of tracks at secondary vertex
+	float vertexEnergyRatio_[max_nStoredVertices_];   // ratio of energy at secondary vertex over total energy
+	float vertexJetDeltaR_[max_nStoredVertices_];     // pseudoangular distance between jet axis and secondary vertex direction
+	float flightDistance2dVal_[max_nStoredVertices_]; // transverse distance between primary and secondary vertex
+	float flightDistance2dSig_[max_nStoredVertices_]; // transverse distance significance between primary and secondary vertex
+	float flightDistance3dVal_[max_nStoredVertices_]; // distance between primary and secondary vertex
+	float flightDistance3dSig_[max_nStoredVertices_]; // distance significance between primary and secondary vertex
 };
 
 

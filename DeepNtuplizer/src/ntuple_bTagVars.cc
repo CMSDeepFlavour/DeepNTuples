@@ -34,12 +34,12 @@ void ntuple_bTagVars::initBranches(TTree* tree){
 	tree->Branch("TagVarCSVTrk_trackSip3dSig"   , &trackSip3dSig_   , "trackSip3dSig_[jetNSelectedTracks_]/f"   );
 	tree->Branch("TagVarCSVTrk_trackSip2dSig"   , &trackSip2dSig_   , "trackSip2dSig_[jetNSelectedTracks_]/f"   );
 	tree->Branch("TagVarCSVTrk_trackDecayLenVal", &trackDecayLenVal_, "trackDecayLenVal_[jetNSelectedTracks_]/f");
+	tree->Branch("TagVarCSVTrk_trackJetDistVal" , &trackJetDistVal_ , "trackJetDistVal_[jetNSelectedTracks_]/f" );
 	tree->Branch("TagVarCSV_jetNTracksEtaRel", &jetNTracksEtaRel_, "jetNTracksEtaRel_/i"                );
 	tree->Branch("TagVarCSV_trackEtaRel"     , &trackEtaRel_     , "trackEtaRel_[jetNTracksEtaRel_]/f"  );
 	tree->Branch("trackPParRatio"  , &trackPParRatio_  , "trackPParRatio_[jetNSelectedTracks_]/f"  );
 	tree->Branch("trackSip2dVal"   , &trackSip2dVal_   , "trackSip2dVal_[jetNSelectedTracks_]/f"   );
 	tree->Branch("trackSip3dVal"   , &trackSip3dVal_   , "trackSip3dVal_[jetNSelectedTracks_]/f"   );
-	tree->Branch("trackJetDistVal" , &trackJetDistVal_ , "trackJetDistVal_[jetNSelectedTracks_]/f" );
 	tree->Branch("trackMomentum"   , &trackMomentum_   , "trackMomentum_[jetNSelectedTracks_]/f"   );
 	tree->Branch("trackEta"        , &trackEta_        , "trackEta_[jetNSelectedTracks_]/f"        );
 	tree->Branch("trackPPar"       , &trackPPar_       , "trackPPar_[jetNSelectedTracks_]/f"       );
@@ -90,34 +90,34 @@ bool ntuple_bTagVars::fillBranches(const pat::Jet & jet, const size_t& jetidx, c
 	//  FIXME: right now there are no default values in the vectors... Is this something we want? or do we want fixed size vectors with zero padding in the end?
 	//
 	//*******************
-	jetNSelectedTracks_ = dump_vector(vars, trackMomentum_, reco::btau::trackMomentum);
-	dump_vector(vars, trackEta_, reco::btau::trackEta)            ;
-	dump_vector(vars, trackPtRel_, reco::btau::trackPtRel)        ;
-	dump_vector(vars, trackPPar_, reco::btau::trackPPar)          ;
-	dump_vector(vars, trackDeltaR_, reco::btau::trackDeltaR)      ;
-	dump_vector(vars, trackPtRatio_, reco::btau::trackPtRatio)    ;
-	dump_vector(vars, trackPParRatio_, reco::btau::trackPParRatio);
-	dump_vector(vars, trackSip2dVal_, reco::btau::trackSip2dVal)  ;
-	dump_vector(vars, trackSip2dSig_, reco::btau::trackSip2dSig)  ;
-	dump_vector(vars, trackSip3dVal_, reco::btau::trackSip3dVal)  ;
-	dump_vector(vars, trackSip3dSig_, reco::btau::trackSip3dSig)  ;
-	dump_vector(vars, trackDecayLenVal_, reco::btau::trackDecayLenVal);
-	dump_vector(vars, trackJetDistVal_, reco::btau::trackJetDistVal);
-	dump_vector(vars, trackEtaRel_, reco::btau::trackEtaRel);
+	jetNSelectedTracks_ = dump_vector(vars, trackMomentum_, reco::btau::trackMomentum,max_jetNSelectedTracks_);
+	dump_vector(vars, trackEta_, reco::btau::trackEta,max_jetNSelectedTracks_)            ;
+	dump_vector(vars, trackPtRel_, reco::btau::trackPtRel,max_jetNSelectedTracks_)        ;
+	dump_vector(vars, trackPPar_, reco::btau::trackPPar,max_jetNSelectedTracks_)          ;
+	dump_vector(vars, trackDeltaR_, reco::btau::trackDeltaR,max_jetNSelectedTracks_)      ;
+	dump_vector(vars, trackPtRatio_, reco::btau::trackPtRatio,max_jetNSelectedTracks_)    ;
+	dump_vector(vars, trackPParRatio_, reco::btau::trackPParRatio,max_jetNSelectedTracks_);
+	dump_vector(vars, trackSip2dVal_, reco::btau::trackSip2dVal,max_jetNSelectedTracks_)  ;
+	dump_vector(vars, trackSip2dSig_, reco::btau::trackSip2dSig,max_jetNSelectedTracks_)  ;
+	dump_vector(vars, trackSip3dVal_, reco::btau::trackSip3dVal,max_jetNSelectedTracks_)  ;
+	dump_vector(vars, trackSip3dSig_, reco::btau::trackSip3dSig,max_jetNSelectedTracks_)  ;
+	dump_vector(vars, trackDecayLenVal_, reco::btau::trackDecayLenVal,max_jetNSelectedTracks_);
+	dump_vector(vars, trackJetDistVal_, reco::btau::trackJetDistVal,max_jetNSelectedTracks_);
+	dump_vector(vars, trackEtaRel_, reco::btau::trackEtaRel,max_jetNSelectedTracks_);
 
 	//*******************
 	//
 	//  vertex info
 	//
 	//*******************
-	dump_vector(vars, vertexMass_, reco::btau::vertexMass);
-	dump_vector(vars, vertexNTracks_, reco::btau::vertexNTracks);
-	dump_vector(vars, vertexEnergyRatio_, reco::btau::vertexEnergyRatio);
-	dump_vector(vars, vertexJetDeltaR_, reco::btau::vertexJetDeltaR);
-	dump_vector(vars, flightDistance2dVal_, reco::btau::flightDistance2dVal);
-	dump_vector(vars, flightDistance2dSig_, reco::btau::flightDistance2dSig);
-	dump_vector(vars, flightDistance3dVal_, reco::btau::flightDistance3dVal);
-	dump_vector(vars, flightDistance3dSig_, reco::btau::flightDistance3dSig);
+	nStoredVertices_ = dump_vector(vars, vertexMass_, reco::btau::vertexMass,max_nStoredVertices_);
+	dump_vector(vars, vertexNTracks_, reco::btau::vertexNTracks,max_nStoredVertices_);
+	dump_vector(vars, vertexEnergyRatio_, reco::btau::vertexEnergyRatio,max_nStoredVertices_);
+	dump_vector(vars, vertexJetDeltaR_, reco::btau::vertexJetDeltaR,max_nStoredVertices_);
+	dump_vector(vars, flightDistance2dVal_, reco::btau::flightDistance2dVal,max_nStoredVertices_);
+	dump_vector(vars, flightDistance2dSig_, reco::btau::flightDistance2dSig,max_nStoredVertices_);
+	dump_vector(vars, flightDistance3dVal_, reco::btau::flightDistance3dVal,max_nStoredVertices_);
+	dump_vector(vars, flightDistance3dSig_, reco::btau::flightDistance3dSig,max_nStoredVertices_);
 
 	return true;
 }
