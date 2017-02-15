@@ -110,7 +110,7 @@ bool ntuple_bTagVars::fillBranches(const pat::Jet & jet, const size_t& jetidx, c
 	//  vertex info
 	//
 	//*******************
-	dump_vector(vars, vertexMass_, reco::btau::vertexMass);
+	nStoredVertices_ = dump_vector(vars, vertexMass_, reco::btau::vertexMass);
 	dump_vector(vars, vertexNTracks_, reco::btau::vertexNTracks);
 	dump_vector(vars, vertexEnergyRatio_, reco::btau::vertexEnergyRatio);
 	dump_vector(vars, vertexJetDeltaR_, reco::btau::vertexJetDeltaR);
