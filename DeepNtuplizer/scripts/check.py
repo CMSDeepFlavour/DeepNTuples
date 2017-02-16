@@ -22,6 +22,10 @@ parser.add_argument('action')
 args = parser.parse_args()
 dir=args.dir
 
+if len(dir.split('/'))>1:
+    print ('please run this script directly in the parent directory of the job directory')
+    exit()
+
 stdoutfiles=glob.glob(dir+"/batch/con_*.out")
 
 #print (stdoutfiles)
@@ -71,18 +75,36 @@ for f in failedjobs:
         os.system('cd ' + dir + ' && condor_submit batch/condor_'+ jobno+'.sub && touch batch/con_out.'+ jobno +'.out')
        
 
-succoutfile=' '
-if args.action == 'merge' or len(succjobs)==nJobs:
-     if len(succjobs)>0:
-         for f in succjobs:
-             jobno=os.path.basename(f).split('.')[1]
-             outputFile=dir+'_'+jobno
-             fulloutfile=os.path.join(ntupleOutDir,outputFile+'.root')
-             succoutfile = succoutfile+ ' ' + fulloutfile
+if (args.action == 'merge' or len(succjobs)==nJobs) and len(succjobs)>0:
+     print('merging...')
+     succoutfile=[]
+     tocombine=' '
+     combinedsize=0
+     for f in succjobs:
+         jobno=os.path.basename(f).split('.')[1]
+         outputFile=dir+'_'+jobno
+         fulloutfile=os.path.join(ntupleOutDir,outputFile+'.root')
          
-         print('merging output to '+dir+'.root')
-         outputroot=ntupleOutDir+'/'+dir+'.root'
-         os.system('hadd '+outputroot+ succoutfile)
+         combinedsize+=os.path.getsize(fulloutfile)
+         if combinedsize < 8e9:
+             tocombine = tocombine+' '+fulloutfile
+         else:
+             succoutfile.append(tocombine)
+             tocombine=' '
+             combinedsize=0
+     # add remaining ones
+     succoutfile.append(tocombine)
+     
+     idx=0
+     #processes=[]
+     for out in succoutfile:
+         outputroot=ntupleOutDir+'/'+dir+'_merged_'+str(idx)+'.root'
+         idx+=1
+         #can run in parallel
+         os.system('hadd '+outputroot+ out) #use subprocess for parallelisatio later
+     
+     print ('merged to '+str(idx) +' files')
+         #os.system('hadd '+outputroot+ succoutfile)
          
          
          
