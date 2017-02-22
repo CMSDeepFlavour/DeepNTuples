@@ -75,18 +75,20 @@ for f in failedjobs:
         os.system('cd ' + dir + ' && condor_submit batch/condor_'+ jobno+'.sub && touch batch/con_out.'+ jobno +'.out')
        
 
-if (args.action == 'merge' or len(succjobs)==nJobs) and len(succjobs)>0:
+if (args.action == 'merge' or len(succjobs)==nJobs or args.action == 'filelist') and len(succjobs)>0:
      print('merging...')
      succoutfile=[]
      tocombine=' '
      combinedsize=0
+     succfilellist=[]
      for f in succjobs:
          jobno=os.path.basename(f).split('.')[1]
          outputFile=dir+'_'+jobno
+         succfilellist.append(outputFile+'.root')
          fulloutfile=os.path.join(ntupleOutDir,outputFile+'.root')
          
          combinedsize+=os.path.getsize(fulloutfile)
-         if combinedsize < 8e9:
+         if combinedsize < 4e9:
              tocombine = tocombine+' '+fulloutfile
          else:
              succoutfile.append(tocombine)
@@ -94,16 +96,21 @@ if (args.action == 'merge' or len(succjobs)==nJobs) and len(succjobs)>0:
              combinedsize=0
      # add remaining ones
      succoutfile.append(tocombine)
+     fileListFile=open(ntupleOutDir+'/samples.txt','w')
+     for l in succfilellist:
+        fileListFile.write("%s\n" % l)
+     fileListFile.close()
      
      idx=0
      #processes=[]
-     for out in succoutfile:
-         outputroot=ntupleOutDir+'/'+dir+'_merged_'+str(idx)+'.root'
-         idx+=1
-         #can run in parallel
-         os.system('hadd '+outputroot+ out) #use subprocess for parallelisatio later
-     
-     print ('merged to '+str(idx) +' files')
+     if args.action == 'merge':
+        for out in succoutfile:
+            outputroot=ntupleOutDir+'/'+dir+'_merged_'+str(idx)+'.root'
+            idx+=1
+            #can run in parallel
+            os.system('hadd '+outputroot+ out) #use subprocess for parallelisatio later
+        
+        print ('merged to '+str(idx) +' files')
          #os.system('hadd '+outputroot+ succoutfile)
          
          

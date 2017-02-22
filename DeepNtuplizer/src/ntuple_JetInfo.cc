@@ -45,6 +45,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
 
 	// jet variables
 	tree->Branch("jet_pt", &jet_pt_);
+	tree->Branch("jet_corr_pt", &jet_corr_pt_);
 	tree->Branch("jet_eta", &jet_eta_);
 
 	// quark gluon
@@ -131,6 +132,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 	jet_pt_ = jet.correctedJet("Uncorrected").pt();
 	jet_eta_ = jet.eta();
+	jet_corr_pt_ = jet.pt();
 
 
 	gen_pt_ =  jet.genJet()->pt();

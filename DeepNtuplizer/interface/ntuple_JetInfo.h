@@ -103,6 +103,7 @@ private:
 
 	// jet variables
 	float jet_pt_;
+	float jet_corr_pt_;
 	float  jet_eta_;
 
 	// quark/gluon
