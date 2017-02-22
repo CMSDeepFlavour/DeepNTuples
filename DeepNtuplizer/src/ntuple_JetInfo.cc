@@ -10,6 +10,7 @@
 
 #include "../interface/ntuple_JetInfo.h"
 #include <vector>
+#include <algorithm>
 using namespace std;
 
 void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
@@ -61,7 +62,9 @@ void ntuple_JetInfo::initBranches(TTree* tree){
 
 	if(1) // discriminators might need to be filled differently. FIXME
 		for(auto& entry : discriminators_) {
-			tree->Branch(entry.first.c_str(), &entry.second, (entry.first+"/F").c_str());
+			string better_name(entry.first);
+			std::replace(better_name.begin(), better_name.end(), ':', '_');
+			tree->Branch(better_name.c_str(), &entry.second, (better_name+"/F").c_str());
 		}
 }
 void ntuple_JetInfo::readEvent(const edm::Event& iEvent){

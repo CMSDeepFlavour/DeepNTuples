@@ -12,6 +12,12 @@ options.register('maxEvents',-1,VarParsing.VarParsing.multiplicity.singleton,Var
 options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "skip N events")
 options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "job number")
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
+options.register(
+	'inputFiles','',
+	VarParsing.VarParsing.multiplicity.list,
+	VarParsing.VarParsing.varType.string,
+	"input files (default is the tt RelVal)"
+	)
 
 if hasattr(sys, "argv"):
     options.parseArguments()
@@ -46,6 +52,8 @@ from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAO
 process.source = cms.Source('PoolSource',
     fileNames=cms.untracked.vstring (filesRelValTTbarPileUpMINIAODSIM),
 )
+if options.inputFiles:
+	process.source.fileNames = options.inputFiles
 
 if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtuplizer.samples.TEST':
     process.load(options.inputScript)
@@ -72,12 +80,16 @@ bTagInfos = [
 	'deepNNTagInfos',
 ]
 bTagDiscriminators = [
-   'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-	 'deepFlavourJetTags:probudsg', #to be fixed with new names
-	 'deepFlavourJetTags:probb', 
-	 'deepFlavourJetTags:probc', 
-	 'deepFlavourJetTags:probbb', 
-	 'deepFlavourJetTags:probcc',
+	'softPFMuonBJetTags',
+	'softPFElectronBJetTags',
+	'pfJetBProbabilityBJetTags',
+	'pfJetProbabilityBJetTags',
+	'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+	'deepFlavourJetTags:probudsg', #to be fixed with new names
+	'deepFlavourJetTags:probb', 
+	'deepFlavourJetTags:probc', 
+	'deepFlavourJetTags:probbb', 
+	'deepFlavourJetTags:probcc',
 ]
 jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
 
