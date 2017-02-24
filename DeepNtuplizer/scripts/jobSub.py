@@ -7,10 +7,9 @@ from pdb import set_trace
 from glob import glob
 from argparse import ArgumentParser
 import re
-#import URAnalysis.Utilities.prettyjson as prettyjson
-#from URAnalysis.PlotTools.data_views import get_best_style, log #not for the same purpose, but the same mechanism
-#import rootpy
-#log.setLevel(log.CRITICAL)
+
+########################## Parsing and environment ############################
+
 
 swdir = os.path.realpath(os.environ['CMSSW_BASE'])
 jobid = 'jobid' #os.environ['jobid']
@@ -29,10 +28,65 @@ args = parser.parse_args()
 if os.path.isdir(args.jobdir):
     print (args.jobdir), 'exists: EXIT'
     sys.exit(-1)
-os.mkdir(args.jobdir)
 configFile=os.path.abspath(args.configfile)
+
+###### check for grid certificate
+
+#check grid proxy with voms-proxy-info
+# grep for timeleft and require at least 3 hours 
+# and check wether the path lives in AFS (voms-proxy-info -path)
+#save this output for auto wget on file lists
+import subprocess
+checkcert = subprocess.Popen(['voms-proxy-info','-path'], stdout=subprocess.PIPE, 
+                                  stderr=subprocess.PIPE)
+sout, serr = checkcert.communicate()
+certpath=sout
+checkcert = subprocess.Popen(['voms-proxy-info','-timeleft'], stdout=subprocess.PIPE, 
+                                  stderr=subprocess.PIPE)
+sout, serr = checkcert.communicate()
+certtime=sout
+
+if float(certtime) < 2*60*60:
+    print('grid proxy loses validity in less than 2 hours, please renew before job submission.')
+    exit()
+    
+usercertfile=os.getenv('HOME')+'/.globus/usercert.pem'
+userkeyfile=os.getenv('HOME')+'/.globus/userkey.pem'
+
+if not os.path.isfile(usercertfile):
+    print('pleace locate your grid certificate file in ~/.globus/usercert.pem')
+if not os.path.isfile(userkeyfile):
+    print('pleace locate your grid key file in ~/.globus/userkey.pem')
+    
+    
+#make samples directory
+samplescriptdir=os.getenv('HOME')+'/.deepntuples_scripts_tmp'
+if not os.path.isdir(samplescriptdir):
+    os.mkdir(samplescriptdir)
+samplescriptdir+='/'
+
+#https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookStartingGrid
+
+#testurl='https://cmsweb.cern.ch/das/makepy?dataset=/QCD_Pt_1000to1400_TuneCUETP8M1_13TeV_pythia8/PhaseIFall16MiniAOD-PhaseIFall16PUFlat20to50_PhaseIFall16_81X_upgrade2017_realistic_v26-v1/MINIAODSIM&instance=prod/global'
+
+#make a system call to wget.. urllib is not powerful enoguh apparently
+
+
+#checkcert = subprocess.Popen(['wget','--certificate='+certpath,'-o bla.py', testurl], stdout=subprocess.PIPE, 
+#                                 stderr=subprocess.PIPE)
+
+#print(checkcert.communicate())
+#exit()#testing
+
+######## all checks done. From now on it just runs
+
+# create output dir
+
+os.mkdir(args.jobdir)
 shutil.copy(configFile, args.jobdir)
 configFile=os.path.abspath(os.path.join(args.jobdir, os.path.basename(configFile)))
+
+
 print ('submitting jobs for '+configFile)
 
 samplesdir='DeepNTuples.DeepNtuplizer.samples.'
@@ -50,8 +104,41 @@ for sampledescription in lines:
         continue
         
     nJobs=entries[0]
-    sample=samplesdir+entries[1]
-    print('preparing '+sample)
+    ######check out from DAS
+    samplename=entries[1]
+    isdasname=False
+    #do differently if it is a DAS name
+    if '/' in samplename: #this is DAS name
+        isdasname=True
+        if '*' in samplename:
+            print('no wildcards in sample names allowed')
+            exit()
+    
+    print('preparing\n'+samplename)
+    sample=""
+    if not isdasname:
+        sample=samplesdir+samplename
+    else:
+        import string
+        chars = re.escape(string.punctuation)
+        scriptfile=re.sub(r'['+chars+']', '', str(samplename))
+        scriptfile=scriptfile
+        if not os.path.isfile(samplescriptdir+scriptfile+'.py'):
+            sampleurl='https://cmsweb.cern.ch/das/makepy?dataset='+samplename+'&instance=prod/global'
+            print(scriptfile)
+            #check if already saved a file list from das?
+            ##get from das etc, prepare query
+            print('getting script file from DAS')
+            dasquery = subprocess.Popen(['wget','--certificate',usercertfile,
+                                         '--private-key',userkeyfile,
+                                         '--no-check-certificate',
+                                         '-O',samplescriptdir+scriptfile+'.py',
+                                         sampleurl],
+                                         stdout=subprocess.PIPE, 
+                                         stderr=subprocess.PIPE)
+            sout, serr = dasquery.communicate()
+        sample=scriptfile
+    
     
     outputFile=entries[2]
     jobargs=''
@@ -128,6 +215,7 @@ queue 1
     shellscript = """#!/bin/bash
 echo "JOBSUB::RUN job running"
 trap "echo JOBSUB::FAIL job killed" SIGTERM
+export PYTHONPATH={sampleScriptdir}:$PYTHONPATH
 cd {basedir}
 eval `scramv1 runtime -sh`
 cd {jobdir}
@@ -140,6 +228,7 @@ else
 echo JOBSUB::SUCC job ended sucessfully
 fi
     """.format(
+        sampleScriptdir=samplescriptdir,
         basedir=swdir,
         jobdir=os.path.abspath(args.jobdir)
         )
