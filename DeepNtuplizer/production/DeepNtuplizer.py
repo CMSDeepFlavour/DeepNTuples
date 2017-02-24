@@ -12,6 +12,8 @@ options.register('maxEvents',-1,VarParsing.VarParsing.multiplicity.singleton,Var
 options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "skip N events")
 options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "job number")
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
+options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "gluon reduction")
+
 options.register(
 	'inputFiles','',
 	VarParsing.VarParsing.multiplicity.list,
@@ -170,5 +172,6 @@ process.TFileService = cms.Service("TFileService",
 process.load("DeepNTuples.DeepNtuplizer.DeepNtuplizer_cfi")
 process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour');
 process.deepntuplizer.bDiscriminators = bTagDiscriminators 
+process.deepntuplizer.gluonReduction  = cms.double(options.gluonReduction)
 
 process.p = cms.Path(process.QGTagger + process.genJetSequence*  process.deepntuplizer)

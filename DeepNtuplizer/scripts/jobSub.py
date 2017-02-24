@@ -53,10 +53,17 @@ if float(certtime) < 2*60*60:
 usercertfile=os.getenv('HOME')+'/.globus/usercert.pem'
 userkeyfile=os.getenv('HOME')+'/.globus/userkey.pem'
 
+nousercertsfound=False
 if not os.path.isfile(usercertfile):
     print('pleace locate your grid certificate file in ~/.globus/usercert.pem')
+    nousercertsfound=True
 if not os.path.isfile(userkeyfile):
     print('pleace locate your grid key file in ~/.globus/userkey.pem')
+    nousercertsfound=True
+    
+if nousercertsfound:
+    print('please follow the Twiki https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookStartingGrid')
+    exit()
     
     
 #make samples directory
