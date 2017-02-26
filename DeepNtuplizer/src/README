@@ -1,0 +1,2 @@
+Please always use the addBranch function when initialising a new branch.
+This is important for consistent merging of the output files later

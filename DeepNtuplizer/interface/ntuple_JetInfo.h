@@ -58,7 +58,7 @@ public:
 
 
 
-private:
+//private:
 
 	double                    jetPtMin_;
 	double                    jetPtMax_;

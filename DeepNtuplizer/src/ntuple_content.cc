@@ -15,6 +15,8 @@ ntuple_content::~ntuple_content(){
 }
 
 
+
+
 const reco::VertexCollection * ntuple_content::vertices()const{
 	if(vertices_)
 		return vertices_;

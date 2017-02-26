@@ -29,43 +29,45 @@ void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
 void ntuple_JetInfo::initBranches(TTree* tree){
 
 	//more general event info, here applied per jet
-	tree->Branch("npv"    ,&npv_    ,"npv/f"    );
-	tree->Branch("event_no"    ,&event_no_    ,"npv/i"    );
-	tree->Branch("jet_no"    ,&jet_no_    ,"npv/i"    );
+	addBranch(tree,"npv"    ,&npv_    ,"npv/f"    );
+	addBranch(tree,"event_no"    ,&event_no_    ,"npv/i"    );
+	addBranch(tree,"jet_no"    ,&jet_no_    ,"npv/i"    );
 
 
 	// truthe labels
-	tree->Branch("gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
-	tree->Branch("Delta_gen_pt"    ,&Delta_gen_pt_,"Delta_gen_pt_/f"    );
-	tree->Branch("isB",&isB_, "isB_/i");
-	tree->Branch("isC",&isC_, "isC_/i");
-	tree->Branch("isUDS",&isUDS_, "isUDS_/i");
-	tree->Branch("isG",&isG_, "isG_/i");
+	addBranch(tree,"gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
+	addBranch(tree,"Delta_gen_pt"    ,&Delta_gen_pt_,"Delta_gen_pt_/f"    );
+	addBranch(tree,"isB",&isB_, "isB_/i");
+	addBranch(tree,"isC",&isC_, "isC_/i");
+	addBranch(tree,"isUDS",&isUDS_, "isUDS_/i");
+	addBranch(tree,"isG",&isG_, "isG_/i");
 
 
 	// jet variables
-	tree->Branch("jet_pt", &jet_pt_);
-	tree->Branch("jet_corr_pt", &jet_corr_pt_);
-	tree->Branch("jet_eta", &jet_eta_);
+	//b=tree->Branch("jet_pt", &jet_pt_);
+	addBranch(tree,"jet_pt", &jet_pt_);
+
+	addBranch(tree,"jet_corr_pt", &jet_corr_pt_);
+	addBranch(tree,"jet_eta", &jet_eta_);
 
 	// quark gluon
-	tree->Branch("jet_qgl",   &jet_qgl_);  // qg tagger from jmar
-	tree->Branch("QG_ptD",   &QG_ptD_);   // momentum fraction per jet constituent 
-	tree->Branch("QG_axis2", &QG_axis2_); // jet shape i.e. gluon are wider than quarks
-	tree->Branch("QG_mult",  &QG_mult_);  // multiplicity i.e. total num of PFcands reconstructed
+	addBranch(tree,"jet_qgl",   &jet_qgl_);  // qg tagger from jmar
+	addBranch(tree,"QG_ptD",   &QG_ptD_);   // momentum fraction per jet constituent
+	addBranch(tree,"QG_axis2", &QG_axis2_); // jet shape i.e. gluon are wider than quarks
+	addBranch(tree,"QG_mult",  &QG_mult_);  // multiplicity i.e. total num of PFcands reconstructed
 	// in the jet
 
 
-	tree->Branch("gen_pt_Recluster"    ,&gen_pt_Recluster_    ,"gen_pt_Recluster_/f"    );
-	tree->Branch("gen_pt_WithNu"    ,&gen_pt_WithNu_    ,"gen_pt_WithNu_/f"    );
-	tree->Branch("Delta_gen_pt_Recluster"    ,&Delta_gen_pt_Recluster_    ,"Delta_gen_pt_Recluster_/f"    );
-	tree->Branch("Delta_gen_pt_WithNu"    ,&Delta_gen_pt_WithNu_    ,"Delta_gen_pt_WithNu_/f"    );
+	addBranch(tree,"gen_pt_Recluster"    ,&gen_pt_Recluster_    ,"gen_pt_Recluster_/f"    );
+	addBranch(tree,"gen_pt_WithNu"    ,&gen_pt_WithNu_    ,"gen_pt_WithNu_/f"    );
+	addBranch(tree,"Delta_gen_pt_Recluster"    ,&Delta_gen_pt_Recluster_    ,"Delta_gen_pt_Recluster_/f"    );
+	addBranch(tree,"Delta_gen_pt_WithNu"    ,&Delta_gen_pt_WithNu_    ,"Delta_gen_pt_WithNu_/f"    );
 
 	if(1) // discriminators might need to be filled differently. FIXME
 		for(auto& entry : discriminators_) {
 			string better_name(entry.first);
 			std::replace(better_name.begin(), better_name.end(), ':', '_');
-			tree->Branch(better_name.c_str(), &entry.second, (better_name+"/F").c_str());
+			addBranch(tree,better_name.c_str(), &entry.second, (better_name+"/F").c_str());
 		}
 }
 void ntuple_JetInfo::readEvent(const edm::Event& iEvent){

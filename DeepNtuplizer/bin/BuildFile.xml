@@ -1,0 +1,6 @@
+
+<use   name="DeepNTuples/DeepNtuplizer"/>
+<use   name="root"/>
+<use   name="rootgraphics"/>
+
+<bin name="mergeSamples" file="mergeSamples.cc" />

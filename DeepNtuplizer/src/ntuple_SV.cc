@@ -27,19 +27,19 @@ void ntuple_SV::getInput(const edm::ParameterSet& iConfig){
 }
 void ntuple_SV::initBranches(TTree* tree){
 	// SV candidates
-	tree->Branch("n_sv"         ,&sv_num_         ,"sv_num_/i"                  );
-	tree->Branch("sv_pt"          ,&sv_pt_          ,"sv_pt_[sv_num_]/f"          );
-	tree->Branch("sv_eta"         ,&sv_eta_         ,"sv_eta_[sv_num_]/f"         );
-	tree->Branch("sv_phi"         ,&sv_phi_         ,"sv_phi_[sv_num_]/f"         );
-	tree->Branch("sv_mass"        ,&sv_mass_        ,"sv_mass_[sv_num_]/f"        );
-	tree->Branch("sv_ntracks"     ,&sv_ntracks_     ,"sv_ntracks_[sv_num_]/f"     );
-	tree->Branch("sv_chi2"        ,&sv_chi2_        ,"sv_chi2_[sv_num_]/f"        );
-	tree->Branch("sv_ndf"         ,&sv_ndf_         ,"sv_ndf_[sv_num_]/f"         );
-	tree->Branch("sv_dxy"         ,&sv_dxy_         ,"sv_dxy_[sv_num_]/f"         );
-	tree->Branch("sv_dxyerr"      ,&sv_dxyerr_      ,"sv_dxyerr_[sv_num_]/f"      );
-	tree->Branch("sv_d3d"         ,&sv_d3d_         ,"sv_d3d_[sv_num_]/f"         );
-	tree->Branch("sv_d3derr"      ,&sv_d3derr_      ,"sv_d3err_[sv_num_]/f"       );
-	tree->Branch("sv_costhetasvpv",&sv_costhetasvpv_,"sv_costhetasvpv_[sv_num_]/f");
+	addBranch(tree,"n_sv"         ,&sv_num_         ,"sv_num_/i"                  );
+	addBranch(tree,"sv_pt"          ,&sv_pt_          ,"sv_pt_[sv_num_]/f"          );
+	addBranch(tree,"sv_eta"         ,&sv_eta_         ,"sv_eta_[sv_num_]/f"         );
+	addBranch(tree,"sv_phi"         ,&sv_phi_         ,"sv_phi_[sv_num_]/f"         );
+	addBranch(tree,"sv_mass"        ,&sv_mass_        ,"sv_mass_[sv_num_]/f"        );
+	addBranch(tree,"sv_ntracks"     ,&sv_ntracks_     ,"sv_ntracks_[sv_num_]/f"     );
+	addBranch(tree,"sv_chi2"        ,&sv_chi2_        ,"sv_chi2_[sv_num_]/f"        );
+	addBranch(tree,"sv_ndf"         ,&sv_ndf_         ,"sv_ndf_[sv_num_]/f"         );
+	addBranch(tree,"sv_dxy"         ,&sv_dxy_         ,"sv_dxy_[sv_num_]/f"         );
+	addBranch(tree,"sv_dxyerr"      ,&sv_dxyerr_      ,"sv_dxyerr_[sv_num_]/f"      );
+	addBranch(tree,"sv_d3d"         ,&sv_d3d_         ,"sv_d3d_[sv_num_]/f"         );
+	addBranch(tree,"sv_d3derr"      ,&sv_d3derr_      ,"sv_d3err_[sv_num_]/f"       );
+	addBranch(tree,"sv_costhetasvpv",&sv_costhetasvpv_,"sv_costhetasvpv_[sv_num_]/f");
 }
 
 

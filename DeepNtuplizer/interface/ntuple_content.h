@@ -15,13 +15,14 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
+#include <iostream>
 
 /**
  * Base class for modules to inherit from.
  */
 class ntuple_content{
 public:
-	ntuple_content():vertices_(0){}
+	ntuple_content():vertices_(0),read_(false){}
 	virtual ~ntuple_content();
 
 	virtual void getInput(const edm::ParameterSet& iConfig){}
@@ -36,15 +37,38 @@ public:
 		vertices_=v;
 	}
 
+	void setIsRead(bool isread){read_=isread;}
 
 protected:
 	const reco::VertexCollection * vertices()const;
 
+
+	template <class T>
+	void addBranch(TTree* t, const char* name,  T*, const char* leaflist=0);
+
 private:
 	const reco::VertexCollection* vertices_;
+	bool read_;
 };
 
+template <class T>
+void ntuple_content::addBranch(TTree* t, const char* name,  T* address, const char* leaflist){
 
+	/*
+	 * some root gymnastics needed here...
+	 */
+
+	if(read_ ){
+		t->SetBranchAddress(name,address);
+	}
+	else{
+		if(leaflist)
+			t->Branch(name  ,address  ,leaflist );
+		else
+			t->Branch(name  ,address);
+	}
+
+}
 
 
 #endif /* DEEPNTUPLES_DEEPNTUPLIZER_INTERFACE_NTUPLE_CONTENT_H_ */
