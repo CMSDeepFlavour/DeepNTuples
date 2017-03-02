@@ -46,6 +46,9 @@ protected:
 	template <class T>
 	void addBranch(TTree* t, const char* name,  T*, const char* leaflist=0);
 
+	template <class T>
+	const T& catchInfs(const T& in,const T& replace_value)const;
+
 private:
 	const reco::VertexCollection* vertices_;
 	bool read_;
@@ -53,10 +56,6 @@ private:
 
 template <class T>
 void ntuple_content::addBranch(TTree* t, const char* name,  T* address, const char* leaflist){
-
-	/*
-	 * some root gymnastics needed here...
-	 */
 
 	if(read_ ){
 		t->SetBranchAddress(name,address);
@@ -68,6 +67,14 @@ void ntuple_content::addBranch(TTree* t, const char* name,  T* address, const ch
 			t->Branch(name  ,address);
 	}
 
+}
+
+
+template <class T>
+const T& catchInfs(const T&x,const T& replace_value)const{
+	if(x==x)
+		return x;
+	return replace_value;
 }
 
 

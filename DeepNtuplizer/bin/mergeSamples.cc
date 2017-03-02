@@ -27,6 +27,9 @@
 #include <string>
 #include <fstream>
 #include "TDirectory.h"
+#include <libgen.h>
+#include "TStyle.h"
+#include "TLine.h"
 
 //for control plots
 #include "TH1D.h"
@@ -41,15 +44,15 @@
 
 bool DirectoryExists( const char* pzPath )
 {
-    if ( pzPath == NULL) return false;
-    DIR *pDir;
-    bool bExists = false;
-    pDir = opendir (pzPath);
-    if (pDir != NULL){
-        bExists = true;
-        (void) closedir (pDir);
-    }
-    return bExists;
+	if ( pzPath == NULL) return false;
+	DIR *pDir;
+	bool bExists = false;
+	pDir = opendir (pzPath);
+	if (pDir != NULL){
+		bExists = true;
+		(void) closedir (pDir);
+	}
+	return bExists;
 }
 
 
@@ -114,7 +117,7 @@ int main(int argc, char *argv[]){
 	for(size_t i=0;i<infiles.size();i++)
 		chains.push_back(new TChain());
 
-	std::cout << "setting up trees... \nPlease ignore wrong branch type errors - they do no harm." <<std::endl;
+	//std::cout << "setting up trees... \nPlease ignore wrong branch type errors - they do no harm." <<std::endl;
 	//read in files
 	std::vector<size_t> entriesperchain(chains.size());
 	size_t totalentries=0;
@@ -159,7 +162,13 @@ int main(int argc, char *argv[]){
 	//control histogram
 	std::vector<double> histobins(1,0);
 	histobins.insert(histobins.end(),fractions.begin(),fractions.end());
-	TH1D hist("samplecontribution","samplecontribution",histobins.size()-1,&histobins.at(0));
+	TH1D hist("samplefraction","samplefraction",histobins.size()-1,&histobins.at(0));
+	std::vector<TH1D> contr_hists;
+	for(size_t i=0;i<chains.size();i++){
+		TString basen="";
+		TH1D hcontr(basen,basen,500,0,totalentries);
+		contr_hists.push_back(hcontr);
+	}
 
 	std::cout << "looping" <<std::endl;
 	while(1){
@@ -195,6 +204,8 @@ int main(int argc, char *argv[]){
 
 		outtree->Fill();
 
+		contr_hists.at(treeindex).Fill(alloutentries);
+
 		outtreeentry++;
 		alloutentries++;
 
@@ -225,6 +236,7 @@ int main(int argc, char *argv[]){
 	TH1D fracs=hist;
 	fracs.Scale(1./(double)totalentries);
 	TCanvas cv;
+	gStyle->SetOptStat(0);
 	fracs.Draw();
 	cv.Print(outpath+"/samplefractions.pdf");
 
@@ -233,6 +245,38 @@ int main(int argc, char *argv[]){
 	hist.Draw();
 	cv.Print(outpath+"/samplefractions_binwidth.pdf");
 
+
+	double min=totalentries,max=0;
+	for(const auto& h:contr_hists){
+		double tmax=h.GetMaximum();
+		double tmin=h.GetMinimum();
+		if(tmax>max)max=tmax;
+		if(tmin<min)min=tmin;
+	}
+
+	contr_hists.at(0).GetYaxis()->SetRangeUser(min*0.95,max*1.05);
+	contr_hists.at(0).Draw("AXIS");
+	contr_hists.at(0).GetYaxis()->SetRangeUser(min*0.95,max*1.05);
+
+	for(size_t i=0;i<contr_hists.size();i++){
+		int color=i+1;
+		if(i>8)color+=30;
+		contr_hists.at(i).SetLineColor(color);
+		contr_hists.at(i).Draw("same");
+	}
+	cv.SetCanvasSize(cv.GetWindowWidth()*5,cv.GetWindowHeight());
+	cv.SetLeftMargin(0.02);
+	cv.SetRightMargin(0.02);
+	double count=0;
+	for(size_t i=0;i<totalentries/entriesperfile+1;i++){
+		if(count){
+			TLine * l = new TLine(count,min*0.95,count,max*1.05);
+			l->SetLineColorAlpha(kBlack,0.5);
+			l->Draw("same");
+		}
+		count+=entriesperfile;
+	}
+	cv.Print(outpath+"/sample_contributions.pdf");
 
 	return 0;
 }
