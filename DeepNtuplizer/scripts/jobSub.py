@@ -93,6 +93,9 @@ os.mkdir(args.jobdir)
 shutil.copy(configFile, args.jobdir)
 configFile=os.path.abspath(os.path.join(args.jobdir, os.path.basename(configFile)))
 
+cernboxpath='/eos/user/'+os.environ['USER'][0]+'/'+os.environ['USER']+'/'
+globalOutDir=cernboxpath+'DeepNtuples/'+time.strftime('%a_%H%M%S')+'_'+args.jobdir
+
 
 print ('submitting jobs for '+configFile)
 
@@ -160,9 +163,8 @@ for sampledescription in lines:
     sheelscp=os.path.abspath(os.path.join(jobpath, 'batchscript.sh'))
     
     #create full output path on eos
-    cernboxpath='/eos/user/'+os.environ['USER'][0]+'/'+os.environ['USER']+'/'
     #print (cernboxpath)
-    ntupleOutDir=cernboxpath+'DeepNtuples/'+time.strftime('%a_%H%M%S')+'_'+args.jobdir+'/'+outputFile+'/'
+    ntupleOutDir=globalOutDir+'/'+outputFile+'/'
     os.makedirs(ntupleOutDir)
     #print (ntupleOutDir)
     
