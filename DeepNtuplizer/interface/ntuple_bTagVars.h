@@ -51,8 +51,12 @@ private:
 	float trackSip3dSigAboveCharm_; // track 3D signed impact parameter significance of first track lifting mass above charm
 	float vertexCategory_;          // category of secondary vertex (Reco, Pseudo, No)
 	//track info
-	int   jetNTracksEtaRel_;        // tracks associated to jet for which trackEtaRel is calculated
-	int   jetNSelectedTracks_;
+	int   n_jetNTracksEtaRel_;        // tracks associated to jet for which trackEtaRel is calculated
+	int   n_jetNSelectedTracks_;
+
+    float jetNTracksEtaRel_;
+    float jetNSelectedTracks_;
+
 
 	static constexpr size_t max_jetNSelectedTracks_=100;
 
@@ -74,7 +78,8 @@ private:
 	float trackJetDistSig_[max_jetNSelectedTracks_];  // minimum track approach distance to jet axis significance
 	float trackEtaRel_[max_jetNSelectedTracks_];      // track pseudorapidity, relative to the jet axis
 	//SV info
-	int   nStoredVertices_;
+	int   n_StoredVertices_;
+	float NStoredVertices_;
 
 	static constexpr size_t max_nStoredVertices_=10;
 

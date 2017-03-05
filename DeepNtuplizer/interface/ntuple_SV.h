@@ -33,6 +33,7 @@ private:
 
 	// SV candidates
 	int   sv_num_;
+	float nsv_;
 
 	static constexpr size_t max_sv=100;
 
@@ -47,8 +48,10 @@ private:
 	float sv_ndf_[max_sv];
 	float sv_dxy_[max_sv];
 	float sv_dxyerr_[max_sv];
+	float sv_dxysig_[max_sv];
 	float sv_d3d_[max_sv];
 	float sv_d3derr_[max_sv];
+	float sv_d3dsig_[max_sv];
 	float sv_costhetasvpv_[max_sv];
 	// TODO (comment of Markus Stoye) add information to PF candidates on which tracks were used !!!
 	// this will come later LG

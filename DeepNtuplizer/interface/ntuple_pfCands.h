@@ -27,7 +27,7 @@ public:
 
 private:
 	unsigned int n_Cpfcand_;
-
+	float nCpfcand_;
 
 	static constexpr size_t max_pfcand_=100;
 
@@ -40,6 +40,10 @@ private:
 	// covariance
 	float  Cpfcan_dz_[max_pfcand_];
 	float  Cpfcan_dxy_[max_pfcand_];
+
+	float  Cpfcan_dxyerr_[max_pfcand_];
+	float  Cpfcan_dxysig_[max_pfcand_];
+
 	float  Cpfcan_dptdpt_[max_pfcand_];
 	float  Cpfcan_detadeta_[max_pfcand_];
 	float  Cpfcan_dphidphi_[max_pfcand_];
@@ -58,15 +62,18 @@ private:
 	// track quality
 	float Cpfcan_lostInnerHits_[max_pfcand_];
 	float Cpfcan_chi2_[max_pfcand_];
-	float Cpfcan_highPurity_[max_pfcand_];
+	float Cpfcan_quality_[max_pfcand_];
 
 	//Neutral Pf candidates
 	unsigned int n_Npfcand_;
+	float nNpfcand_;
 	float  Npfcan_pt_[max_pfcand_];
 	float  Npfcan_phirel_[max_pfcand_];
 	float  Npfcan_etarel_[max_pfcand_];
 	float  Npfcan_isGamma_[max_pfcand_];
 	float  Npfcan_HadFrac_[max_pfcand_];
+
+
 
 };
 

@@ -16,6 +16,7 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include <iostream>
+#include <math.h>
 
 /**
  * Base class for modules to inherit from.
@@ -46,9 +47,14 @@ protected:
 	template <class T>
 	void addBranch(TTree* t, const char* name,  T*, const char* leaflist=0);
 
-	template <class T>
-	const T& catchInfs(const T& in,const T& replace_value)const;
 
+	inline const float& catchInfs(const float& in,const float& replace_value)const{
+		if(in==in)
+			if(isinf(in))
+				return replace_value;
+			return in;
+		return replace_value;
+	}
 private:
 	const reco::VertexCollection* vertices_;
 	bool read_;
@@ -70,12 +76,6 @@ void ntuple_content::addBranch(TTree* t, const char* name,  T* address, const ch
 }
 
 
-template <class T>
-const T& catchInfs(const T&x,const T& replace_value)const{
-	if(x==x)
-		return x;
-	return replace_value;
-}
 
 
 #endif /* DEEPNTUPLES_DEEPNTUPLIZER_INTERFACE_NTUPLE_CONTENT_H_ */
