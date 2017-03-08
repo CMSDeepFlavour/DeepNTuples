@@ -13,9 +13,7 @@ namespace deep_ntuples {
 			else return JetFlavor::UNDEFINED;			
 		}
 		else if(hflav == 4) { //C jet
-			if(ncs > 1) return JetFlavor::CC;
-			else if(ncs == 1) return JetFlavor::C;
-			else return JetFlavor::UNDEFINED;			
+			return JetFlavor::C;
 		}
 		else { //not a heavy jet
 			if(std::abs(pflav) == 4 || std::abs(pflav) == 5 || nbs || ncs) {

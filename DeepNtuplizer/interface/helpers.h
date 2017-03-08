@@ -7,7 +7,7 @@
 #include "DataFormats/PatCandidates/interface/Jet.h"
 
 namespace deep_ntuples {
-	enum JetFlavor {UNDEFINED, G, L, C, CC, B, BB};
+	enum JetFlavor {UNDEFINED, G, L, C, B, BB};
 	JetFlavor jet_flavour(const pat::Jet& jet);
 }
 

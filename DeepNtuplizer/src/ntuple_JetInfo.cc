@@ -127,7 +127,6 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 	case deep_ntuples::JetFlavor::L: isUDS_=1; break;
 	case deep_ntuples::JetFlavor::BB: 
 	case deep_ntuples::JetFlavor::B: isB_=1; break;
-	case deep_ntuples::JetFlavor::CC:
 	case deep_ntuples::JetFlavor::C: isC_=1; break;
 	case deep_ntuples::JetFlavor::G: isG_=1; break;
 	default : break;
