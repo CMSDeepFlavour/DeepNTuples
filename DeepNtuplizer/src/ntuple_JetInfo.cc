@@ -9,6 +9,7 @@
 
 
 #include "../interface/ntuple_JetInfo.h"
+#include "../interface/helpers.h"
 #include <vector>
 #include <algorithm>
 using namespace std;
@@ -121,12 +122,16 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 	//std::vector<Ptr<pat::Jet> > p= coll->ptrs();
 
-
-
-	isB_= int(abs(jet.partonFlavour())==5);
-	isC_= int(abs(jet.partonFlavour())==4);
-	isUDS_= int( (abs(jet.partonFlavour())>0) && (abs(jet.partonFlavour())<4 ));
-	isG_= int(jet.partonFlavour()==21);
+	isB_=0; isC_=0; isUDS_=0; isG_=0;
+	switch(deep_ntuples::jet_flavour(jet)) {
+	case deep_ntuples::JetFlavor::L: isUDS_=1; break;
+	case deep_ntuples::JetFlavor::BB: 
+	case deep_ntuples::JetFlavor::B: isB_=1; break;
+	case deep_ntuples::JetFlavor::CC:
+	case deep_ntuples::JetFlavor::C: isC_=1; break;
+	case deep_ntuples::JetFlavor::G: isG_=1; break;
+	default : break;
+	}
 
 	if(!isB_ && !isC_ && !isUDS_ && !isG_) return false;
 
