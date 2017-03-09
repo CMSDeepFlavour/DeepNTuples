@@ -31,8 +31,11 @@ private:
 	int dump_vector(reco::TaggingVariableList& from, T* to, reco::btau::TaggingVariableName name, const size_t& max) {
 		std::vector<T> vals = from.getList(name ,false);
 		size_t size=std::min(vals.size(),max);
-		if(size > 0)
-			std::copy(vals.begin(), vals.begin()+size, to);
+		if(size > 0){
+			for(size_t i=0;i<vals.size();i++){
+				to[i]=catchInfs(vals.at(i),-0.1);
+			}
+		}
 		return size;
 	}
 

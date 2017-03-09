@@ -17,7 +17,7 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include <iostream>
 #include <math.h>
-
+#include <iostream>
 /**
  * Base class for modules to inherit from.
  */
@@ -50,8 +50,9 @@ protected:
 
 	inline const float& catchInfs(const float& in,const float& replace_value)const{
 		if(in==in)
-			if(isinf(in))
-				return replace_value;
+			if(isinf(in)){
+				std::cout << "inf" <<std::endl;
+				return replace_value;}
 			return in;
 		return replace_value;
 	}
