@@ -55,6 +55,9 @@ public:
 			edm::EDGetTokenT<edm::Association<reco::GenJetCollection> > genJetMatchWithNuToken) {
 		genJetMatchWithNuToken_ = genJetMatchWithNuToken;
 	}
+	/*	void setGenParticleToken(edm::EDGetTokenT<reco::GenParticle> genParticleToken) {
+		genParticleToken_ = genParticleToken;
+		}*/
 
 
 
@@ -82,6 +85,8 @@ public:
 
 	edm::Handle<edm::Association<reco::GenJetCollection> > genJetMatchRecluster;
 	edm::Handle<edm::Association<reco::GenJetCollection> > genJetMatchWithNu;
+	//	edm::EDGetTokenT<reco::AGenParticleCollection> genParticleToken_;
+	//	edm::Handle<reco::GenParticleCollection> genParticleToken;
 
 	TRandom3 TRandom_;
 	float gluonReduction_;
@@ -95,6 +100,10 @@ public:
 	int isC_;
 	int isUDS_;
 	int isG_;
+	int isBB_;
+        int isBlep_;
+        int isBtau_;
+        float BPt_;
 
 	// global variables
 	float npv_;

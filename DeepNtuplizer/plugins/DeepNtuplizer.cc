@@ -5,6 +5,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "../interface/helpers.h"
 #include "../interface/ntuple_content.h"
 #include "../interface/ntuple_SV.h"
 #include "../interface/ntuple_JetInfo.h"
@@ -45,7 +46,7 @@
 #include "DataFormats/Math/interface/deltaR.h"
 #include "TrackingTools/IPTools/interface/IPTools.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
-
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 
 #if defined( __GXX_EXPERIMENTAL_CXX0X__)
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
@@ -75,7 +76,7 @@ private:
 	// ----------member data ---------------------------
 	edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
 	edm::EDGetTokenT<edm::View<pat::Jet> >      jetToken_;
-
+        edm::EDGetTokenT<reco::GenParticleCollection> genToken_;
 
 	edm::Service<TFileService> fs;
 	TTree *tree_;
@@ -92,8 +93,8 @@ private:
 
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
 										  vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
-										  jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets")))
-
+										  jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets"))),
+										  genToken_(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("pruned")))
 
 {
 	/*
@@ -120,6 +121,9 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
 	jetinfo->setGenJetMatchWithNuToken(
 			consumes<edm::Association<reco::GenJetCollection> >(
 					iConfig.getParameter<edm::InputTag>( "genJetMatchWithNu" )));
+	/*  jetinfo->setGenParticleToken(
+			consumes<edm::Association<reco::GenParticleCollection> >(
+			iConfig.getParameter<edm::InputTag>( "pruned" )));*/
 	addModule(jetinfo);
 
 
@@ -157,16 +161,20 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	edm::Handle<reco::VertexCollection> vertices;
 	iEvent.getByToken(vtxToken_, vertices);
 	if (vertices->empty()) return; // skip the event if no PV found
-
-
+	edm::Handle<reco::GenParticleCollection> prun_gen_parts;
+		iEvent.getByToken(genToken_, prun_gen_parts );
+        /*for (const reco::Candidate &genC : *prun_gen_parts )
+	  std::cout<<"this";*/
+        
 	for(auto& m:modules_){
 		m->setPrimaryVertices(vertices.product());
+                m->setgenParticles(prun_gen_parts.product());
 		m->readEvent(iEvent);
 	}
 	edm::Handle<edm::View<pat::Jet> > jets;
 	iEvent.getByToken(jetToken_, jets);
 
-
+        
 
 	// loop over the jets
 	for (edm::View<pat::Jet>::const_iterator jetIter = jets->begin(); jetIter != jets->end(); ++jetIter) {

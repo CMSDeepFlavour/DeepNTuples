@@ -37,12 +37,15 @@ public:
 	void setPrimaryVertices(const reco::VertexCollection* v){
 		vertices_=v;
 	}
+        void setgenParticles(const reco::GenParticleCollection* p){
+		prun_gen_parts_=p;
+	}
 
 	void setIsRead(bool isread){read_=isread;}
 
 protected:
 	const reco::VertexCollection * vertices()const;
-
+        const reco::GenParticleCollection * prun_gen_parts() const;
 
 	template <class T>
 	void addBranch(TTree* t, const char* name,  T*, const char* leaflist=0);
@@ -57,6 +60,7 @@ protected:
 	}
 private:
 	const reco::VertexCollection* vertices_;
+        const reco::GenParticleCollection* prun_gen_parts_;
 	bool read_;
 };
 
