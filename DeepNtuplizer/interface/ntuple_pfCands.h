@@ -37,6 +37,16 @@ private:
 	float  Cpfcan_puppiw_[max_pfcand_];
 	float   Cpfcan_VTX_ass_[max_pfcand_];
 
+	float   Cpfcan_fromPV_[max_pfcand_];
+
+	float Cpfcan_vertexChi2_[max_pfcand_];
+	float Cpfcan_vertexNdof_[max_pfcand_];
+	float Cpfcan_vertexNormalizedChi2_[max_pfcand_];
+	float Cpfcan_vertex_rho_[max_pfcand_];
+	float Cpfcan_vertex_phirel_[max_pfcand_];
+	float Cpfcan_vertex_etarel_[max_pfcand_];
+	float Cpfcan_vertexRef_mass_[max_pfcand_];
+
 	// covariance
 	float  Cpfcan_dz_[max_pfcand_];
 	float  Cpfcan_dxy_[max_pfcand_];

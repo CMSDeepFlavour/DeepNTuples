@@ -48,10 +48,9 @@ protected:
 	void addBranch(TTree* t, const char* name,  T*, const char* leaflist=0);
 
 
-	inline const float& catchInfs(const float& in,const float& replace_value)const{
+	static inline const float& catchInfs(const float& in,const float& replace_value){
 		if(in==in)
-			if(isinf(in)){
-				std::cout << "inf" <<std::endl;
+			if(std::isinf(in)){
 				return replace_value;}
 			return in;
 		return replace_value;

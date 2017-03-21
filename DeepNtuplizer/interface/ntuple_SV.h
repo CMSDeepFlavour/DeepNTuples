@@ -62,12 +62,14 @@ private:
 	//helper:
 	edm::Handle<reco::VertexCompositePtrCandidateCollection> secVertices;
 
+	static const reco::Vertex * spvp_;
 
+	static bool compareDxyDxyErr(const reco::VertexCompositePtrCandidate &sva,const reco::VertexCompositePtrCandidate &svb);
 
 	//helper functions:
-	Measurement1D vertexDxy(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv) const ;
-	Measurement1D vertexD3d(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv) const ;
-	float vertexDdotP(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
+	static Measurement1D vertexDxy(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv)  ;
+	static Measurement1D vertexD3d(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv)  ;
+	static float vertexDdotP(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv)  ;
 
 };
 
