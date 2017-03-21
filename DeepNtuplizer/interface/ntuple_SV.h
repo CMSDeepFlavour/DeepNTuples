@@ -38,8 +38,9 @@ private:
 	static constexpr size_t max_sv=100;
 
 	float sv_pt_[max_sv];
-	float sv_eta_[max_sv];
-	float sv_phi_[max_sv];
+	float sv_etarel_[max_sv];
+	float sv_phirel_[max_sv];
+	float sv_deltaR_[max_sv];
 	float sv_mass_[max_sv];
 	//  float sv_phirel_[max_sv];
 	//  float sv_etarel_[max_sv];
@@ -53,6 +54,9 @@ private:
 	float sv_d3derr_[max_sv];
 	float sv_d3dsig_[max_sv];
 	float sv_costhetasvpv_[max_sv];
+	float sv_enratio_[max_sv];
+
+
 	// TODO (comment of Markus Stoye) add information to PF candidates on which tracks were used !!!
 	// this will come later LG
 
