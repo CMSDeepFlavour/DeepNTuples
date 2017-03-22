@@ -56,7 +56,10 @@ public:
 		genJetMatchWithNuToken_ = genJetMatchWithNuToken;
 	}
 
-
+    void setGenParticlesToken(
+            edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken) {
+        genParticlesToken_ = genParticlesToken;
+    }
 
 //private:
 
@@ -80,11 +83,18 @@ public:
 	edm::EDGetTokenT<edm::Association<reco::GenJetCollection> > genJetMatchReclusterToken_;
 	edm::EDGetTokenT<edm::Association<reco::GenJetCollection> > genJetMatchWithNuToken_;
 
+    edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken_;
+
 	edm::Handle<edm::Association<reco::GenJetCollection> > genJetMatchRecluster;
 	edm::Handle<edm::Association<reco::GenJetCollection> > genJetMatchWithNu;
 
+    edm::Handle<reco::GenParticleCollection> genParticlesHandle;
+
 	TRandom3 TRandom_;
 	float gluonReduction_;
+
+    std::vector < reco::GenParticle> neutrinosLepB;
+    std::vector < reco::GenParticle> neutrinosLepB_C;
 
 	// labels (MC truth)
 	// regressions pt, Deta, Dphi
@@ -95,6 +105,8 @@ public:
 	int isC_;
 	int isUDS_;
 	int isG_;
+    int isLeptonicB_;
+    int isLeptonicB_C_;
 
 	// global variables
 	float npv_;

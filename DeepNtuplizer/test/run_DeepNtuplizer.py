@@ -73,13 +73,18 @@ bTagInfos = [
 	'deepNNTagInfos',
 ]
 bTagDiscriminators = [
-   'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+     'softPFMuonBJetTags',
+     'softPFElectronBJetTags',
+	 'pfJetBProbabilityBJetTags',
+	 'pfJetProbabilityBJetTags',
+     'pfCombinedInclusiveSecondaryVertexV2BJetTags',
 	 'deepFlavourJetTags:probudsg', #to be fixed with new names
 	 'deepFlavourJetTags:probb', 
 	 'deepFlavourJetTags:probc', 
 	 'deepFlavourJetTags:probbb', 
 	 'deepFlavourJetTags:probcc',
 ]
+
 jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
