@@ -39,11 +39,12 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
     addBranch(tree,"Delta_gen_pt"    ,&Delta_gen_pt_,"Delta_gen_pt_/f"    );
     addBranch(tree,"isB",&isB_, "isB_/i");
+    addBranch(tree,"isBB",&isBB_, "isBB_/i");
+    addBranch(tree,"isLeptonicB",&isLeptonicB_, "isLeptonicB_/i");
+    addBranch(tree,"isLeptonicB_C",&isLeptonicB_C_, "isLeptonicB_C_/i");
     addBranch(tree,"isC",&isC_, "isC_/i");
     addBranch(tree,"isUDS",&isUDS_, "isUDS_/i");
     addBranch(tree,"isG",&isG_, "isG_/i");
-    addBranch(tree,"isLeptonicB",&isLeptonicB_, "isLeptonicB_/i");
-    addBranch(tree,"isLeptonicB_C",&isLeptonicB_C_, "isLeptonicB_C_/i");
 
     // jet variables
     //b=tree->Branch("jet_pt", &jet_pt_);
@@ -147,19 +148,19 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     //std::vector<Ptr<pat::Jet> > p= coll->ptrs();
 
-    isB_=0; isC_=0; isUDS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0;
+    isB_=0; isBB_=0; isC_=0; isUDS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0;
     switch(deep_ntuples::jet_flavour(jet, neutrinosLepB, neutrinosLepB_C)) {
-    case deep_ntuples::JetFlavor::L: isUDS_=1; break;
-    case deep_ntuples::JetFlavor::BB:
-    case deep_ntuples::JetFlavor::B: isB_=1; break;
-    case deep_ntuples::JetFlavor::C: isC_=1; break;
-    case deep_ntuples::JetFlavor::G: isG_=1; break;
+    case deep_ntuples::JetFlavor::L:  isUDS_=1; break;
+    case deep_ntuples::JetFlavor::B:  isB_=1; break;
+    case deep_ntuples::JetFlavor::BB: isBB_=1; break;
+    case deep_ntuples::JetFlavor::C:  isC_=1; break;
+    case deep_ntuples::JetFlavor::G:  isG_=1; break;
     case deep_ntuples::JetFlavor::LeptonicB: isLeptonicB_=1; break;                                 
     case deep_ntuples::JetFlavor::LeptonicB_C: isLeptonicB_C_=1; break; 
     default : break;
     }
 
-    if(!isB_ && !isC_ && !isUDS_ && !isG_ && !isLeptonicB_ && !isLeptonicB_C_) return false;
+    if(!isB_ && !isC_ && !isUDS_ && !isBB_ && !isG_ && !isLeptonicB_ && !isLeptonicB_C_) return false;
 
     pat::JetCollection h;
 

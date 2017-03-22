@@ -102,6 +102,7 @@ public:
 	float Delta_gen_pt_;
 	//classification
 	int isB_;
+	int isBB_;
 	int isC_;
 	int isUDS_;
 	int isG_;

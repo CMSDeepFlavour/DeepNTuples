@@ -35,6 +35,8 @@
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "TLorentzVector.h"
 
+#include <algorithm>
+
 //trash?
 
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -45,6 +47,7 @@
 #include "DataFormats/Math/interface/deltaR.h"
 #include "TrackingTools/IPTools/interface/IPTools.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
+
 
 
 #if defined( __GXX_EXPERIMENTAL_CXX0X__)
@@ -91,8 +94,8 @@ private:
 
 
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
-										  vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
-										  jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets")))
+												  vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
+												  jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets")))
 
 
 {
@@ -121,11 +124,11 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
 			consumes<edm::Association<reco::GenJetCollection> >(
 					iConfig.getParameter<edm::InputTag>( "genJetMatchWithNu" )));
 
-    jetinfo->setGenParticlesToken(
-            consumes<reco::GenParticleCollection>(
-                iConfig.getParameter<edm::InputTag>("pruned")));
+	jetinfo->setGenParticlesToken(
+			consumes<reco::GenParticleCollection>(
+					iConfig.getParameter<edm::InputTag>("pruned")));
 
-    addModule(jetinfo);
+	addModule(jetinfo);
 
 	ntuple_pfCands * pfcands = new ntuple_pfCands();
 	addModule(pfcands);
@@ -171,11 +174,19 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	iEvent.getByToken(jetToken_, jets);
 
 
+	std::vector<size_t> indices(jets->size());
+	for(size_t i=0;i<jets->size();i++)
+		indices.at(i)=i;
 
+	std::random_shuffle (indices.begin(),indices.end());
+
+	edm::View<pat::Jet>::const_iterator jetIter;
 	// loop over the jets
-	for (edm::View<pat::Jet>::const_iterator jetIter = jets->begin(); jetIter != jets->end(); ++jetIter) {
+	//for (edm::View<pat::Jet>::const_iterator jetIter = jets->begin(); jetIter != jets->end(); ++jetIter) {
+	for(size_t j=0;j<indices.size();j++){
+		size_t jetidx=indices.at(j);
+		jetIter = jets->begin()+jetidx;
 		const pat::Jet& jet = *jetIter;
-		size_t jetidx=jetIter-jets->begin();
 
 
 		bool writejet=true;
