@@ -128,10 +128,12 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     if(jet.genJet()==NULL)return false;
 
 
-    //branch fills
-    for(auto& entry : discriminators_) {
-        entry.second = jet.bDiscriminator(entry.first);
-    }
+
+	//branch fills
+	  for(auto& entry : discriminators_) {
+		    entry.second = catchInfs(jet.bDiscriminator(entry.first),-0.1);
+	  }
+
 
     npv_ = vertices()->size();
     jet_no_=jetidx;

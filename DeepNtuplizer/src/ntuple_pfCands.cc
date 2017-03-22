@@ -22,8 +22,10 @@ void ntuple_pfCands::initBranches(TTree* tree){
 	addBranch(tree,"nCpfcand", &nCpfcand_,"nCpfcand_/f");
 
 	addBranch(tree,"Cpfcan_pt", &Cpfcan_pt_,"Cpfcan_pt_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_erel", &Cpfcan_erel_,"Cpfcan_erel_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_phirel",&Cpfcan_phirel_,"Cpfcan_phirel_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_etarel",&Cpfcan_etarel_,"Cpfcan_etarel_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_deltaR",&Cpfcan_deltaR_,"Cpfcan_deltaR_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_puppiw",&Cpfcan_puppiw_,"Cpfcan_puppiw_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_dxy",&Cpfcan_dxy_,"Cpfcan_dxy_[n_Cpfcand_]/f");
 
@@ -31,7 +33,20 @@ void ntuple_pfCands::initBranches(TTree* tree){
 	addBranch(tree,"Cpfcan_dxysig",&Cpfcan_dxysig_,"Cpfcan_dxysig_[n_Cpfcand_]/f");
 
 	addBranch(tree,"Cpfcan_dz",&Cpfcan_dz_,"Cpfcan_dz_[n_Cpfcand_]/f");
+
 	addBranch(tree,"Cpfcan_VTX_ass",&Cpfcan_VTX_ass_,"Cpfcan_VTX_ass_[n_Cpfcand_]/f");
+
+	addBranch(tree,"Cpfcan_fromPV",&Cpfcan_fromPV_,"Cpfcan_fromPV_[n_Cpfcand_]/f");
+
+//commented ones don't work
+	/**///addBranch(tree,"Cpfcan_vertexChi2",&Cpfcan_vertexChi2_,"Cpfcan_vertexChi2_[n_Cpfcand_]/f");
+	/**///addBranch(tree,"Cpfcan_vertexNdof",&Cpfcan_vertexNdof_,"Cpfcan_vertexNdof_[n_Cpfcand_]/f");
+	/**///addBranch(tree,"Cpfcan_vertexNormalizedChi2",&Cpfcan_vertexNormalizedChi2_,"Cpfcan_vertexNormalizedChi2_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_vertex_rho",&Cpfcan_vertex_rho_,"Cpfcan_vertex_rho_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_vertex_phirel",&Cpfcan_vertex_phirel_,"Cpfcan_vertex_phirel_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_vertex_etarel",&Cpfcan_vertex_etarel_,"Cpfcan_vertex_etarel_[n_Cpfcand_]/f");
+	/**///addBranch(tree,"Cpfcan_vertexRef_mass",&Cpfcan_vertexRef_mass_,"Cpfcan_vertexRef_mass_[n_Cpfcand_]/f");
+
 	addBranch(tree,"Cpfcan_dptdpt",&Cpfcan_dptdpt_,"Cpfcan_dptdpt_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_detadeta",&Cpfcan_detadeta_,"Cpfcan_detadeta_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_dphidphi",&Cpfcan_dphidphi_,"Cpfcan_dphidphi_[n_Cpfcand_]/f");
@@ -58,8 +73,11 @@ void ntuple_pfCands::initBranches(TTree* tree){
 	addBranch(tree,"nNpfcand", &nNpfcand_,"nNpfcand/f");
 
 	addBranch(tree,"Npfcan_pt", &Npfcan_pt_,"Npfcan_pt_[n_Npfcand_]/f");
+	addBranch(tree,"Npfcan_erel", &Npfcan_erel_,"Npfcan_erel_[n_Npfcand_]/f");
+
 	addBranch(tree,"Npfcan_phirel",&Npfcan_phirel_,"Npfcan_phirel_[n_Npfcand_]/f");
 	addBranch(tree,"Npfcan_etarel",&Npfcan_etarel_,"Npfcan_etarel_[n_Npfcand_]/f");
+	addBranch(tree,"Npfcan_deltaR",&Npfcan_deltaR_,"Npfcan_deltaR_[n_Npfcand_]/f");
 	addBranch(tree,"Npfcan_isGamma",&Npfcan_isGamma_,"Npfcan_isGamma_[n_Npfcand_]/f");
 	addBranch(tree,"Npfcan_HadFrac",&Npfcan_HadFrac_,"Npfcan_HadFrac_[n_Npfcand_]/f");
 
@@ -84,11 +102,14 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 	//create collection first, to be able to do some sorting
 	for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++){
 		const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
-		pfcands.push_back(PackedCandidate);
+		if(PackedCandidate)
+			pfcands.push_back(PackedCandidate);
 	}
 
 
-	//std::sort(pfcands.begin(),pfcands.end(),sorting::compareDxyDxyErr<const pat::PackedCandidate*>);
+
+	//sort by dxy significance - many infs and nans - check  - is this the reason for worse performance? FIXME
+	std::sort(pfcands.begin(),pfcands.end(),sorting::compareDxyDxyErr<const pat::PackedCandidate*>);
 
 
 	// counts neutral and charged candicates
@@ -97,17 +118,23 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 
 
+
 	for (const auto& PackedCandidate_:pfcands){
 
+		if(!PackedCandidate_)continue;
 		/// This might include more than PF candidates, e.g. Reco muons and could
 		/// be double counting. Needs to be checked.!!!!
 		///
 		/// Split to charged and neutral candidates
 		if(PackedCandidate_->charge()!=0 && max_pfcand_>n_Cpfcand_){
 
+
+
 			Cpfcan_pt_[n_Cpfcand_] = PackedCandidate_->pt();
+			Cpfcan_erel_[n_Cpfcand_] = PackedCandidate_->energy()/jet.energy();
 			Cpfcan_phirel_[n_Cpfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
 			Cpfcan_etarel_[n_Cpfcand_] = etasign*(PackedCandidate_->eta()-jet.eta());
+			Cpfcan_deltaR_[n_Cpfcand_] =reco::deltaR(*PackedCandidate_,jet);
 			Cpfcan_dxy_[n_Cpfcand_] = PackedCandidate_->dxy();
 
 
@@ -118,6 +145,22 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 			Cpfcan_dz_[n_Cpfcand_] = PackedCandidate_->dz();
 			Cpfcan_VTX_ass_[n_Cpfcand_] = PackedCandidate_->pvAssociationQuality();
+
+			Cpfcan_fromPV_[n_Cpfcand_] = PackedCandidate_->fromPV();
+
+			float tempdontopt=PackedCandidate_->vx();
+			tempdontopt++;
+
+			Cpfcan_vertexChi2_[n_Cpfcand_]=PackedCandidate_->vertexChi2();
+			Cpfcan_vertexNdof_[n_Cpfcand_]=PackedCandidate_->vertexNdof();
+			//divided
+			Cpfcan_vertexNormalizedChi2_[n_Cpfcand_]=PackedCandidate_->vertexNormalizedChi2();
+			Cpfcan_vertex_rho_[n_Cpfcand_]=PackedCandidate_->vertex().rho();
+			Cpfcan_vertex_phirel_[n_Cpfcand_]=reco::deltaPhi(PackedCandidate_->vertex().phi(),jet.phi());
+			Cpfcan_vertex_etarel_[n_Cpfcand_]=etasign*(PackedCandidate_->vertex().eta()-jet.eta());
+			Cpfcan_vertexRef_mass_[n_Cpfcand_]=PackedCandidate_->vertexRef()->p4().M();
+
+
 			Cpfcan_puppiw_[n_Cpfcand_] = PackedCandidate_->puppiWeight();
 
 			const reco::Track & PseudoTrack =  PackedCandidate_->pseudoTrack();
@@ -161,8 +204,10 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 		}
 		else if(max_pfcand_>n_Npfcand_){// neutral candidates
 			Npfcan_pt_[n_Npfcand_] = PackedCandidate_->pt();
+			Npfcan_erel_[n_Npfcand_] = PackedCandidate_->energy()/jet.energy();
 			Npfcan_phirel_[n_Npfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
 			Npfcan_etarel_[n_Npfcand_] = etasign*(PackedCandidate_->eta()-jet.eta());
+			Npfcan_deltaR_[n_Npfcand_] = reco::deltaR(*PackedCandidate_,jet);
 			Npfcan_isGamma_[n_Npfcand_] = 0;
 			if(fabs(PackedCandidate_->pdgId())==22)  Npfcan_isGamma_[n_Npfcand_] = 1;
 			Npfcan_HadFrac_[n_Npfcand_] = PackedCandidate_->hcalFraction();

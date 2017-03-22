@@ -7,7 +7,7 @@ The mass production can be started and monitored by the scripts in the "../scrip
 directory
 
 example:
-jobSub.py myconfig.py myoutdir
+jobSub.py --file samples_XX.cfg myconfig.py myoutdir
 
 -> submits jobs to the condor batch for mass production. The output root files will NOT be stored in
 the output directory specified. Instead, a new directory will be created on the user eos (cernbox).
