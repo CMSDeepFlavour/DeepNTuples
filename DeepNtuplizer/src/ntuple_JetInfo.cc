@@ -3,6 +3,8 @@
  *
  *  Created on: 13 Feb 2017
  *      Author: jkiesele
+        Modifications:George Karathanasis
+
  */
 
 
@@ -35,15 +37,18 @@ void ntuple_JetInfo::initBranches(TTree* tree){
 	addBranch(tree,"jet_no"    ,&jet_no_    ,"npv/i"    );
 
 
-	// truthe labels
+	// truth labels
 	addBranch(tree,"gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
 	addBranch(tree,"Delta_gen_pt"    ,&Delta_gen_pt_,"Delta_gen_pt_/f"    );
 	addBranch(tree,"isB",&isB_, "isB_/i");
 	addBranch(tree,"isC",&isC_, "isC_/i");
 	addBranch(tree,"isUDS",&isUDS_, "isUDS_/i");
 	addBranch(tree,"isG",&isG_, "isG_/i");
-
-
+	addBranch(tree,"isBlep",&isBlep_, "isBlep_/i");
+	addBranch(tree,"isBB",&isBB_, "isBB_/i");
+        addBranch(tree,"isBtau",&isBtau_,"isBtau_/i");
+        addBranch(tree,"BPt",&BPt_,"BPt_/f");
+        	
 	// jet variables
 	//b=tree->Branch("jet_pt", &jet_pt_);
 	addBranch(tree,"jet_pt", &jet_pt_);
@@ -78,7 +83,7 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
 	iEvent.getByToken(axis2Token_, axis2Handle);
 	iEvent.getByToken(multToken_, multHandle);
 
-
+	//		iEvent.getByToken(genParticleToken_, genParticleToken);
 	iEvent.getByToken(genJetMatchReclusterToken_, genJetMatchRecluster);
 	iEvent.getByToken(genJetMatchWithNuToken_, genJetMatchWithNu);
 
@@ -122,17 +127,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 	//std::vector<Ptr<pat::Jet> > p= coll->ptrs();
 
-	isB_=0; isC_=0; isUDS_=0; isG_=0;
-	switch(deep_ntuples::jet_flavour(jet)) {
-	case deep_ntuples::JetFlavor::L: isUDS_=1; break;
-	case deep_ntuples::JetFlavor::BB: 
-	case deep_ntuples::JetFlavor::B: isB_=1; break;
-	case deep_ntuples::JetFlavor::C: isC_=1; break;
-	case deep_ntuples::JetFlavor::G: isG_=1; break;
-	default : break;
-	}
 
-	if(!isB_ && !isC_ && !isUDS_ && !isG_) return false;
 
 	pat::JetCollection h;
 
@@ -143,8 +138,32 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 	gen_pt_ =  jet.genJet()->pt();
 	Delta_gen_pt_ =  jet.genJet()->pt()- jet_pt_;
+  
+	/*	reco::GenJet * g1;
+	//g1=jet.genJet();
+        g1=const_cast<reco::GenJet*>(jet.genJet());
+        cout<<g1->pt()<<endl;*/
+       	//for ( const reco::Candidate & gp:*prun_gen_parts() ){cout<<"skata";}
+    	isBlep_=0; 
+        isBB_=0; isBtau_=0; 
+        isB_=0; isC_=0; isUDS_=0; isG_=0;
+	switch(deep_ntuples::jet_flavour(jet,prun_gen_parts())) {
+	case deep_ntuples::JetFlavor::Blep:isBlep_=1; break;
+        case deep_ntuples::JetFlavor::Btau:isBtau_=1; break;
+	case deep_ntuples::JetFlavor::L: isUDS_=1; break;
+	case deep_ntuples::JetFlavor::BB:isBB_=1; break; 
+	case deep_ntuples::JetFlavor::B: isB_=1; break;
+	case deep_ntuples::JetFlavor::C: isC_=1; break;
+	case deep_ntuples::JetFlavor::G: isG_=1; break;
+	default : break;
+	}
+	//std::cout<<prun_gen_parts()->size()<<std::endl;
+               
 
-
+	if(!isBtau_ && !isBB_ && !isBlep_ && !isB_ && !isC_ && !isUDS_ && !isG_) return false;
+        BPt_=0;
+        if (isB_==1 ||isBtau_==1 || isBlep_==1||isBB_==1)
+	  BPt_=deep_ntuples::parton_pt(jet,prun_gen_parts());
 	const edm::RefToBase<pat::Jet> patJetRef = coll->refAt(jetidx);
 	reco::GenJetRef genjetRecluster = (*genJetMatchRecluster)[patJetRef];
 
