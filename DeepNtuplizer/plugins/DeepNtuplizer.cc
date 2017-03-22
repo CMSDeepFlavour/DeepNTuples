@@ -120,8 +120,12 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
 	jetinfo->setGenJetMatchWithNuToken(
 			consumes<edm::Association<reco::GenJetCollection> >(
 					iConfig.getParameter<edm::InputTag>( "genJetMatchWithNu" )));
-	addModule(jetinfo);
 
+    jetinfo->setGenParticlesToken(
+            consumes<reco::GenParticleCollection>(
+                iConfig.getParameter<edm::InputTag>("pruned")));
+
+    addModule(jetinfo);
 
 	ntuple_pfCands * pfcands = new ntuple_pfCands();
 	addModule(pfcands);
