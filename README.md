@@ -38,6 +38,7 @@ The jobs can be submitted in the production directory using the following syntax
 jobSub.py --file <sample file> DeepNtuplizer.py <batch directory>
 ```
 For an example of sample files, please refer to the ones already in the directory.
+The large job output (root files) will NOT be stored in the batch directory. A directory in your cernbox eos space will be created for those output files. The batch directory will contain a symlink to this directory.
 
 The status of the jobs can be checked with
 ```
