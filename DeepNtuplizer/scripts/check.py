@@ -40,7 +40,11 @@ dirs=args.dirs
 
 action=args.action
 
+print('getting condor batch status...\n')
 clustersandjobs,statuses=getCondorStatus()
+
+if len(clustersandjobs) < 1:
+    raise Exception("condor_q not available, cannot check job status")
 
 #for i in range(len(clustersandjobs)):
 #    print(clustersandjobs[i],statuses[i])
@@ -49,36 +53,39 @@ clustersandjobs,statuses=getCondorStatus()
 
 for dir in dirs:
     
-    print('checking dir '+dir)
+    print('\nchecking dir '+dir)
     
     if len(dir.split('/'))>1:
         print ('please run this script directly in the parent directory of the job directory')
         exit()
     
-    stdoutfiles=glob.glob(dir+"/batch/con_*.out")
+    stdoutfiles=glob.glob(dir+"/batch/con_out*.out")
     clusterfiles=glob.glob(dir+"/batch/condorcluster_*")
+    nJobsFile=glob.glob(dir+"/batch/nJobs*")
     
     #print (stdoutfiles)
     
-    nJobs=len(clusterfiles)
+    nJobs=int(nJobsFile[0].split('.')[1])
     
     failedjobs=[]
     idlejobs=[]
     jobstatus=[]
     
-    for i in range(len(clusterfiles)):
+    for i in range(nJobs):
         jobstatus.append('L')
         
     for clf in clusterfiles:
         jcl=clf.split('_')[-1]
-        jidx=int(jcl.split('.')[-1])
+        jidx=int(jcl.split('.')[-3])
+        jcl=jcl.split('.')[1]+'.'+jcl.split('.')[2]
+        
         try:
             idxofjob=clustersandjobs.index(jcl)
             jobstatus[jidx]=statuses[idxofjob]
         except:
             jobstatus[jidx]='L'
         
-        
+    
     succjobs=[]
     runjobs=[]
     lostjobs=[]
@@ -127,25 +134,44 @@ for dir in dirs:
     
         elif action == 'resubmit':
             
-            print('resubmitting ' +str(jobno)+ '...')
+            print('resubmitting '+dir+' ' +str(jobno)+ '...')
             resetJobOutput(dir,jobno)
             cluster=submitjob(dir,'batch/condor_'+ jobno+'.sub')
-            createClusterInfo(dir,jobno,cluster)
-            os.system('touch '+dir+'/batch/con_out.'+ jobno +'.out')
+            createClusterInfo(dir,jobno,cluster,False)#single submission
+            
         else:
             print('failed job, see: ' + f)
             
             
             #os.system('cd ' + dir + ' && condor_submit batch/condor_'+ jobno+'.sub && touch batch/con_out.'+ jobno +'.out')
            
-    
-    print ('idle:    '  + str(len(idlejobs)))
-    print ('running: '  + str(len(runjobs)))
-    print ('\x1b[6;30;42m'+bcolors.BOLD+'success: '  + str(len(succjobs))+'\x1b[0m')
-    print ('failed:  '  + str(len(failedjobs)))
-    print ('lost:    '  + str(len(lostjobs)))
-    print ('hold:    '  + str(len(holdjobs)))
-    
+    allValidjobs=nJobs
+    if float(len(idlejobs))/float(allValidjobs)>0.8:
+        print (bcolors.BOLD+'idle:    '  + str(len(idlejobs))+bcolors.ENDC)
+    else:
+        print ('idle:    '  + str(len(idlejobs)))
+    if float(len(runjobs))/float(allValidjobs)>0.8:
+        print (bcolors.BOLD+'running: '  + str(len(runjobs))+bcolors.ENDC)
+    else:
+        print ('running: '  + str(len(runjobs)))
+    if float(len(succjobs))/float(allValidjobs)>0.95:
+        print ('\x1b[6;30;42m'+bcolors.BOLD+'success: '  + str(len(succjobs))+'\x1b[0m')
+    elif float(len(succjobs))/float(allValidjobs)>0.9:
+        print (bcolors.BOLD+'success: '  + str(len(succjobs))+bcolors.ENDC)
+    else:
+        print ('success: '  + str(len(succjobs)))
+    if float(len(failedjobs))/float(allValidjobs)>0.9:
+        print ('\x1b[5;32;31m'+bcolors.BOLD+'failed:  '  + str(len(failedjobs))+'\x1b[0m')
+    else:
+        print ('failed:  '  + str(len(failedjobs)))
+    if float(len(lostjobs))/float(allValidjobs)>0.8:
+        print ('\x1b[5;32;31m'+bcolors.BOLD+'lost:    '  + str(len(lostjobs))+'\x1b[0m')
+    else:
+        print ('lost:    '  + str(len(lostjobs)))
+    if float(len(holdjobs))/float(allValidjobs)>0.8:
+        print (bcolors.BOLD+'hold:    '  + str(len(holdjobs))+bcolors.ENDC)
+    else:
+        print ('hold:    '  + str(len(holdjobs)))
     
     if (action == 'merge' or len(succjobs)==nJobs or action == 'filelist') and len(succjobs)>0:
          

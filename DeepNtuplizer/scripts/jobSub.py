@@ -10,7 +10,7 @@ import re
 ########################## Parsing and environment ############################
 import subprocess
 
-from helpers import submitjob, createClusterInfo
+from helpers import submitjob, createClusterInfo, resetJobOutput
 
 def doSub():
     
@@ -222,6 +222,7 @@ def doSub():
              jconf = open(os.path.join(jobpath+'/batch', 'condor_'+str(job)+'.sub'), 'w')
              jconf.write(jobcondorfile)
              jconf.close()
+             resetJobOutput(jobpath,job)
              
              
         #create script
@@ -250,6 +251,7 @@ def doSub():
         shellsc.write(shellscript)
         shellsc.close()
         os.system('chmod +x '+sheelscp)
+        os.system('touch '+jobpath+'/batch/nJobs.'+str(nJobs))
         
         #add a 'touch for the .out file to make the check realise it is there
         
@@ -259,7 +261,7 @@ def doSub():
             cluster=submitjob(jobpath,'condor.sub')
             #print(cluster)
             for job in range(0,int(nJobs)):
-               createClusterInfo(jobpath,job,cluster)
+               createClusterInfo(jobpath,job,cluster,True)
     
     
     exit()

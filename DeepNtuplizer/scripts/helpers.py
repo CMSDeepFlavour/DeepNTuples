@@ -15,11 +15,9 @@ def resetJobOutput(parentdir,jobno):
     import os
     rootfile=parentdir+'/output/'+parentdir+'_'+str(jobno)+'.root'
     outs=parentdir+'/batch/con_*'+str(jobno)+'.*'
-    clusterf=parentdir+"/batch/condorcluster_*"+str(jobno)
-    
+    clusterf=parentdir+"/batch/condorcluster_"+str(jobno)+'*'
     os.system('rm -f '+rootfile+' '+outs+' '+clusterf)
-    exit()
-    os.system('touch '+parentdir+'/batch/con_out.'+ jobno +'.out')
+    os.system('touch '+parentdir+'/batch/con_out.'+ str(jobno) +'.out')
     
 
 
@@ -29,12 +27,17 @@ def submitjob(path,condorfile):
     proc = subprocess.Popen(['cd ' + path + ' && condor_submit '+ condorfile], stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
     print (out)
+    if len(err):
+        print (err)
     cluster=out.split()[-1][0:-1]
     return cluster
 
-def createClusterInfo(path,job,cluster):
+def createClusterInfo(path,job,cluster,batchsub):
     import os
-    clfile= open(os.path.join(path+'/batch', 'condorcluster_'+str(cluster)+'.'+str(job)), 'w')
+    addstring='0'
+    if batchsub:
+        addstring=str(job)
+    clfile= open(os.path.join(path+'/batch', 'condorcluster_'+str(job)+'.'+str(cluster)+'.'+addstring), 'w')
     clfile.write(str(cluster))
     clfile.close()
 

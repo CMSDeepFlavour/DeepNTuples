@@ -140,7 +140,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 			Cpfcan_dxyerr_[n_Cpfcand_]=catchInfs(PackedCandidate_->dxyError(), 5.);
 
-			Cpfcan_dxysig_[n_Cpfcand_]=catchInfs(PackedCandidate_->dxy()/Cpfcan_dxyerr_[n_Cpfcand_],0.);
+			Cpfcan_dxysig_[n_Cpfcand_]=catchInfs(PackedCandidate_->dxy()/PackedCandidate_->dxyError(),0.);
 
 
 			Cpfcan_dz_[n_Cpfcand_] = PackedCandidate_->dz();
