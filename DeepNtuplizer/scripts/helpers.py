@@ -27,7 +27,7 @@ def submitjob(path,condorfile):
     proc = subprocess.Popen(['cd ' + path + ' && condor_submit '+ condorfile], stdout=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
     print (out)
-    if len(err):
+    if err and len(err):
         print (err)
     cluster=out.split()[-1][0:-1]
     return cluster
