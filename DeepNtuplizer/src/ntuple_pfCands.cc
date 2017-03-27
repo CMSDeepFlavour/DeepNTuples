@@ -8,7 +8,7 @@
 
 #include "../interface/ntuple_pfCands.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
-
+#include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
 #include "../interface/sorting_modules.h"
 
 void ntuple_pfCands::getInput(const edm::ParameterSet& iConfig){
@@ -37,6 +37,8 @@ void ntuple_pfCands::initBranches(TTree* tree){
 	addBranch(tree,"Cpfcan_VTX_ass",&Cpfcan_VTX_ass_,"Cpfcan_VTX_ass_[n_Cpfcand_]/f");
 
 	addBranch(tree,"Cpfcan_fromPV",&Cpfcan_fromPV_,"Cpfcan_fromPV_[n_Cpfcand_]/f");
+
+	addBranch(tree,"Cpfcan_drminsv",&Cpfcan_drminsv_,"Cpfcan_drminsv_[n_Cpfcand_]/f");
 
 //commented ones don't work
 	/**///addBranch(tree,"Cpfcan_vertexChi2",&Cpfcan_vertexChi2_,"Cpfcan_vertexChi2_[n_Cpfcand_]/f");
@@ -80,12 +82,14 @@ void ntuple_pfCands::initBranches(TTree* tree){
 	addBranch(tree,"Npfcan_deltaR",&Npfcan_deltaR_,"Npfcan_deltaR_[n_Npfcand_]/f");
 	addBranch(tree,"Npfcan_isGamma",&Npfcan_isGamma_,"Npfcan_isGamma_[n_Npfcand_]/f");
 	addBranch(tree,"Npfcan_HadFrac",&Npfcan_HadFrac_,"Npfcan_HadFrac_[n_Npfcand_]/f");
-
+	addBranch(tree,"Npfcan_drminsv",&Npfcan_drminsv_,"Npfcan_drminsv_[n_Npfcand_]/f");
 
 
 }
 
 void ntuple_pfCands::readEvent(const edm::Event& iEvent){
+
+  iEvent.getByToken(svToken_, secVertices);
 
 }
 
@@ -116,12 +120,16 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 	n_Cpfcand_ = 0;
 	n_Npfcand_ = 0;
 
-
+	reco::VertexCompositePtrCandidateCollection cpvtx=*secVertices;
 
 
 	for (const auto& PackedCandidate_:pfcands){
 
 		if(!PackedCandidate_)continue;
+
+		// get the dr with the closest sv
+		float drminpfcandsv_ = mindrsvpfcand(cpvtx,PackedCandidate_); 
+
 		/// This might include more than PF candidates, e.g. Reco muons and could
 		/// be double counting. Needs to be checked.!!!!
 		///
@@ -200,6 +208,9 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 			Cpfcan_chi2_[n_Cpfcand_] = PseudoTrack.normalizedChi2();
 			//for some reason this returns the quality enum not a mask.
 			Cpfcan_quality_[n_Cpfcand_] = PseudoTrack.qualityMask();
+
+			Cpfcan_drminsv_[n_Cpfcand_] = drminpfcandsv_;
+
 			n_Cpfcand_++;
 		}
 		else if(max_pfcand_>n_Npfcand_){// neutral candidates
@@ -211,6 +222,9 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 			Npfcan_isGamma_[n_Npfcand_] = 0;
 			if(fabs(PackedCandidate_->pdgId())==22)  Npfcan_isGamma_[n_Npfcand_] = 1;
 			Npfcan_HadFrac_[n_Npfcand_] = PackedCandidate_->hcalFraction();
+
+			Npfcan_drminsv_[n_Npfcand_] = drminpfcandsv_;
+
 			n_Npfcand_++;
 		}
 
@@ -220,4 +234,18 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 	nNpfcand_=n_Npfcand_;
 
 	return true; //for making cuts
+}
+
+
+float ntuple_pfCands::mindrsvpfcand(const std::vector<reco::VertexCompositePtrCandidate> svs, const pat::PackedCandidate* pfcand) {
+
+  float mindr_ = 999.;
+  for (unsigned int i0=0; i0<svs.size(); ++i0) {
+
+    float tempdr_ = reco::deltaR(svs[i0],*pfcand);
+    if (tempdr_<mindr_) { mindr_ = tempdr_; }
+
+  }
+
+  return mindr_;
 }

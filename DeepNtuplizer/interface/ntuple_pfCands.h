@@ -9,6 +9,7 @@
 #define DEEPNTUPLES_DEEPNTUPLIZER_INTERFACE_NTUPLE_PFCANDS_H_
 
 #include "ntuple_content.h"
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
 class ntuple_pfCands: public ntuple_content{
 public:
@@ -19,6 +20,10 @@ public:
 	void initBranches(TTree* );
 	void readEvent(const edm::Event& iEvent);
 
+
+	void setSVToken(const edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> & t){
+	  svToken_=t;
+	}
 
 
 	//use either of these functions
@@ -76,6 +81,8 @@ private:
 	float Cpfcan_chi2_[max_pfcand_];
 	float Cpfcan_quality_[max_pfcand_];
 
+	float Cpfcan_drminsv_[max_pfcand_];
+
 	//Neutral Pf candidates
 	unsigned int n_Npfcand_;
 	float nNpfcand_;
@@ -86,8 +93,12 @@ private:
 	float  Npfcan_deltaR_[max_pfcand_];
 	float  Npfcan_isGamma_[max_pfcand_];
 	float  Npfcan_HadFrac_[max_pfcand_];
+	float  Npfcan_drminsv_[max_pfcand_];
 
+	edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> svToken_;
+	edm::Handle<reco::VertexCompositePtrCandidateCollection> secVertices;
 
+	float mindrsvpfcand(const std::vector<reco::VertexCompositePtrCandidate> svs, const pat::PackedCandidate* pfcand);
 
 };
 

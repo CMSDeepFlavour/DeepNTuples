@@ -131,6 +131,9 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
 	addModule(jetinfo);
 
 	ntuple_pfCands * pfcands = new ntuple_pfCands();
+	pfcands->setSVToken(
+			     consumes<reco::VertexCompositePtrCandidateCollection>(
+										   iConfig.getParameter<edm::InputTag>("secVertices")));
 	addModule(pfcands);
 
 	addModule(new ntuple_bTagVars());
