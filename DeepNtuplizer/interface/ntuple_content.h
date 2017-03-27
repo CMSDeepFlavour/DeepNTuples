@@ -49,10 +49,13 @@ protected:
 
 
 	static inline const float& catchInfs(const float& in,const float& replace_value){
-		if(in==in)
-			if(std::isinf(in)){
-				return replace_value;}
+		if(in==in){
+			if(std::isinf(in))
+				return replace_value;
+			else if(in < -1e32 || in > 1e32)
+				return replace_value;
 			return in;
+		}
 		return replace_value;
 	}
 private:
