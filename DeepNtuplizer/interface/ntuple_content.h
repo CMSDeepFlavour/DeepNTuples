@@ -58,6 +58,14 @@ protected:
 		}
 		return replace_value;
 	}
+
+	static inline float catchInfsAndBound(const float& in,const float& replace_value, const float& lowerbound, const float& upperbound){
+		float withoutinfs=catchInfs(in,replace_value);
+		if(withoutinfs<lowerbound) return lowerbound;
+		if(withoutinfs>upperbound) return upperbound;
+		return withoutinfs;
+	}
+
 private:
 	const reco::VertexCollection* vertices_;
 	bool read_;

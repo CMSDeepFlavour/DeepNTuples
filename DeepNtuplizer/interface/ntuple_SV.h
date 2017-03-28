@@ -47,6 +47,7 @@ private:
 	float sv_ntracks_[max_sv];
 	float sv_chi2_[max_sv];
 	float sv_ndf_[max_sv];
+	float sv_normchi2_[max_sv];
 	float sv_dxy_[max_sv];
 	float sv_dxyerr_[max_sv];
 	float sv_dxysig_[max_sv];

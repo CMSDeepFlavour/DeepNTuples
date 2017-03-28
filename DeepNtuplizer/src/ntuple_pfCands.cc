@@ -22,6 +22,7 @@ void ntuple_pfCands::initBranches(TTree* tree){
 	addBranch(tree,"nCpfcand", &nCpfcand_,"nCpfcand_/f");
 
 	addBranch(tree,"Cpfcan_pt", &Cpfcan_pt_,"Cpfcan_pt_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_ptrel", &Cpfcan_ptrel_,"Cpfcan_ptrel_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_erel", &Cpfcan_erel_,"Cpfcan_erel_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_phirel",&Cpfcan_phirel_,"Cpfcan_phirel_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_etarel",&Cpfcan_etarel_,"Cpfcan_etarel_[n_Cpfcand_]/f");
@@ -75,6 +76,7 @@ void ntuple_pfCands::initBranches(TTree* tree){
 	addBranch(tree,"nNpfcand", &nNpfcand_,"nNpfcand/f");
 
 	addBranch(tree,"Npfcan_pt", &Npfcan_pt_,"Npfcan_pt_[n_Npfcand_]/f");
+	addBranch(tree,"Npfcan_ptrel", &Npfcan_ptrel_,"Npfcan_ptrel_[n_Npfcand_]/f");
 	addBranch(tree,"Npfcan_erel", &Npfcan_erel_,"Npfcan_erel_[n_Npfcand_]/f");
 
 	addBranch(tree,"Npfcan_phirel",&Npfcan_phirel_,"Npfcan_phirel_[n_Npfcand_]/f");
@@ -143,12 +145,12 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 			Cpfcan_phirel_[n_Cpfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
 			Cpfcan_etarel_[n_Cpfcand_] = etasign*(PackedCandidate_->eta()-jet.eta());
 			Cpfcan_deltaR_[n_Cpfcand_] =reco::deltaR(*PackedCandidate_,jet);
-			Cpfcan_dxy_[n_Cpfcand_] = PackedCandidate_->dxy();
+			Cpfcan_dxy_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->dxy(),0,-50,50);
 
 
 			Cpfcan_dxyerr_[n_Cpfcand_]=catchInfs(PackedCandidate_->dxyError(), 5.);
 
-			Cpfcan_dxysig_[n_Cpfcand_]=catchInfs(PackedCandidate_->dxy()/PackedCandidate_->dxyError(),0.);
+			Cpfcan_dxysig_[n_Cpfcand_]=catchInfsAndBound(PackedCandidate_->dxy()/PackedCandidate_->dxyError(),0.,-5000,5000);
 
 
 			Cpfcan_dz_[n_Cpfcand_] = PackedCandidate_->dz();
@@ -163,7 +165,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 			Cpfcan_vertexNdof_[n_Cpfcand_]=PackedCandidate_->vertexNdof();
 			//divided
 			Cpfcan_vertexNormalizedChi2_[n_Cpfcand_]=PackedCandidate_->vertexNormalizedChi2();
-			Cpfcan_vertex_rho_[n_Cpfcand_]=PackedCandidate_->vertex().rho();
+			Cpfcan_vertex_rho_[n_Cpfcand_]=catchInfsAndBound(PackedCandidate_->vertex().rho(),0,-1,50);
 			Cpfcan_vertex_phirel_[n_Cpfcand_]=reco::deltaPhi(PackedCandidate_->vertex().phi(),jet.phi());
 			Cpfcan_vertex_etarel_[n_Cpfcand_]=etasign*(PackedCandidate_->vertex().eta()-jet.eta());
 			Cpfcan_vertexRef_mass_[n_Cpfcand_]=PackedCandidate_->vertexRef()->p4().M();
@@ -175,18 +177,18 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 			reco::Track::CovarianceMatrix myCov = PseudoTrack.covariance ();
 			//https://github.com/cms-sw/cmssw/blob/CMSSW_9_0_X/DataFormats/PatCandidates/interface/PackedCandidate.h#L394
 
-			Cpfcan_dptdpt_[n_Cpfcand_] =    myCov[0][0];
-			Cpfcan_detadeta_[n_Cpfcand_]=   myCov[1][1];
-			Cpfcan_dphidphi_[n_Cpfcand_]=   myCov[2][2];
+			Cpfcan_dptdpt_[n_Cpfcand_] =    catchInfsAndBound(myCov[0][0],0,-1,1);
+			Cpfcan_detadeta_[n_Cpfcand_]=   catchInfsAndBound(myCov[1][1],0,-1,0.01);
+			Cpfcan_dphidphi_[n_Cpfcand_]=   catchInfsAndBound(myCov[2][2],0,-1,0.1);
 
 			/*
 			 * what makes the most sense here if a track is used in the fit... cerntainly no btag
 			 * for now leave it a t zero
 			 * infs and nans are set to poor quality
 			 */
-			Cpfcan_dxydxy_[n_Cpfcand_] =    catchInfs(myCov[3][3],3.); //zero if pvAssociationQuality ==7 ?
-			Cpfcan_dzdz_[n_Cpfcand_] =      catchInfs(myCov[4][4],10.); //zero if pvAssociationQuality ==7 ?
-			Cpfcan_dxydz_[n_Cpfcand_] =     catchInfs(myCov[3][4],5.); //zero if pvAssociationQuality ==7 ?
+			Cpfcan_dxydxy_[n_Cpfcand_] =    catchInfsAndBound(myCov[3][3],7.,-1,7); //zero if pvAssociationQuality ==7 ?
+			Cpfcan_dzdz_[n_Cpfcand_] =      catchInfsAndBound(myCov[4][4],6.5,-1,6.5); //zero if pvAssociationQuality ==7 ?
+			Cpfcan_dxydz_[n_Cpfcand_] =     catchInfsAndBound(myCov[3][4],6.,-6,6); //zero if pvAssociationQuality ==7 ?
 			Cpfcan_dphidxy_[n_Cpfcand_] =   catchInfs(myCov[2][3],-0.03); //zero if pvAssociationQuality ==7 ?
 			Cpfcan_dlambdadz_[n_Cpfcand_]=  catchInfs(myCov[1][4],-0.03); //zero if pvAssociationQuality ==7 ?
 
@@ -205,16 +207,17 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 			Cpfcan_charge_[n_Cpfcand_] = PackedCandidate_->charge();
 			Cpfcan_lostInnerHits_[n_Cpfcand_] = catchInfs(PackedCandidate_->lostInnerHits(),2);
-			Cpfcan_chi2_[n_Cpfcand_] = PseudoTrack.normalizedChi2();
+			Cpfcan_chi2_[n_Cpfcand_] = catchInfsAndBound(PseudoTrack.normalizedChi2(),300,-1,300);
 			//for some reason this returns the quality enum not a mask.
 			Cpfcan_quality_[n_Cpfcand_] = PseudoTrack.qualityMask();
 
-			Cpfcan_drminsv_[n_Cpfcand_] = drminpfcandsv_;
+			Cpfcan_drminsv_[n_Cpfcand_] = catchInfsAndBound(drminpfcandsv_,5,-1,5);
 
 			n_Cpfcand_++;
 		}
 		else if(max_pfcand_>n_Npfcand_){// neutral candidates
 			Npfcan_pt_[n_Npfcand_] = PackedCandidate_->pt();
+			Npfcan_ptrel_[n_Npfcand_] = PackedCandidate_->pt()/jet.pt();
 			Npfcan_erel_[n_Npfcand_] = PackedCandidate_->energy()/jet.energy();
 			Npfcan_phirel_[n_Npfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
 			Npfcan_etarel_[n_Npfcand_] = etasign*(PackedCandidate_->eta()-jet.eta());
@@ -223,7 +226,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 			if(fabs(PackedCandidate_->pdgId())==22)  Npfcan_isGamma_[n_Npfcand_] = 1;
 			Npfcan_HadFrac_[n_Npfcand_] = PackedCandidate_->hcalFraction();
 
-			Npfcan_drminsv_[n_Npfcand_] = drminpfcandsv_;
+			Npfcan_drminsv_[n_Npfcand_] = catchInfsAndBound(drminpfcandsv_,5,-1,5);
 
 			n_Npfcand_++;
 		}

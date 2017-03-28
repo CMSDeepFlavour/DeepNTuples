@@ -37,6 +37,7 @@ private:
 	static constexpr size_t max_pfcand_=100;
 
 	float  Cpfcan_pt_[max_pfcand_];
+	float  Cpfcan_ptrel_[max_pfcand_];
 	float  Cpfcan_erel_[max_pfcand_];
 	float  Cpfcan_phirel_[max_pfcand_];
 	float  Cpfcan_etarel_[max_pfcand_];
@@ -87,6 +88,7 @@ private:
 	unsigned int n_Npfcand_;
 	float nNpfcand_;
 	float  Npfcan_pt_[max_pfcand_];
+	float  Npfcan_ptrel_[max_pfcand_];
 	float  Npfcan_erel_[max_pfcand_];
 	float  Npfcan_phirel_[max_pfcand_];
 	float  Npfcan_etarel_[max_pfcand_];

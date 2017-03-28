@@ -40,6 +40,7 @@ void ntuple_SV::initBranches(TTree* tree){
 	addBranch(tree,"sv_ntracks"     ,&sv_ntracks_     ,"sv_ntracks_[sv_num_]/f"     );
 	addBranch(tree,"sv_chi2"        ,&sv_chi2_        ,"sv_chi2_[sv_num_]/f"        );
 	addBranch(tree,"sv_ndf"         ,&sv_ndf_         ,"sv_ndf_[sv_num_]/f"         );
+	addBranch(tree,"sv_normchi2"    ,&sv_normchi2_   ,"sv_normchi2_[sv_num_]/f"         );
 	addBranch(tree,"sv_dxy"         ,&sv_dxy_         ,"sv_dxy_[sv_num_]/f"         );
 	addBranch(tree,"sv_dxyerr"      ,&sv_dxyerr_      ,"sv_dxyerr_[sv_num_]/f"      );
 	addBranch(tree,"sv_dxysig"      ,&sv_dxysig_      ,"sv_dxysig_[sv_num_]/f"      );
@@ -99,9 +100,10 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
 			sv_ntracks_[sv_num_]      = sv.numberOfDaughters();
 			sv_chi2_[sv_num_]         = sv.vertexChi2();
 			sv_ndf_[sv_num_]          = sv.vertexNdof();
+			sv_normchi2_[sv_num_]     = catchInfsAndBound(sv_chi2_[sv_num_]/sv_ndf_[sv_num_],1000,-1000,1000);
 			sv_dxy_[sv_num_]          = vertexDxy(sv,pv).value();
 			sv_dxyerr_[sv_num_]       = vertexDxy(sv,pv).error();
-			sv_dxysig_[sv_num_]       = catchInfs(sv_dxy_[sv_num_]/sv_dxyerr_[sv_num_] ,0);
+			sv_dxysig_[sv_num_]       = catchInfsAndBound(sv_dxy_[sv_num_]/sv_dxyerr_[sv_num_] ,0,-1,3000);
 			sv_d3d_[sv_num_]          = vertexD3d(sv,pv).value();
 			sv_d3derr_[sv_num_]       = vertexD3d(sv,pv).error();
 			sv_d3dsig_[sv_num_]       = catchInfs(sv_d3d_[sv_num_]/sv_d3derr_[sv_num_] ,0);
