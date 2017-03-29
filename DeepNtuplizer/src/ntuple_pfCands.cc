@@ -141,7 +141,8 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 
 			Cpfcan_pt_[n_Cpfcand_] = PackedCandidate_->pt();
-			Cpfcan_erel_[n_Cpfcand_] = PackedCandidate_->energy()/jet.energy();
+			Cpfcan_ptrel_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->pt()/jet.pt(),1,-1,1);
+			Cpfcan_erel_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->energy()/jet.energy(),1.2,-1,1.2);
 			Cpfcan_phirel_[n_Cpfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
 			Cpfcan_etarel_[n_Cpfcand_] = etasign*(PackedCandidate_->eta()-jet.eta());
 			Cpfcan_deltaR_[n_Cpfcand_] =reco::deltaR(*PackedCandidate_,jet);
@@ -150,7 +151,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 			Cpfcan_dxyerr_[n_Cpfcand_]=catchInfs(PackedCandidate_->dxyError(), 5.);
 
-			Cpfcan_dxysig_[n_Cpfcand_]=catchInfsAndBound(PackedCandidate_->dxy()/PackedCandidate_->dxyError(),0.,-5000,5000);
+			Cpfcan_dxysig_[n_Cpfcand_]=catchInfsAndBound(PackedCandidate_->dxy()/PackedCandidate_->dxyError(),0.,-2000,2000);
 
 
 			Cpfcan_dz_[n_Cpfcand_] = PackedCandidate_->dz();
@@ -217,8 +218,8 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 		}
 		else if(max_pfcand_>n_Npfcand_){// neutral candidates
 			Npfcan_pt_[n_Npfcand_] = PackedCandidate_->pt();
-			Npfcan_ptrel_[n_Npfcand_] = PackedCandidate_->pt()/jet.pt();
-			Npfcan_erel_[n_Npfcand_] = PackedCandidate_->energy()/jet.energy();
+			Npfcan_ptrel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->pt()/jet.pt(),1,-1,1);
+			Npfcan_erel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->energy()/jet.energy(),1.2,-1,1.2);
 			Npfcan_phirel_[n_Npfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
 			Npfcan_etarel_[n_Npfcand_] = etasign*(PackedCandidate_->eta()-jet.eta());
 			Npfcan_deltaR_[n_Npfcand_] = reco::deltaR(*PackedCandidate_,jet);

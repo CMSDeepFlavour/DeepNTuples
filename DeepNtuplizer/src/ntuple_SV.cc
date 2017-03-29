@@ -103,10 +103,10 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
 			sv_normchi2_[sv_num_]     = catchInfsAndBound(sv_chi2_[sv_num_]/sv_ndf_[sv_num_],1000,-1000,1000);
 			sv_dxy_[sv_num_]          = vertexDxy(sv,pv).value();
 			sv_dxyerr_[sv_num_]       = vertexDxy(sv,pv).error();
-			sv_dxysig_[sv_num_]       = catchInfsAndBound(sv_dxy_[sv_num_]/sv_dxyerr_[sv_num_] ,0,-1,3000);
+			sv_dxysig_[sv_num_]       = catchInfsAndBound(sv_dxy_[sv_num_]/sv_dxyerr_[sv_num_] ,0,-1,800);
 			sv_d3d_[sv_num_]          = vertexD3d(sv,pv).value();
 			sv_d3derr_[sv_num_]       = vertexD3d(sv,pv).error();
-			sv_d3dsig_[sv_num_]       = catchInfs(sv_d3d_[sv_num_]/sv_d3derr_[sv_num_] ,0);
+			sv_d3dsig_[sv_num_]       = catchInfsAndBound(sv_d3d_[sv_num_]/sv_d3derr_[sv_num_] ,0,-1,800);
 			sv_costhetasvpv_[sv_num_] = vertexDdotP(sv,pv); // the pointing angle (i.e. the angle between the sum of the momentum
 			// of the tracks in the SV and the flight direction betwen PV and SV)
 
