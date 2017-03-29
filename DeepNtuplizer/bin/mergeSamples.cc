@@ -34,6 +34,7 @@
 //for control plots
 #include "TH1D.h"
 #include "TCanvas.h"
+#include <ctime>
 
 #include "DeepNTuples/DeepNtuplizer/interface/ntuple_bTagVars.h"
 #include "DeepNTuples/DeepNtuplizer/interface/ntuple_JetInfo.h"
@@ -171,6 +172,11 @@ int main(int argc, char *argv[]){
 	}
 
 	std::cout << "looping" <<std::endl;
+	time_t now;
+	time_t started;
+	time(&started);
+	time(&now);
+
 	while(1){
 
 		if(newfile || lastwrite){
@@ -186,8 +192,23 @@ int main(int argc, char *argv[]){
 			//goes in the indexed loop later
 			outlist << outfilename<<"\n";
 			std::cout << "new output file " <<outfilename <<std::endl;
-			if(outfileindex)
-				std::cout << "total progress: " << (int)((double)alloutentries/(double)totalentries * 100) << "%"<<std::endl;
+
+			time(&now);
+			float runningsecond=difftime(now,started);
+			float processedfraction=(double)alloutentries/(double)totalentries;
+			float expectedtotal=runningsecond/processedfraction;
+			int eta=expectedtotal-runningsecond;
+			int min=0;
+			if(eta>120)
+				min=eta/60;
+
+			if(outfileindex){
+				if(min)
+					std::cout << "total progress: " << (int)(processedfraction * 100) << "%, ETA " << min << " min"<<std::endl;
+				else
+					std::cout << "total progress: " << (int)(processedfraction * 100) << "%, ETA " << eta << " sec"<<std::endl;
+
+			}
 			fout= new TFile(outpath+"/"+outfilename,"RECREATE");
 			TDirectory* tdir=fout->mkdir("deepntuplizer","deepntuplizer");
 			tdir->cd();
