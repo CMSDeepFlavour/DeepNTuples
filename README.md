@@ -1,7 +1,7 @@
 # DeepNTuples
 NTuple framework for DeepFlavour
 
-Installation
+Installation (CMSSW 8_0_25)
 ============
 
 ```
@@ -22,7 +22,53 @@ mkdir RecoBTag/DeepFlavour/data/
 cd RecoBTag/DeepFlavour/data/
 wget http://home.fnal.gov/~verzetti//DeepFlavour/training/DeepFlavourNoSL.json
 cd -
+#compile
+scram b -j 4
 ```
+Installation (CMSSW 8_1_X)
+============
+
+```
+cmsrel CMSSW_8_0_25
+cd CMSSW_8_0_25/src/
+cmsenv
+git cms-init
+git clone https://github.com/CMSDeepFlavour/DeepNTuples
+# Add JetToolBox
+cd DeepNTuples
+git submodule init
+git submodule update
+
+# Add DeepFlavour -- To be updated once the 80X PR is done
+cd -
+git cms-merge-topic -u cms-btv-pog:DeepFlavour-from-CMSSW_8_1_0
+cd -
+#compile
+scram b -j 4
+```
+
+Installation (CMSSW 8_4_X and 9_0_X)
+============
+
+```
+cmsrel CMSSW_8_0_25
+cd CMSSW_8_0_25/src/
+cmsenv
+git cms-init
+git clone https://github.com/CMSDeepFlavour/DeepNTuples
+# Add JetToolBox
+cd DeepNTuples
+git submodule init
+git submodule update
+
+#DeepCSV is already in the release, but with different names, which will become the defaults in the close future
+sed -i 's|deepFlavourJetTags|pfDeepCSVJetTags|g' DeepNTuples/DeepNtuplizer/production/DeepNtuplizer.py
+#compile
+scram b -j 4
+```
+
+Further settings
+============
 
 It is important to create your grid proxy in a location that is accessible by other nodes (there is no security issue, your full credentials are still needed for access). For this purpose, redirect the grid proxy location by adding the following to your login script:
 
