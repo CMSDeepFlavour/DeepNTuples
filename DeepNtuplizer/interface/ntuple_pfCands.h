@@ -59,7 +59,7 @@ private:
 	float  Cpfcan_dz_[max_pfcand_];
 	float  Cpfcan_dxy_[max_pfcand_];
 
-	float  Cpfcan_dxyerr_[max_pfcand_];
+	float  Cpfcan_dxyerrinv_[max_pfcand_];
 	float  Cpfcan_dxysig_[max_pfcand_];
 
 	float  Cpfcan_dptdpt_[max_pfcand_];

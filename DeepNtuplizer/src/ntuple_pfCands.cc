@@ -30,7 +30,7 @@ void ntuple_pfCands::initBranches(TTree* tree){
 	addBranch(tree,"Cpfcan_puppiw",&Cpfcan_puppiw_,"Cpfcan_puppiw_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_dxy",&Cpfcan_dxy_,"Cpfcan_dxy_[n_Cpfcand_]/f");
 
-	addBranch(tree,"Cpfcan_dxyerr",&Cpfcan_dxyerr_,"Cpfcan_dxyerr_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_dxyerrinv",&Cpfcan_dxyerrinv_,"Cpfcan_dxyerrinv_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_dxysig",&Cpfcan_dxysig_,"Cpfcan_dxysig_[n_Cpfcand_]/f");
 
 	addBranch(tree,"Cpfcan_dz",&Cpfcan_dz_,"Cpfcan_dz_[n_Cpfcand_]/f");
@@ -41,7 +41,7 @@ void ntuple_pfCands::initBranches(TTree* tree){
 
 	addBranch(tree,"Cpfcan_drminsv",&Cpfcan_drminsv_,"Cpfcan_drminsv_[n_Cpfcand_]/f");
 
-//commented ones don't work
+	//commented ones don't work
 	/**///addBranch(tree,"Cpfcan_vertexChi2",&Cpfcan_vertexChi2_,"Cpfcan_vertexChi2_[n_Cpfcand_]/f");
 	/**///addBranch(tree,"Cpfcan_vertexNdof",&Cpfcan_vertexNdof_,"Cpfcan_vertexNdof_[n_Cpfcand_]/f");
 	/**///addBranch(tree,"Cpfcan_vertexNormalizedChi2",&Cpfcan_vertexNormalizedChi2_,"Cpfcan_vertexNormalizedChi2_[n_Cpfcand_]/f");
@@ -64,7 +64,7 @@ void ntuple_pfCands::initBranches(TTree* tree){
 	addBranch(tree,"Cpfcan_isEl",&Cpfcan_isEl_,"Cpfcan_isEl_[n_Cpfcand_]/f");
 
 	//in16 conversion broken
-   // addBranch(tree,"Cpfcan_lostInnerHits",&Cpfcan_lostInnerHits_,"Cpfcan_lostInnerHits_[n_Cpfcand_]/i");
+	// addBranch(tree,"Cpfcan_lostInnerHits",&Cpfcan_lostInnerHits_,"Cpfcan_lostInnerHits_[n_Cpfcand_]/i");
 	addBranch(tree,"Cpfcan_chi2",&Cpfcan_chi2_,"Cpfcan_chi2_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_quality",&Cpfcan_quality_,"Cpfcan_quality_[n_Cpfcand_]/f");
 
@@ -91,7 +91,7 @@ void ntuple_pfCands::initBranches(TTree* tree){
 
 void ntuple_pfCands::readEvent(const edm::Event& iEvent){
 
-  iEvent.getByToken(svToken_, secVertices);
+	iEvent.getByToken(svToken_, secVertices);
 
 }
 
@@ -101,32 +101,43 @@ void ntuple_pfCands::readEvent(const edm::Event& iEvent){
 
 bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  edm::View<pat::Jet> * coll){
 
+	reco::VertexCompositePtrCandidateCollection cpvtx=*secVertices;
+
 	float etasign = 1.;
 	if (jet.eta()<0) etasign =-1.;
 
-	std::vector<const pat::PackedCandidate* > pfcands;
+	std::vector<sorting::sortingClass<pat::PackedCandidate> > sortedcharged, sortedneutrals, sortedall;
+
 	//create collection first, to be able to do some sorting
 	for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++){
 		const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
-		if(PackedCandidate)
-			pfcands.push_back(PackedCandidate);
+		if(PackedCandidate){
+
+
+			sortedall.push_back(sorting::sortingClass<pat::PackedCandidate>
+			(PackedCandidate,fabs(PackedCandidate->dxy()/PackedCandidate->dxyError()),
+					-mindrsvpfcand(cpvtx,PackedCandidate), PackedCandidate->pt()/jet.pt()));
+
+		}
 	}
+
+	std::sort(sortedall.begin(),sortedall.end(),sorting::sortingClass<pat::PackedCandidate>::compareByABCInv);
+
 
 
 
 	//sort by dxy significance - many infs and nans - check  - is this the reason for worse performance? FIXME
-	std::sort(pfcands.begin(),pfcands.end(),sorting::compareDxyDxyErr<const pat::PackedCandidate*>);
 
 
 	// counts neutral and charged candicates
 	n_Cpfcand_ = 0;
 	n_Npfcand_ = 0;
 
-	reco::VertexCompositePtrCandidateCollection cpvtx=*secVertices;
 
 
-	for (const auto& PackedCandidate_:pfcands){
+	for (const auto& s:sortedall){
 
+		const auto& PackedCandidate_=s.get();
 		if(!PackedCandidate_)continue;
 
 		// get the dr with the closest sv
@@ -141,17 +152,17 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 
 			Cpfcan_pt_[n_Cpfcand_] = PackedCandidate_->pt();
-			Cpfcan_ptrel_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->pt()/jet.pt(),1,-1,1);
-			Cpfcan_erel_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->energy()/jet.energy(),1.2,-1,1.2);
-			Cpfcan_phirel_[n_Cpfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
-			Cpfcan_etarel_[n_Cpfcand_] = etasign*(PackedCandidate_->eta()-jet.eta());
-			Cpfcan_deltaR_[n_Cpfcand_] =reco::deltaR(*PackedCandidate_,jet);
-			Cpfcan_dxy_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->dxy(),0,-50,50);
+			Cpfcan_ptrel_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->pt()/jet.pt()-1,0,-1,0);
+			Cpfcan_erel_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->energy()/jet.energy()-1,0,-1,0);
+			Cpfcan_phirel_[n_Cpfcand_] = catchInfsAndBound(fabs(reco::deltaPhi(PackedCandidate_->phi(),jet.phi()))-0.5,0,-2,0);
+			Cpfcan_etarel_[n_Cpfcand_] = catchInfsAndBound(fabs(PackedCandidate_->eta()-jet.eta())-0.5,0,-2,0);
+			Cpfcan_deltaR_[n_Cpfcand_] =catchInfsAndBound(reco::deltaR(*PackedCandidate_,jet)-0.6,0,-0.6,0);
+			Cpfcan_dxy_[n_Cpfcand_] = catchInfsAndBound(fabs(PackedCandidate_->dxy()),0,-50,50);
 
 
-			Cpfcan_dxyerr_[n_Cpfcand_]=catchInfs(PackedCandidate_->dxyError(), 5.);
+			Cpfcan_dxyerrinv_[n_Cpfcand_]=catchInfsAndBound(1/PackedCandidate_->dxyError(),0,-1, 10000.);
 
-			Cpfcan_dxysig_[n_Cpfcand_]=catchInfsAndBound(PackedCandidate_->dxy()/PackedCandidate_->dxyError(),0.,-2000,2000);
+			Cpfcan_dxysig_[n_Cpfcand_]=catchInfsAndBound(fabs(PackedCandidate_->dxy()/PackedCandidate_->dxyError()),0.,-2000,2000);
 
 
 			Cpfcan_dz_[n_Cpfcand_] = PackedCandidate_->dz();
@@ -212,22 +223,22 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 			//for some reason this returns the quality enum not a mask.
 			Cpfcan_quality_[n_Cpfcand_] = PseudoTrack.qualityMask();
 
-			Cpfcan_drminsv_[n_Cpfcand_] = catchInfsAndBound(drminpfcandsv_,5,-1,5);
+			Cpfcan_drminsv_[n_Cpfcand_] = catchInfsAndBound(drminpfcandsv_-5,0,-5,0);
 
 			n_Cpfcand_++;
 		}
 		else if(max_pfcand_>n_Npfcand_){// neutral candidates
 			Npfcan_pt_[n_Npfcand_] = PackedCandidate_->pt();
-			Npfcan_ptrel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->pt()/jet.pt(),1,-1,1);
-			Npfcan_erel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->energy()/jet.energy(),1.2,-1,1.2);
-			Npfcan_phirel_[n_Npfcand_] = reco::deltaPhi(PackedCandidate_->phi(),jet.phi());
-			Npfcan_etarel_[n_Npfcand_] = etasign*(PackedCandidate_->eta()-jet.eta());
-			Npfcan_deltaR_[n_Npfcand_] = reco::deltaR(*PackedCandidate_,jet);
+			Npfcan_ptrel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->pt()/jet.pt()-1,0,-1,0);
+			Npfcan_erel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->energy()/jet.energy()-1,0,-1,0);
+			Npfcan_phirel_[n_Npfcand_] = catchInfsAndBound(fabs(reco::deltaPhi(PackedCandidate_->phi(),jet.phi()))-0.5,0,-2,0);
+			Npfcan_etarel_[n_Npfcand_] = catchInfsAndBound(fabs(PackedCandidate_->eta()-jet.eta())-0.5,0,-2,0);
+			Npfcan_deltaR_[n_Npfcand_] = catchInfsAndBound(reco::deltaR(*PackedCandidate_,jet)-0.6,0,-0.6,0);
 			Npfcan_isGamma_[n_Npfcand_] = 0;
 			if(fabs(PackedCandidate_->pdgId())==22)  Npfcan_isGamma_[n_Npfcand_] = 1;
 			Npfcan_HadFrac_[n_Npfcand_] = PackedCandidate_->hcalFraction();
 
-			Npfcan_drminsv_[n_Npfcand_] = catchInfsAndBound(drminpfcandsv_,5,-1,5);
+			Npfcan_drminsv_[n_Npfcand_] = catchInfsAndBound(drminpfcandsv_-5,0,-5,0);
 
 			n_Npfcand_++;
 		}
@@ -243,13 +254,13 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 float ntuple_pfCands::mindrsvpfcand(const std::vector<reco::VertexCompositePtrCandidate> svs, const pat::PackedCandidate* pfcand) {
 
-  float mindr_ = 999.;
-  for (unsigned int i0=0; i0<svs.size(); ++i0) {
+	float mindr_ = 999.;
+	for (unsigned int i0=0; i0<svs.size(); ++i0) {
 
-    float tempdr_ = reco::deltaR(svs[i0],*pfcand);
-    if (tempdr_<mindr_) { mindr_ = tempdr_; }
+		float tempdr_ = reco::deltaR(svs[i0],*pfcand);
+		if (tempdr_<mindr_) { mindr_ = tempdr_; }
 
-  }
+	}
 
-  return mindr_;
+	return mindr_;
 }

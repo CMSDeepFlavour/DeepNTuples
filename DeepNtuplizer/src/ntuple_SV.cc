@@ -85,6 +85,7 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
 	std::sort(cpvtx.begin(),cpvtx.end(),ntuple_SV::compareDxyDxyErr);
 
 	float etasign=1;
+	etasign++; //avoid unused warning
 	if(jet.eta()<0)etasign=-1;
 
 	for (const reco::VertexCompositePtrCandidate &sv : cpvtx) {
@@ -93,20 +94,20 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
 		if((int)max_sv>sv_num_){
 
 			sv_pt_[sv_num_]           = sv.pt();
-			sv_etarel_[sv_num_]       = etasign*(sv.eta()-jet.eta());
-			sv_phirel_[sv_num_]       = reco::deltaPhi(sv.phi(),jet.phi());
-			sv_deltaR_[sv_num_]       = reco::deltaR(sv,jet);
+			sv_etarel_[sv_num_]       = catchInfsAndBound(fabs(sv.eta()-jet.eta())-0.5,0,-2,0);
+			sv_phirel_[sv_num_]       = catchInfsAndBound(fabs(reco::deltaPhi(sv.phi(),jet.phi()))-0.5,0,-2,0);
+			sv_deltaR_[sv_num_]       = catchInfsAndBound(fabs(reco::deltaR(sv,jet))-0.5,0,-2,0);
 			sv_mass_[sv_num_]         = sv.mass();
 			sv_ntracks_[sv_num_]      = sv.numberOfDaughters();
 			sv_chi2_[sv_num_]         = sv.vertexChi2();
 			sv_ndf_[sv_num_]          = sv.vertexNdof();
 			sv_normchi2_[sv_num_]     = catchInfsAndBound(sv_chi2_[sv_num_]/sv_ndf_[sv_num_],1000,-1000,1000);
 			sv_dxy_[sv_num_]          = vertexDxy(sv,pv).value();
-			sv_dxyerr_[sv_num_]       = vertexDxy(sv,pv).error();
-			sv_dxysig_[sv_num_]       = catchInfsAndBound(sv_dxy_[sv_num_]/sv_dxyerr_[sv_num_] ,0,-1,800);
+			sv_dxyerr_[sv_num_]       = catchInfsAndBound(vertexDxy(sv,pv).error()-2,0,-2,0);
+			sv_dxysig_[sv_num_]       = catchInfsAndBound(sv_dxy_[sv_num_]/vertexDxy(sv,pv).error() ,0,-1,800);
 			sv_d3d_[sv_num_]          = vertexD3d(sv,pv).value();
-			sv_d3derr_[sv_num_]       = vertexD3d(sv,pv).error();
-			sv_d3dsig_[sv_num_]       = catchInfsAndBound(sv_d3d_[sv_num_]/sv_d3derr_[sv_num_] ,0,-1,800);
+			sv_d3derr_[sv_num_]       = catchInfsAndBound(vertexD3d(sv,pv).error()-2,0,-2,0);
+			sv_d3dsig_[sv_num_]       = catchInfsAndBound(vertexD3d(sv,pv).value()/vertexD3d(sv,pv).error(),0,-1,800);
 			sv_costhetasvpv_[sv_num_] = vertexDdotP(sv,pv); // the pointing angle (i.e. the angle between the sum of the momentum
 			// of the tracks in the SV and the flight direction betwen PV and SV)
 

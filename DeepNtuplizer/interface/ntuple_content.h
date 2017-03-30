@@ -18,6 +18,7 @@
 #include <iostream>
 #include <math.h>
 #include <iostream>
+#include "TString.h"
 /**
  * Base class for modules to inherit from.
  */
@@ -39,6 +40,16 @@ public:
 	}
 
 	void setIsRead(bool isread){read_=isread;}
+
+	std::vector<TString> getListOfBranches(){
+		if(allbranches_.size())
+			return allbranches_;
+		else{
+			TTree *t=new TTree();
+			initBranches(t);
+			return allbranches_;
+		}
+	}
 
 protected:
 	const reco::VertexCollection * vertices()const;
@@ -69,6 +80,7 @@ protected:
 private:
 	const reco::VertexCollection* vertices_;
 	bool read_;
+	std::vector<TString> allbranches_;
 };
 
 template <class T>
@@ -83,6 +95,7 @@ void ntuple_content::addBranch(TTree* t, const char* name,  T* address, const ch
 		else
 			t->Branch(name  ,address);
 	}
+	allbranches_.push_back((TString)name);
 
 }
 

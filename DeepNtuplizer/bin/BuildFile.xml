@@ -4,3 +4,4 @@
 <use   name="rootgraphics"/>
 
 <bin name="mergeSamples" file="mergeSamples.cc" />
+<bin name="printBranches" file="printBranches.cc" />
