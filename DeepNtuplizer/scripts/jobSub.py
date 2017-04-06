@@ -26,8 +26,16 @@ def doSub():
     parser.add_argument('jobdir')
     parser.add_argument('--file',default='samples.cfg',help='file containing a sample list')
     parser.add_argument('--nosubmit',default=False,help='no submission')
+    parser.add_argument('--outpath',default='',help='set path to store the .root output')
     
     args = parser.parse_args()
+    
+    cernboxpath='/eos/user/'+os.environ['USER'][0]+'/'+os.environ['USER']+'/DeepNtuples'
+    if len(args.outpath):
+        cernboxpath=args.outpath
+        if not os.path.isdir(cernboxpath):
+            print('please specify a valid output path')
+            sys.exit(-1)
     
     
     if os.path.isdir(args.jobdir):
@@ -97,8 +105,8 @@ def doSub():
     shutil.copy(configFile, args.jobdir)
     configFile=os.path.abspath(os.path.join(args.jobdir, os.path.basename(configFile)))
     
-    cernboxpath='/eos/user/'+os.environ['USER'][0]+'/'+os.environ['USER']+'/'
-    globalOutDir=cernboxpath+'DeepNtuples/'+time.strftime('%a_%H%M%S')+'_'+args.jobdir
+    
+    globalOutDir=cernboxpath+'/'+time.strftime('%a_%H%M%S')+'_'+args.jobdir
     
     
     print ('submitting jobs for '+configFile)
