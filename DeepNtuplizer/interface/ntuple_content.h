@@ -30,7 +30,7 @@ public:
 	virtual void getInput(const edm::ParameterSet& iConfig){}
 	virtual void initBranches(TTree* )=0;
 	virtual void readEvent(const edm::Event& iEvent)=0;
-
+	virtual void readSetup(const edm::EventSetup& iSetup){}
 	//use either of these functions
 
 	virtual bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0)=0;

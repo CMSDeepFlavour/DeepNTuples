@@ -172,6 +172,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	for(auto& m:modules_){
 		m->setPrimaryVertices(vertices.product());
 		m->readEvent(iEvent);
+		m->readSetup(iSetup);
 	}
 	edm::Handle<edm::View<pat::Jet> > jets;
 	iEvent.getByToken(jetToken_, jets);

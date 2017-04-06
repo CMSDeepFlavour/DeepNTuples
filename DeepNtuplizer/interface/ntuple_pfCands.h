@@ -10,6 +10,7 @@
 
 #include "ntuple_content.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 
 class ntuple_pfCands: public ntuple_content{
 public:
@@ -19,7 +20,7 @@ public:
 	void getInput(const edm::ParameterSet& iConfig);
 	void initBranches(TTree* );
 	void readEvent(const edm::Event& iEvent);
-
+	void readSetup(const edm::EventSetup& iSetup);
 
 	void setSVToken(const edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> & t){
 	  svToken_=t;
@@ -31,6 +32,10 @@ public:
 	bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0);
 
 private:
+
+
+	edm::ESHandle<TransientTrackBuilder> builder;
+
 	unsigned int n_Cpfcand_;
 	float nCpfcand_;
 
@@ -70,6 +75,26 @@ private:
 	float  Cpfcan_dxydz_[max_pfcand_];
 	float  Cpfcan_dphidxy_[max_pfcand_];
 	float  Cpfcan_dlambdadz_[max_pfcand_];
+
+
+
+    float Cpfcan_BtagPf_trackMomentum_[max_pfcand_];
+    float Cpfcan_BtagPf_trackEta_[max_pfcand_];
+    float Cpfcan_BtagPf_trackEtaRel_[max_pfcand_];
+    float Cpfcan_BtagPf_trackPtRel_[max_pfcand_];
+    float Cpfcan_BtagPf_trackPPar_[max_pfcand_];
+    float Cpfcan_BtagPf_trackDeltaR_[max_pfcand_];
+    float Cpfcan_BtagPf_trackPtRatio_[max_pfcand_];
+    float Cpfcan_BtagPf_trackPParRatio_[max_pfcand_];
+    float Cpfcan_BtagPf_trackSip3dVal_[max_pfcand_];
+    float Cpfcan_BtagPf_trackSip3dSig_[max_pfcand_];
+    float Cpfcan_BtagPf_trackSip2dVal_[max_pfcand_];
+    float Cpfcan_BtagPf_trackSip2dSig_[max_pfcand_];
+
+    float Cpfcan_BtagPf_trackDecayLen_[max_pfcand_];
+
+    float Cpfcan_BtagPf_trackJetDistVal_[max_pfcand_];
+    float Cpfcan_BtagPf_trackJetDistSig_[max_pfcand_];
 
 	// ID, skipped "charged hadron" as that is true if now the other
 	// TODO (comment of Markus Stoye) add reco information

@@ -11,6 +11,119 @@
 #include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
 #include "../interface/sorting_modules.h"
 
+
+#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+#include "TrackingTools/IPTools/interface/IPTools.h"
+#include "TrackingTools/Records/interface/TransientTrackRecord.h"
+#include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
+#include "TVector3.h"
+
+class TrackInfoBuilder{
+public:
+	TrackInfoBuilder(edm::ESHandle<TransientTrackBuilder> & build):
+		builder(build),
+		trackMomentum_(0),
+		trackEta_(0),
+		trackEtaRel_(0),
+		trackPtRel_(0),
+		trackPPar_(0),
+		trackDeltaR_(0),
+		trackPtRatio_(0),
+		trackPParRatio_(0),
+		trackSip2dVal_(0),
+		trackSip2dSig_(0),
+		trackSip3dVal_(0),
+		trackSip3dSig_(0),
+
+		trackJetDistVal_(0),
+		trackJetDistSig_(0)
+{
+
+
+}
+
+	void buildTrackInfo(const pat::PackedCandidate* PackedCandidate_ ,const math::XYZVector&  jetDir, GlobalVector refjetdirection, const reco::Vertex & pv){
+		const reco::Track & PseudoTrack =  PackedCandidate_->pseudoTrack();
+		//                       const reco::Track * pf_track=PackedCandidate_->bestTrack();
+		//edm::ESHandle<TransientTrackBuilder> builder;
+		//iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", builder);
+		reco::TransientTrack transientTrack;
+		transientTrack=builder->build(PseudoTrack);
+		Measurement1D meas_ip2d=IPTools::signedTransverseImpactParameter(transientTrack, refjetdirection, pv).second;
+		Measurement1D meas_ip3d=IPTools::signedImpactParameter3D(transientTrack, refjetdirection, pv).second;
+		Measurement1D jetdist=IPTools::jetTrackDistance(transientTrack, refjetdirection, pv).second;
+		math::XYZVector trackMom = PseudoTrack.momentum();
+		double trackMag = std::sqrt(trackMom.Mag2());
+		TVector3 trackMom3(trackMom.x(),trackMom.y(),trackMom.z());
+		TVector3 jetDir3(jetDir.x(),jetDir.y(),jetDir.z());
+
+
+		trackMomentum_=std::sqrt(trackMom.Mag2());
+		trackEta_= trackMom.Eta();
+		trackEtaRel_=reco::btau::etaRel(jetDir, trackMom);
+		trackPtRel_=trackMom3.Perp(jetDir3);
+		trackPPar_=jetDir.Dot(trackMom);
+		trackDeltaR_=reco::deltaR(trackMom, jetDir);
+		trackPtRatio_=trackMom3.Perp(jetDir3) / trackMag;
+		trackPParRatio_=jetDir.Dot(trackMom) / trackMag;
+		trackSip2dVal_=static_cast<float>(meas_ip2d.value());
+
+		trackSip2dSig_=static_cast<float>(meas_ip2d.significance());
+		trackSip3dVal_=static_cast<float>(meas_ip3d.value());
+
+
+		trackSip3dSig_=static_cast<float>(meas_ip3d.significance());
+		trackJetDistVal_=static_cast<float>(jetdist.value());
+		trackJetDistSig_=static_cast<float>(jetdist.significance());
+
+	}
+
+	const float& getTrackDeltaR() const {return trackDeltaR_;}
+	const float& getTrackEta() const {return trackEta_;}
+	const float& getTrackEtaRel() const {return trackEtaRel_;}
+	const float& getTrackJetDistSig() const {return trackJetDistSig_;}
+	const float& getTrackJetDistVal() const {return trackJetDistVal_;}
+	const float& getTrackMomentum() const {return trackMomentum_;}
+	const float& getTrackPPar() const {return trackPPar_;}
+	const float& getTrackPParRatio() const {return trackPParRatio_;}
+	const float& getTrackPtRatio() const {return trackPtRatio_;}
+	const float& getTrackPtRel() const {return trackPtRel_;}
+	const float& getTrackSip2dSig() const {return trackSip2dSig_;}
+	const float& getTrackSip2dVal() const {return trackSip2dVal_;}
+	const float& getTrackSip3dSig() const {return trackSip3dSig_;}
+	const float& getTrackSip3dVal() const {return trackSip3dVal_;}
+
+private:
+
+	edm::ESHandle<TransientTrackBuilder> builder;
+
+	float trackMomentum_;
+	float trackEta_;
+	float trackEtaRel_;
+	float trackPtRel_;
+	float trackPPar_;
+	float trackDeltaR_;
+	float trackPtRatio_;
+	float trackPParRatio_;
+	float trackSip2dVal_;
+	float trackSip2dSig_;
+	float trackSip3dVal_;
+	float trackSip3dSig_;
+
+	float trackJetDistVal_;
+	float trackJetDistSig_;
+
+};
+
+
+
+
+void ntuple_pfCands::readSetup(const edm::EventSetup& iSetup){
+
+	iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", builder);
+
+}
+
 void ntuple_pfCands::getInput(const edm::ParameterSet& iConfig){
 
 }
@@ -60,6 +173,29 @@ void ntuple_pfCands::initBranches(TTree* tree){
 	addBranch(tree,"Cpfcan_dxydz",&Cpfcan_dxydz_,"Cpfcan_dxydz_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_dphidxy",&Cpfcan_dphidxy_,"Cpfcan_dphidxy_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_dlambdadz",&Cpfcan_dlambdadz_,"Cpfcan_dlambdadz_[n_Cpfcand_]/f");
+
+
+
+
+	addBranch(tree,"Cpfcan_BtagPf_trackMomentum",&Cpfcan_BtagPf_trackMomentum_,"Cpfcan_BtagPf_trackMomentum_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackEta",&Cpfcan_BtagPf_trackEta_,"Cpfcan_BtagPf_trackEta_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackEtaRel",&Cpfcan_BtagPf_trackEtaRel_,"Cpfcan_BtagPf_trackEtaRel_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackPtRel",&Cpfcan_BtagPf_trackPtRel_,"Cpfcan_BtagPf_trackPtRel_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackPPar",&Cpfcan_BtagPf_trackPPar_,"Cpfcan_BtagPf_trackPPar_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackDeltaR",&Cpfcan_BtagPf_trackDeltaR_,"Cpfcan_BtagPf_trackDeltaR_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackPtRatio",&Cpfcan_BtagPf_trackPtRatio_,"Cpfcan_BtagPf_trackPtRatio_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackPParRatio",&Cpfcan_BtagPf_trackPParRatio_,"Cpfcan_BtagPf_trackPParRatio[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackSip3dVal",&Cpfcan_BtagPf_trackSip3dVal_,"Cpfcan_BtagPf_trackSip3dVal_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackSip3dSig",&Cpfcan_BtagPf_trackSip3dSig_,"Cpfcan_BtagPf_trackSip3dSig_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackSip2dVal",&Cpfcan_BtagPf_trackSip2dVal_,"Cpfcan_BtagPf_trackSip2dVal_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackSip2dSig",&Cpfcan_BtagPf_trackSip2dSig_,"Cpfcan_BtagPf_trackSip2dSig_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackDecayLen",&Cpfcan_BtagPf_trackDecayLen_,"Cpfcan_BtagPf_trackDecayLen_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackJetDistVal",&Cpfcan_BtagPf_trackJetDistVal_,"Cpfcan_BtagPf_trackJetDistVal_[n_Cpfcand_]/f");
+	addBranch(tree,"Cpfcan_BtagPf_trackJetDistSig",&Cpfcan_BtagPf_trackJetDistSig_,"Cpfcan_BtagPf_trackJetDistSig_[n_Cpfcand_]/f");
+
+
+
+
 	addBranch(tree,"Cpfcan_isMu",&Cpfcan_isMu_,"Cpfcan_isMu_[n_Cpfcand_]/f");
 	addBranch(tree,"Cpfcan_isEl",&Cpfcan_isEl_,"Cpfcan_isEl_[n_Cpfcand_]/f");
 
@@ -105,17 +241,23 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 	float etasign = 1.;
 	if (jet.eta()<0) etasign =-1.;
+	math::XYZVector jetDir = jet.momentum().Unit();
+	GlobalVector jetRefTrackDir(jet.px(),jet.py(),jet.pz());
+	const reco::Vertex & pv = vertices()->at(0);
 
 	std::vector<sorting::sortingClass<pat::PackedCandidate> > sortedcharged, sortedneutrals, sortedall;
+
+	TrackInfoBuilder trackinfo(builder);
 
 	//create collection first, to be able to do some sorting
 	for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++){
 		const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
 		if(PackedCandidate){
 
+			trackinfo.buildTrackInfo(PackedCandidate,jetDir,jetRefTrackDir,pv);
 
 			sortedall.push_back(sorting::sortingClass<pat::PackedCandidate>
-			(PackedCandidate,fabs(PackedCandidate->dxy()/PackedCandidate->dxyError()),
+			(PackedCandidate, trackinfo.getTrackSip2dSig(),
 					-mindrsvpfcand(cpvtx,PackedCandidate), PackedCandidate->pt()/jet.pt()));
 
 		}
@@ -123,9 +265,12 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 	std::sort(sortedall.begin(),sortedall.end(),sorting::sortingClass<pat::PackedCandidate>::compareByABCInv);
 
-
-
-
+	if(false){//DEBUG
+		for (const auto& s:sortedall){
+			std::cout << s.sortValA <<' '<<s.sortValB<<' '<<s.sortValC<<' '<<s.get()->charge()<< std::endl;
+		}
+		std::cout << std::endl;
+	}
 	//sort by dxy significance - many infs and nans - check  - is this the reason for worse performance? FIXME
 
 
@@ -204,6 +349,24 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 			Cpfcan_dphidxy_[n_Cpfcand_] =   catchInfs(myCov[2][3],-0.03); //zero if pvAssociationQuality ==7 ?
 			Cpfcan_dlambdadz_[n_Cpfcand_]=  catchInfs(myCov[1][4],-0.03); //zero if pvAssociationQuality ==7 ?
 
+
+			trackinfo.buildTrackInfo(PackedCandidate_,jetDir,jetRefTrackDir,pv);
+
+			Cpfcan_BtagPf_trackMomentum_[n_Cpfcand_]   =catchInfsAndBound(trackinfo.getTrackMomentum(),0,0 ,1000);
+			Cpfcan_BtagPf_trackEta_[n_Cpfcand_]        =catchInfsAndBound(trackinfo.getTrackEta()   ,  0,-5,5);
+			Cpfcan_BtagPf_trackEtaRel_[n_Cpfcand_]     =catchInfsAndBound(trackinfo.getTrackEtaRel(),  0,-5,15);
+			Cpfcan_BtagPf_trackPtRel_[n_Cpfcand_]      =catchInfsAndBound(trackinfo.getTrackPtRel(),   0,-1,4);
+			Cpfcan_BtagPf_trackPPar_[n_Cpfcand_]       =catchInfsAndBound(trackinfo.getTrackPPar(),    0,-1e5,1e5 );
+			Cpfcan_BtagPf_trackDeltaR_[n_Cpfcand_]     =catchInfsAndBound(trackinfo.getTrackDeltaR(),  0,-5,5 );
+			Cpfcan_BtagPf_trackPtRatio_[n_Cpfcand_]    =catchInfsAndBound(trackinfo.getTrackPtRatio(), 0,-1,10 );
+			Cpfcan_BtagPf_trackPParRatio_[n_Cpfcand_]  =catchInfsAndBound(trackinfo.getTrackPParRatio(),0,-10,100);
+			Cpfcan_BtagPf_trackSip3dVal_[n_Cpfcand_]   =catchInfsAndBound(trackinfo.getTrackSip3dVal(), 0, -1,1e5 );
+			Cpfcan_BtagPf_trackSip3dSig_[n_Cpfcand_]   =catchInfsAndBound(trackinfo.getTrackSip3dSig(), 0, -1,4e4 );
+			Cpfcan_BtagPf_trackSip2dVal_[n_Cpfcand_]   =catchInfsAndBound(trackinfo.getTrackSip2dVal(), 0, -1,70 );
+			Cpfcan_BtagPf_trackSip2dSig_[n_Cpfcand_]   =catchInfsAndBound(trackinfo.getTrackSip2dSig(), 0, -1,4e4 );
+			Cpfcan_BtagPf_trackDecayLen_[n_Cpfcand_]   =0;
+			Cpfcan_BtagPf_trackJetDistVal_[n_Cpfcand_] =catchInfsAndBound(trackinfo.getTrackJetDistVal(),0,-20,1 );
+			Cpfcan_BtagPf_trackJetDistSig_[n_Cpfcand_] =catchInfsAndBound(trackinfo.getTrackJetDistSig(),0,-1,1e5 );
 
 			// TO DO: we can do better than that by including reco::muon informations
 			Cpfcan_isMu_[n_Cpfcand_] = 0;
