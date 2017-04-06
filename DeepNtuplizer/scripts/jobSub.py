@@ -176,13 +176,14 @@ def doSub():
         os.symlink(ntupleOutDir,jobpath+'/output')
            
         condorfile ="""executable            = {batchscriptpath}
-    arguments             = {configfile} inputScript={sample} outputFile={ntupledir}{outputfile} nJobs={njobs} job=$(ProcId) {options}
-    output                = batch/con_out.$(ProcId).out
-    error                 = batch/con_out.$(ProcId).err
-    log                   = batch/con_out.$(ProcId).log
-    send_credential        = True
-    use_x509userproxy = True
-    queue {njobs}
+arguments             = {configfile} inputScript={sample} outputFile={ntupledir}{outputfile} nJobs={njobs} job=$(ProcId) {options}
+output                = batch/con_out.$(ProcId).out
+error                 = batch/con_out.$(ProcId).err
+log                   = batch/con_out.$(ProcId).log
+send_credential        = True
+getenv = True
+use_x509userproxy = True
+queue {njobs}
     """.format(
               batchscriptpath=sheelscp,
               configfile=configFile, 
@@ -202,13 +203,14 @@ def doSub():
         #create individual condor files for resubmission
         for job in range(0,int(nJobs)):
              jobcondorfile ="""executable            = {batchscriptpath}
-    arguments             = {configfile} inputScript={sample} outputFile={ntupledir}{outputfile} nJobs={njobs} job={job} {options}
-    output                = batch/con_out.{job}.out
-    error                 = batch/con_out.{job}.err
-    log                   = batch/con_out.{job}.log
-    send_credential        = True
-    use_x509userproxy = True
-    queue 1
+arguments = {configfile} inputScript={sample} outputFile={ntupledir}{outputfile} nJobs={njobs} job={job} {options}
+output = batch/con_out.{job}.out
+error  = batch/con_out.{job}.err
+log   = batch/con_out.{job}.log
+send_credential = True
+getenv = True
+use_x509userproxy = True
+queue 1
              """.format(
                   batchscriptpath=sheelscp,
                   configfile=configFile, 
@@ -227,20 +229,21 @@ def doSub():
              
         #create script
         shellscript = """#!/bin/bash
-    echo "JOBSUB::RUN job running"
-    trap "echo JOBSUB::FAIL job killed" SIGTERM
-    export PYTHONPATH={sampleScriptdir}:$PYTHONPATH
-    cd {basedir}
-    eval `scramv1 runtime -sh`
-    cd {jobdir}
-    cmsRun "$@" 2>&1
-    exitstatus=$?
-    if [ $exitstatus != 0 ]
-    then
-    echo JOBSUB::FAIL job failed with status $exitstatus
-    else
-    echo JOBSUB::SUCC job ended sucessfully
-    fi
+echo "JOBSUB::RUN job running"
+trap "echo JOBSUB::FAIL job killed" SIGTERM
+cd {basedir}
+eval `scramv1 runtime -sh`
+export PYTHONPATH={sampleScriptdir}:$PYTHONPATH
+which cmsRun
+cd {jobdir}
+cmsRun "$@" 2>&1
+exitstatus=$?
+if [ $exitstatus != 0 ]
+then
+echo JOBSUB::FAIL job failed with status $exitstatus
+else
+echo JOBSUB::SUCC job ended sucessfully
+fi
         """.format(
             sampleScriptdir=samplescriptdir,
             basedir=swdir,
