@@ -66,6 +66,10 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"jet_corr_pt", &jet_corr_pt_);
     addBranch(tree,"jet_eta", &jet_eta_);
 
+
+    //jet id
+    addBranch(tree,"jet_looseId", &jet_looseId_);
+
     // quark gluon
     addBranch(tree,"jet_qgl",   &jet_qgl_);  // qg tagger from jmar
     addBranch(tree,"QG_ptD",   &QG_ptD_);   // momentum fraction per jet constituent
@@ -142,7 +146,6 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     if(jet.genJet()==NULL)return false;
 
 
-
 	//branch fills
 	  for(auto& entry : discriminators_) {
 		    entry.second = catchInfs(jet.bDiscriminator(entry.first),-0.1);
@@ -195,6 +198,23 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     jet_pt_ = jet.correctedJet("Uncorrected").pt();
     jet_eta_ = jet.eta();
     jet_corr_pt_ = jet.pt();
+
+
+    //https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016
+    float NHF  = jet.neutralHadronEnergyFraction();
+    float NEMF = jet.neutralEmEnergyFraction();
+    float CHF  = jet.chargedHadronEnergyFraction();
+    //float MUF  = jet.muonEnergyFraction();
+    float CEMF = jet.chargedEmEnergyFraction();
+    float NumConst = jet.chargedMultiplicity()+jet.neutralMultiplicity();
+    float NumNeutralParticles =jet.neutralMultiplicity();
+    float CHM      = jet.chargedMultiplicity(); 
+
+    jet_looseId_ = ((NHF<0.99 && NEMF<0.99 && NumConst>1) && ((abs(jet_eta_)<=2.4 && CHF>0 && CHM>0 && CEMF<0.99) || abs(jet_eta_)>2.4) && abs(jet_eta_)<=2.7) ||
+      (NHF<0.98 && NEMF>0.01 && NumNeutralParticles>2 && abs(jet_eta_)>2.7 && abs(jet_eta_)<=3.0 ) ||
+      (NEMF<0.90 && NumNeutralParticles>10 && abs(jet_eta_)>3.0 );
+
+
 
 
     gen_pt_ =  jet.genJet()->pt();

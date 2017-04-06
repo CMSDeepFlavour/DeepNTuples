@@ -132,6 +132,7 @@ public:
 	float jet_corr_pt_;
 	float  jet_eta_;
 
+	float jet_looseId_;
 	// quark/gluon
 	float jet_qgl_;
 	float QG_ptD_;
