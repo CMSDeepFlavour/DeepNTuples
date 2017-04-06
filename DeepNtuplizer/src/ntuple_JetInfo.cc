@@ -35,7 +35,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"jet_no"    ,&jet_no_    ,"jet_no/i"    );
 
 
-    // truthe labels
+    // truth labels
     addBranch(tree,"gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
     addBranch(tree,"Delta_gen_pt"    ,&Delta_gen_pt_,"Delta_gen_pt_/f"    );
     addBranch(tree,"isB",&isB_, "isB_/i");
@@ -43,15 +43,32 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"isLeptonicB",&isLeptonicB_, "isLeptonicB_/i");
     addBranch(tree,"isLeptonicB_C",&isLeptonicB_C_, "isLeptonicB_C_/i");
     addBranch(tree,"isC",&isC_, "isC_/i");
-    addBranch(tree,"isUDS",&isUDS_, "isUDS_/i");
+    addBranch(tree,"isUD",&isUD_, "isUD_/i");
+    addBranch(tree,"isS",&isS_, "isS_/i");
     addBranch(tree,"isG",&isG_, "isG_/i");
+    addBranch(tree,"isUndefined",&isUndefined_, "isUndefined_/i");
 
+    //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
+    addBranch(tree,"isPhysB",&isPhysB_, "isPhysB_/i");
+    addBranch(tree,"isPhysBB",&isPhysBB_, "isPhysBB_/i");
+    addBranch(tree,"isPhysLeptonicB",&isPhysLeptonicB_, "isPhysLeptonicB_/i");
+    addBranch(tree,"isPhysLeptonicB_C",&isPhysLeptonicB_C_, "isPhysLeptonicB_C_/i");
+    addBranch(tree,"isPhysC",&isPhysC_, "isPhysC_/i");
+    addBranch(tree,"isPhysUD",&isPhysUD_, "isPhysUD_/i");
+    addBranch(tree,"isPhysS",&isPhysS_, "isPhysS_/i");
+    addBranch(tree,"isPhysG",&isPhysG_, "isPhysG_/i");
+    addBranch(tree,"isPhysUndefined",&isPhysUndefined_, "isPhysUndefined_/i");
+    
     // jet variables
     //b=tree->Branch("jet_pt", &jet_pt_);
     addBranch(tree,"jet_pt", &jet_pt_);
 
     addBranch(tree,"jet_corr_pt", &jet_corr_pt_);
     addBranch(tree,"jet_eta", &jet_eta_);
+
+
+    //jet id
+    addBranch(tree,"jet_looseId", &jet_looseId_);
 
     // quark gluon
     addBranch(tree,"jet_qgl",   &jet_qgl_);  // qg tagger from jmar
@@ -129,7 +146,6 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     if(jet.genJet()==NULL)return false;
 
 
-
 	//branch fills
 	  for(auto& entry : discriminators_) {
 		    entry.second = catchInfs(jet.bDiscriminator(entry.first),-0.1);
@@ -148,25 +164,57 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     //std::vector<Ptr<pat::Jet> > p= coll->ptrs();
 
-    isB_=0; isBB_=0; isC_=0; isUDS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0;
+    isB_=0; isBB_=0; isC_=0; isUD_=0; isS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0, isUndefined_=0;
     switch(deep_ntuples::jet_flavour(jet, neutrinosLepB, neutrinosLepB_C)) {
-    case deep_ntuples::JetFlavor::L:  isUDS_=1; break;
+    case deep_ntuples::JetFlavor::UD: isUD_=1; break;
+    case deep_ntuples::JetFlavor::S:  isS_=1; break;
     case deep_ntuples::JetFlavor::B:  isB_=1; break;
     case deep_ntuples::JetFlavor::BB: isBB_=1; break;
     case deep_ntuples::JetFlavor::C:  isC_=1; break;
     case deep_ntuples::JetFlavor::G:  isG_=1; break;
     case deep_ntuples::JetFlavor::LeptonicB: isLeptonicB_=1; break;                                 
     case deep_ntuples::JetFlavor::LeptonicB_C: isLeptonicB_C_=1; break; 
-    default : break;
+    default : isUndefined_=1; break;
     }
 
-    if(!isB_ && !isC_ && !isUDS_ && !isBB_ && !isG_ && !isLeptonicB_ && !isLeptonicB_C_) return false;
+    //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
+    isPhysB_=0; isPhysBB_=0; isPhysC_=0; isPhysUD_=0; isPhysS_=0; isPhysG_=0, isPhysLeptonicB_=0, isPhysLeptonicB_C_=0, isPhysUndefined_=0;
+    switch(deep_ntuples::jet_flavour(jet, neutrinosLepB, neutrinosLepB_C, true)) {
+    case deep_ntuples::JetFlavor::UD: isPhysUD_=1; break;
+    case deep_ntuples::JetFlavor::S:  isPhysS_=1; break;
+    case deep_ntuples::JetFlavor::B:  isPhysB_=1; break;
+    case deep_ntuples::JetFlavor::BB: isPhysBB_=1; break;
+    case deep_ntuples::JetFlavor::C:  isPhysC_=1; break;
+    case deep_ntuples::JetFlavor::G:  isPhysG_=1; break;
+    case deep_ntuples::JetFlavor::LeptonicB: isPhysLeptonicB_=1; break;                                 
+    case deep_ntuples::JetFlavor::LeptonicB_C: isPhysLeptonicB_C_=1; break; 
+    default : isPhysUndefined_=1; break;
+    }
+
+    if(isUndefined_ && isPhysUndefined_) return false; //skip event, if neither standard flavor definition nor physics definition fallback define a "proper flavor"
 
     pat::JetCollection h;
 
     jet_pt_ = jet.correctedJet("Uncorrected").pt();
     jet_eta_ = jet.eta();
     jet_corr_pt_ = jet.pt();
+
+
+    //https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016
+    float NHF  = jet.neutralHadronEnergyFraction();
+    float NEMF = jet.neutralEmEnergyFraction();
+    float CHF  = jet.chargedHadronEnergyFraction();
+    //float MUF  = jet.muonEnergyFraction();
+    float CEMF = jet.chargedEmEnergyFraction();
+    float NumConst = jet.chargedMultiplicity()+jet.neutralMultiplicity();
+    float NumNeutralParticles =jet.neutralMultiplicity();
+    float CHM      = jet.chargedMultiplicity(); 
+
+    jet_looseId_ = ((NHF<0.99 && NEMF<0.99 && NumConst>1) && ((abs(jet_eta_)<=2.4 && CHF>0 && CHM>0 && CEMF<0.99) || abs(jet_eta_)>2.4) && abs(jet_eta_)<=2.7) ||
+      (NHF<0.98 && NEMF>0.01 && NumNeutralParticles>2 && abs(jet_eta_)>2.7 && abs(jet_eta_)<=3.0 ) ||
+      (NEMF<0.90 && NumNeutralParticles>10 && abs(jet_eta_)>3.0 );
+
+
 
 
     gen_pt_ =  jet.genJet()->pt();
