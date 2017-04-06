@@ -104,10 +104,23 @@ public:
 	int isB_;
 	int isBB_;
 	int isC_;
-	int isUDS_;
+	int isUD_;
+	int isS_;
 	int isG_;
-    int isLeptonicB_;
-    int isLeptonicB_C_;
+	int isUndefined_;
+	int isLeptonicB_;
+	int isLeptonicB_C_;
+
+	//truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
+	int isPhysB_;
+	int isPhysBB_;
+	int isPhysC_;
+	int isPhysUD_;
+	int isPhysS_;
+	int isPhysG_;
+	int isPhysUndefined_;
+	int isPhysLeptonicB_;
+	int isPhysLeptonicB_C_;
 
 	// global variables
 	float npv_;
