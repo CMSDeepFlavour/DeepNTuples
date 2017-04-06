@@ -26,7 +26,8 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
-
+#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
 
 // for ivf
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -89,15 +90,11 @@ private:
         return m;
     }
     std::vector<ntuple_content* > modules_;
-
 };
 
-
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
-												          vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
-												          jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets")))
-
-
+    vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
+    jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets")))
 {
     /*
      *  Initialise the modules here
@@ -128,12 +125,21 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
             consumes<reco::GenParticleCollection>(
                     iConfig.getParameter<edm::InputTag>("pruned")));
 
+    jetinfo->setMuonsToken(
+            consumes<reco::MuonCollection>(
+                    iConfig.getParameter<edm::InputTag>("muons")));
+
+    jetinfo->setElectronsToken(
+            consumes<reco::ElectronCollection>(
+                    iConfig.getParameter<edm::InputTag>("electrons")));
+
     addModule(jetinfo);
 
     ntuple_pfCands * pfcands = new ntuple_pfCands();
     pfcands->setSVToken(
             consumes<reco::VertexCompositePtrCandidateCollection>(
                     iConfig.getParameter<edm::InputTag>("secVertices")));
+
     addModule(pfcands);
 
     addModule(new ntuple_bTagVars());
