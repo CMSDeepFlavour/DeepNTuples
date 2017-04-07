@@ -92,9 +92,24 @@ cd <batch directory>
 check.py <sample subdirectories to be checked>
 ```
 
-The check.py script provides additional options to resubmit failed jobs or to create sample lists in case a satisfying fraction of jobs ended successfully. In this case do:
+The check.py script provides additional options to resubmit failed jobs or to create sample lists in case a satisfying fraction of jobs ended successfully. 
+In this case do:
 ```
 check.py <sample subdirectories to be checked> --action filelist
 ```
-
 This will create file lists that can be further processed by the DeepJet framework
+For resubmitting failed jobs, do:
+```
+check.py <sample subdirectories to be checked> --action resubmit
+```
+
+When the file lists are created, the part used for training of the ttbar and QCD samples (or in principle any other process) can be merged using the executable:
+```
+mergeSamples <no of jets per file> <output dir> <file lists 1> <file lists 2> <file lists 3> ...
+```
+For example:
+```
+mergeSamples 400000 merged ntuple_*/train_val_samples.txt
+```
+This will take a significant amount of time - likely more than the ntuple production itself. It is therefore recommended to run the command within 'screen'.
+
