@@ -15,66 +15,66 @@
 class ntuple_pfCands: public ntuple_content{
 public:
 
-	ntuple_pfCands():ntuple_content(){}
+    ntuple_pfCands():ntuple_content(){}
 
-	void getInput(const edm::ParameterSet& iConfig);
-	void initBranches(TTree* );
-	void readEvent(const edm::Event& iEvent);
-	void readSetup(const edm::EventSetup& iSetup);
+    void getInput(const edm::ParameterSet& iConfig);
+    void initBranches(TTree* );
+    void readEvent(const edm::Event& iEvent);
+    void readSetup(const edm::EventSetup& iSetup);
 
-	void setSVToken(const edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> & t){
-	  svToken_=t;
-	}
+    void setSVToken(const edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> & t){
+        svToken_=t;
+    }
 
 
-	//use either of these functions
+    //use either of these functions
 
-	bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0);
+    bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0);
 
 private:
 
 
-	edm::ESHandle<TransientTrackBuilder> builder;
+    edm::ESHandle<TransientTrackBuilder> builder;
 
-	unsigned int n_Cpfcand_;
-	float nCpfcand_;
+    unsigned int n_Cpfcand_;
+    float nCpfcand_;
 
-	static constexpr size_t max_pfcand_=100;
+    static constexpr size_t max_pfcand_=100;
 
-	float  Cpfcan_pt_[max_pfcand_];
-	float  Cpfcan_ptrel_[max_pfcand_];
-	float  Cpfcan_erel_[max_pfcand_];
-	float  Cpfcan_phirel_[max_pfcand_];
-	float  Cpfcan_etarel_[max_pfcand_];
-	float  Cpfcan_deltaR_[max_pfcand_];
-	float  Cpfcan_puppiw_[max_pfcand_];
-	float   Cpfcan_VTX_ass_[max_pfcand_];
+    float  Cpfcan_pt_[max_pfcand_];
+    float  Cpfcan_ptrel_[max_pfcand_];
+    float  Cpfcan_erel_[max_pfcand_];
+    float  Cpfcan_phirel_[max_pfcand_];
+    float  Cpfcan_etarel_[max_pfcand_];
+    float  Cpfcan_deltaR_[max_pfcand_];
+    float  Cpfcan_puppiw_[max_pfcand_];
+    float   Cpfcan_VTX_ass_[max_pfcand_];
 
-	float   Cpfcan_fromPV_[max_pfcand_];
+    float   Cpfcan_fromPV_[max_pfcand_];
 
-	float Cpfcan_vertexChi2_[max_pfcand_];
-	float Cpfcan_vertexNdof_[max_pfcand_];
-	float Cpfcan_vertexNormalizedChi2_[max_pfcand_];
-	float Cpfcan_vertex_rho_[max_pfcand_];
-	float Cpfcan_vertex_phirel_[max_pfcand_];
-	float Cpfcan_vertex_etarel_[max_pfcand_];
-	float Cpfcan_vertexRef_mass_[max_pfcand_];
+    float Cpfcan_vertexChi2_[max_pfcand_];
+    float Cpfcan_vertexNdof_[max_pfcand_];
+    float Cpfcan_vertexNormalizedChi2_[max_pfcand_];
+    float Cpfcan_vertex_rho_[max_pfcand_];
+    float Cpfcan_vertex_phirel_[max_pfcand_];
+    float Cpfcan_vertex_etarel_[max_pfcand_];
+    float Cpfcan_vertexRef_mass_[max_pfcand_];
 
-	// covariance
-	float  Cpfcan_dz_[max_pfcand_];
-	float  Cpfcan_dxy_[max_pfcand_];
+    // covariance
+    float  Cpfcan_dz_[max_pfcand_];
+    float  Cpfcan_dxy_[max_pfcand_];
 
-	float  Cpfcan_dxyerrinv_[max_pfcand_];
-	float  Cpfcan_dxysig_[max_pfcand_];
+    float  Cpfcan_dxyerrinv_[max_pfcand_];
+    float  Cpfcan_dxysig_[max_pfcand_];
 
-	float  Cpfcan_dptdpt_[max_pfcand_];
-	float  Cpfcan_detadeta_[max_pfcand_];
-	float  Cpfcan_dphidphi_[max_pfcand_];
-	float  Cpfcan_dxydxy_[max_pfcand_];
-	float  Cpfcan_dzdz_[max_pfcand_];
-	float  Cpfcan_dxydz_[max_pfcand_];
-	float  Cpfcan_dphidxy_[max_pfcand_];
-	float  Cpfcan_dlambdadz_[max_pfcand_];
+    float  Cpfcan_dptdpt_[max_pfcand_];
+    float  Cpfcan_detadeta_[max_pfcand_];
+    float  Cpfcan_dphidphi_[max_pfcand_];
+    float  Cpfcan_dxydxy_[max_pfcand_];
+    float  Cpfcan_dzdz_[max_pfcand_];
+    float  Cpfcan_dxydz_[max_pfcand_];
+    float  Cpfcan_dphidxy_[max_pfcand_];
+    float  Cpfcan_dlambdadz_[max_pfcand_];
 
 
 
@@ -96,36 +96,36 @@ private:
     float Cpfcan_BtagPf_trackJetDistVal_[max_pfcand_];
     float Cpfcan_BtagPf_trackJetDistSig_[max_pfcand_];
 
-	// ID, skipped "charged hadron" as that is true if now the other
-	// TODO (comment of Markus Stoye) add reco information
-	float Cpfcan_isMu_[max_pfcand_]; // pitty that the quality is missing
-	float Cpfcan_isEl_[max_pfcand_]; // pitty that the quality is missing
-	float Cpfcan_charge_[max_pfcand_];
+    // ID, skipped "charged hadron" as that is true if now the other
+    // TODO (comment of Markus Stoye) add reco information
+    float Cpfcan_isMu_[max_pfcand_]; // pitty that the quality is missing
+    float Cpfcan_isEl_[max_pfcand_]; // pitty that the quality is missing
+    float Cpfcan_charge_[max_pfcand_];
 
-	// track quality
-	float Cpfcan_lostInnerHits_[max_pfcand_];
-	float Cpfcan_chi2_[max_pfcand_];
-	float Cpfcan_quality_[max_pfcand_];
+    // track quality
+    float Cpfcan_lostInnerHits_[max_pfcand_];
+    float Cpfcan_chi2_[max_pfcand_];
+    float Cpfcan_quality_[max_pfcand_];
 
-	float Cpfcan_drminsv_[max_pfcand_];
+    float Cpfcan_drminsv_[max_pfcand_];
 
-	//Neutral Pf candidates
-	unsigned int n_Npfcand_;
-	float nNpfcand_;
-	float  Npfcan_pt_[max_pfcand_];
-	float  Npfcan_ptrel_[max_pfcand_];
-	float  Npfcan_erel_[max_pfcand_];
-	float  Npfcan_phirel_[max_pfcand_];
-	float  Npfcan_etarel_[max_pfcand_];
-	float  Npfcan_deltaR_[max_pfcand_];
-	float  Npfcan_isGamma_[max_pfcand_];
-	float  Npfcan_HadFrac_[max_pfcand_];
-	float  Npfcan_drminsv_[max_pfcand_];
+    //Neutral Pf candidates
+    unsigned int n_Npfcand_;
+    float nNpfcand_;
+    float  Npfcan_pt_[max_pfcand_];
+    float  Npfcan_ptrel_[max_pfcand_];
+    float  Npfcan_erel_[max_pfcand_];
+    float  Npfcan_phirel_[max_pfcand_];
+    float  Npfcan_etarel_[max_pfcand_];
+    float  Npfcan_deltaR_[max_pfcand_];
+    float  Npfcan_isGamma_[max_pfcand_];
+    float  Npfcan_HadFrac_[max_pfcand_];
+    float  Npfcan_drminsv_[max_pfcand_];
 
-	edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> svToken_;
-	edm::Handle<reco::VertexCompositePtrCandidateCollection> secVertices;
+    edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> svToken_;
+    edm::Handle<reco::VertexCompositePtrCandidateCollection> secVertices;
 
-	float mindrsvpfcand(const std::vector<reco::VertexCompositePtrCandidate> svs, const pat::PackedCandidate* pfcand);
+    float mindrsvpfcand(const std::vector<reco::VertexCompositePtrCandidate> svs, const pat::PackedCandidate* pfcand);
 
 };
 

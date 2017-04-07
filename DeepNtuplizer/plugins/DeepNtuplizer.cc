@@ -59,101 +59,101 @@ struct MagneticField;
 
 class DeepNtuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 public:
-	explicit DeepNtuplizer(const edm::ParameterSet&);
-	~DeepNtuplizer();
+    explicit DeepNtuplizer(const edm::ParameterSet&);
+    ~DeepNtuplizer();
 
-	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+    static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 
 private:
-	virtual void beginJob() override;
-	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-	virtual void endJob() override;
+    virtual void beginJob() override;
+    virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+    virtual void endJob() override;
 
-	Measurement1D vertexDxy(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv) const;
-	Measurement1D vertexD3d(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
-	float vertexDdotP(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
-
-
-	// ----------member data ---------------------------
-	edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
-	edm::EDGetTokenT<edm::View<pat::Jet> >      jetToken_;
+    Measurement1D vertexDxy(const reco::VertexCompositePtrCandidate &svcand, const reco::Vertex &pv) const;
+    Measurement1D vertexD3d(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
+    float vertexDdotP(const reco::VertexCompositePtrCandidate &sv, const reco::Vertex &pv) const ;
 
 
-	edm::Service<TFileService> fs;
-	TTree *tree_;
+    // ----------member data ---------------------------
+    edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
+    edm::EDGetTokenT<edm::View<pat::Jet> >      jetToken_;
 
 
-	ntuple_content * addModule(ntuple_content *m){
-		modules_.push_back(m);
-		return m;
-	}
-	std::vector<ntuple_content* > modules_;
+    edm::Service<TFileService> fs;
+    TTree *tree_;
+
+
+    ntuple_content * addModule(ntuple_content *m){
+        modules_.push_back(m);
+        return m;
+    }
+    std::vector<ntuple_content* > modules_;
 
 };
 
 
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
-												  vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
-												  jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets")))
+												          vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
+												          jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets")))
 
 
 {
-	/*
-	 *  Initialise the modules here
-	 *  Everything else does not need to be changed if
-	 *  modules don't interact.
-	 */
+    /*
+     *  Initialise the modules here
+     *  Everything else does not need to be changed if
+     *  modules don't interact.
+     */
 
-	ntuple_SV* svmodule=new ntuple_SV();
-	svmodule->setSVToken(
-			consumes<reco::VertexCompositePtrCandidateCollection>(
-					iConfig.getParameter<edm::InputTag>("secVertices")));
-	addModule(svmodule);
+    ntuple_SV* svmodule=new ntuple_SV();
+    svmodule->setSVToken(
+            consumes<reco::VertexCompositePtrCandidateCollection>(
+                    iConfig.getParameter<edm::InputTag>("secVertices")));
+    addModule(svmodule);
 
-	ntuple_JetInfo* jetinfo=new ntuple_JetInfo();
-	jetinfo->setQglToken(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood")));
-	jetinfo->setPtDToken(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood")));
-	jetinfo->setAxis2Token(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2")));
-	jetinfo->setMultToken(consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult")));
+    ntuple_JetInfo* jetinfo=new ntuple_JetInfo();
+    jetinfo->setQglToken(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood")));
+    jetinfo->setPtDToken(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood")));
+    jetinfo->setAxis2Token(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2")));
+    jetinfo->setMultToken(consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult")));
 
-	jetinfo->setGenJetMatchReclusterToken(
-			consumes<edm::Association<reco::GenJetCollection> >(
-					iConfig.getParameter<edm::InputTag>( "genJetMatchRecluster" )));
-	jetinfo->setGenJetMatchWithNuToken(
-			consumes<edm::Association<reco::GenJetCollection> >(
-					iConfig.getParameter<edm::InputTag>( "genJetMatchWithNu" )));
+    jetinfo->setGenJetMatchReclusterToken(
+            consumes<edm::Association<reco::GenJetCollection> >(
+                    iConfig.getParameter<edm::InputTag>( "genJetMatchRecluster" )));
+    jetinfo->setGenJetMatchWithNuToken(
+            consumes<edm::Association<reco::GenJetCollection> >(
+                    iConfig.getParameter<edm::InputTag>( "genJetMatchWithNu" )));
 
-	jetinfo->setGenParticlesToken(
-			consumes<reco::GenParticleCollection>(
-					iConfig.getParameter<edm::InputTag>("pruned")));
+    jetinfo->setGenParticlesToken(
+            consumes<reco::GenParticleCollection>(
+                    iConfig.getParameter<edm::InputTag>("pruned")));
 
-	addModule(jetinfo);
+    addModule(jetinfo);
 
-	ntuple_pfCands * pfcands = new ntuple_pfCands();
-	pfcands->setSVToken(
-			     consumes<reco::VertexCompositePtrCandidateCollection>(
-										   iConfig.getParameter<edm::InputTag>("secVertices")));
-	addModule(pfcands);
+    ntuple_pfCands * pfcands = new ntuple_pfCands();
+    pfcands->setSVToken(
+            consumes<reco::VertexCompositePtrCandidateCollection>(
+                    iConfig.getParameter<edm::InputTag>("secVertices")));
+    addModule(pfcands);
 
-	addModule(new ntuple_bTagVars());
+    addModule(new ntuple_bTagVars());
 
-	/*
-	 *
-	 * Modules initialized
-	 *
-	 * parse the input parameters (if any)
-	 */
-	for(auto& m: modules_)
-		m->getInput(iConfig);
+    /*
+     *
+     * Modules initialized
+     *
+     * parse the input parameters (if any)
+     */
+    for(auto& m: modules_)
+        m->getInput(iConfig);
 
 }
 
 
 DeepNtuplizer::~DeepNtuplizer()
 {
-	for(auto& m:modules_)
-		delete m;
+    for(auto& m:modules_)
+        delete m;
 }
 
 
@@ -162,45 +162,45 @@ void
 DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
-	//global info
+    //global info
 
-	edm::Handle<reco::VertexCollection> vertices;
-	iEvent.getByToken(vtxToken_, vertices);
-	if (vertices->empty()) return; // skip the event if no PV found
-
-
-	for(auto& m:modules_){
-		m->setPrimaryVertices(vertices.product());
-		m->readEvent(iEvent);
-		m->readSetup(iSetup);
-	}
-	edm::Handle<edm::View<pat::Jet> > jets;
-	iEvent.getByToken(jetToken_, jets);
+    edm::Handle<reco::VertexCollection> vertices;
+    iEvent.getByToken(vtxToken_, vertices);
+    if (vertices->empty()) return; // skip the event if no PV found
 
 
-	std::vector<size_t> indices(jets->size());
-	for(size_t i=0;i<jets->size();i++)
-		indices.at(i)=i;
-
-	std::random_shuffle (indices.begin(),indices.end());
-
-	edm::View<pat::Jet>::const_iterator jetIter;
-	// loop over the jets
-	//for (edm::View<pat::Jet>::const_iterator jetIter = jets->begin(); jetIter != jets->end(); ++jetIter) {
-	for(size_t j=0;j<indices.size();j++){
-		size_t jetidx=indices.at(j);
-		jetIter = jets->begin()+jetidx;
-		const pat::Jet& jet = *jetIter;
+    for(auto& m:modules_){
+        m->setPrimaryVertices(vertices.product());
+        m->readEvent(iEvent);
+        m->readSetup(iSetup);
+    }
+    edm::Handle<edm::View<pat::Jet> > jets;
+    iEvent.getByToken(jetToken_, jets);
 
 
-		bool writejet=true;
-		for(auto& m:modules_){
-			if(! m->fillBranches(jet, jetidx, jets.product()))
-				writejet=false;
-		}
-		if(writejet)
-			tree_->Fill();
-	} // end of looping over the jets
+    std::vector<size_t> indices(jets->size());
+    for(size_t i=0;i<jets->size();i++)
+        indices.at(i)=i;
+
+    std::random_shuffle (indices.begin(),indices.end());
+
+    edm::View<pat::Jet>::const_iterator jetIter;
+    // loop over the jets
+    //for (edm::View<pat::Jet>::const_iterator jetIter = jets->begin(); jetIter != jets->end(); ++jetIter) {
+    for(size_t j=0;j<indices.size();j++){
+        size_t jetidx=indices.at(j);
+        jetIter = jets->begin()+jetidx;
+        const pat::Jet& jet = *jetIter;
+
+
+        bool writejet=true;
+        for(auto& m:modules_){
+            if(! m->fillBranches(jet, jetidx, jets.product()))
+                writejet=false;
+        }
+        if(writejet)
+            tree_->Fill();
+    } // end of looping over the jets
 }
 
 
@@ -208,14 +208,14 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 void
 DeepNtuplizer::beginJob()
 {
-	if( !fs ){
-		throw edm::Exception( edm::errors::Configuration,
-				"TFile Service is not registered in cfg file" );
-	}
-	tree_=(fs->make<TTree>("tree" ,"tree" ));
+    if( !fs ){
+        throw edm::Exception( edm::errors::Configuration,
+                "TFile Service is not registered in cfg file" );
+    }
+    tree_=(fs->make<TTree>("tree" ,"tree" ));
 
-	for(auto& m:modules_)
-		m->initBranches(tree_);
+    for(auto& m:modules_)
+        m->initBranches(tree_);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
@@ -228,11 +228,11 @@ DeepNtuplizer::endJob()
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
 DeepNtuplizer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-	//The following says we do not know what parameters are allowed so do no validation
-	// Please change this to state exactly what you do use, even if it is no parameters
-	edm::ParameterSetDescription desc;
-	desc.setUnknown();
-	descriptions.addDefault(desc);
+    //The following says we do not know what parameters are allowed so do no validation
+    // Please change this to state exactly what you do use, even if it is no parameters
+    edm::ParameterSetDescription desc;
+    desc.setUnknown();
+    descriptions.addDefault(desc);
 }
 
 //define this as a plug-in

@@ -58,7 +58,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"isPhysS",&isPhysS_, "isPhysS_/i");
     addBranch(tree,"isPhysG",&isPhysG_, "isPhysG_/i");
     addBranch(tree,"isPhysUndefined",&isPhysUndefined_, "isPhysUndefined_/i");
-    
+
     // jet variables
     //b=tree->Branch("jet_pt", &jet_pt_);
     addBranch(tree,"jet_pt", &jet_pt_);
@@ -146,10 +146,10 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     if(jet.genJet()==NULL)return false;
 
 
-	//branch fills
-	  for(auto& entry : discriminators_) {
-		    entry.second = catchInfs(jet.bDiscriminator(entry.first),-0.1);
-	  }
+    //branch fills
+    for(auto& entry : discriminators_) {
+        entry.second = catchInfs(jet.bDiscriminator(entry.first),-0.1);
+    }
 
 
     npv_ = vertices()->size();
@@ -211,8 +211,8 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     float CHM      = jet.chargedMultiplicity(); 
 
     jet_looseId_ = ((NHF<0.99 && NEMF<0.99 && NumConst>1) && ((abs(jet_eta_)<=2.4 && CHF>0 && CHM>0 && CEMF<0.99) || abs(jet_eta_)>2.4) && abs(jet_eta_)<=2.7) ||
-      (NHF<0.98 && NEMF>0.01 && NumNeutralParticles>2 && abs(jet_eta_)>2.7 && abs(jet_eta_)<=3.0 ) ||
-      (NEMF<0.90 && NumNeutralParticles>10 && abs(jet_eta_)>3.0 );
+            (NHF<0.98 && NEMF>0.01 && NumNeutralParticles>2 && abs(jet_eta_)>2.7 && abs(jet_eta_)<=3.0 ) ||
+            (NEMF<0.90 && NumNeutralParticles>10 && abs(jet_eta_)>3.0 );
 
 
 

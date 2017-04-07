@@ -18,7 +18,7 @@ ntuple_content::~ntuple_content(){
 
 
 const reco::VertexCollection * ntuple_content::vertices()const{
-	if(vertices_)
-		return vertices_;
-	throw std::runtime_error("ntuple_content: vertices not assigned");
+    if(vertices_)
+        return vertices_;
+    throw std::runtime_error("ntuple_content: vertices not assigned");
 }
