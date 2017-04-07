@@ -45,7 +45,8 @@
 
 
 void setPreCache(TChain* tree){
-	tree->SetCacheSize(100e6);//100MB precache (eos is slow)
+	return ; //don't do anything for now
+	tree->SetCacheSize(100e6);//100MB precache (eos is slow) - but increases CPU a lot...
 }
 
 bool DirectoryExists( const char* pzPath )
@@ -198,6 +199,7 @@ int main(int argc, char *argv[]){
 			//goes in the indexed loop later
 			outlist << outfilename<<"\n";
 			std::cout << "new output file " <<outfilename <<std::endl;
+
 
 			time(&now);
 			float runningsecond=difftime(now,started);
