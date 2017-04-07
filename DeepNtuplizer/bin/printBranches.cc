@@ -54,7 +54,7 @@ int main(int argc, char *argv[]){
 		histo = (TH1F*)gROOT->FindObject(b+"C");
 		histo->Draw("hist,same");
 		t->SetLineColor(kBlue);
-		t->Draw(b+">>"+b+"L","isUDS+isG","same,normalized");
+		t->Draw(b+">>"+b+"L","isUD+isS+isG","same,normalized");
 		histo = (TH1F*)gROOT->FindObject(b+"L");
 		histo->Draw("hist,same");
 		cv.Print(outdir+"/"+b+".pdf");

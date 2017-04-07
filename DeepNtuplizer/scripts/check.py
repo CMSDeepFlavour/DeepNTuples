@@ -43,8 +43,8 @@ action=args.action
 print('getting condor batch status...\n')
 clustersandjobs,statuses=getCondorStatus()
 
-if len(clustersandjobs) < 1:
-    raise Exception("condor_q not available, cannot check job status")
+#if len(clustersandjobs) < 1:
+#    raise Exception("condor_q not available, cannot check job status")
 
 #for i in range(len(clustersandjobs)):
 #    print(clustersandjobs[i],statuses[i])

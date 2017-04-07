@@ -43,6 +43,11 @@
 
 #include <dirent.h>
 
+
+void setPreCache(TChain* tree){
+	tree->SetCacheSize(100e6);//100MB precache (eos is slow)
+}
+
 bool DirectoryExists( const char* pzPath )
 {
 	if ( pzPath == NULL) return false;
@@ -130,6 +135,7 @@ int main(int argc, char *argv[]){
 			bi->initBranches(chains.at(i));
 		}
 		entriesperchain.at(i) = chains.at(i)->GetEntries();
+		setPreCache(chains.at(i));
 		totalentries+=entriesperchain.at(i);
 	}
 
