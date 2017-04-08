@@ -4,12 +4,21 @@
 namespace deep_ntuples {
 
     std::vector<std::size_t> jet_muonsIds(const pat::Jet& jet, const std::vector<pat::Muon>& event_muons) {
-        std::vector <std::size_t> muonIds;
+        std::vector <std::size_t> muonsIds;
         for (std::size_t i = 0; i < event_muons.size(); i++) {
             const auto & muon = event_muons.at(i);
-            if(reco::deltaR(muon.eta(),muon.phi(),jet.eta(),jet.phi()) < 0.4) muonIds.emplace_back(i);
+            if(reco::deltaR(muon.eta(),muon.phi(),jet.eta(),jet.phi()) < 0.4) muonsIds.emplace_back(i);
         }
-        return muonIds;
+        return muonsIds;
+    }
+
+    std::vector<std::size_t> jet_electronsIds(const pat::Jet& jet, const std::vector<pat::Electron>& event_electrons) {
+        std::vector <std::size_t> electronsIds;
+        for (std::size_t i = 0; i < event_electrons.size(); i++) {
+            const auto & electron = event_electrons.at(i);
+            if(reco::deltaR(electron.eta(),electron.phi(),jet.eta(),jet.phi()) < 0.4) electronsIds.emplace_back(i);
+        }
+        return electronsIds;
     }
 
     JetFlavor jet_flavour(const pat::Jet& jet, std::vector<reco::GenParticle> neutrinosLepB, std::vector<reco::GenParticle> neutrinosLepB_C, bool usePhysForLightAndUndefined) {

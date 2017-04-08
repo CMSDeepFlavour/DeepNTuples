@@ -126,11 +126,11 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
                     iConfig.getParameter<edm::InputTag>("pruned")));
 
     jetinfo->setMuonsToken(
-            consumes<reco::MuonCollection>(
+            consumes<pat::MuonCollection>(
                     iConfig.getParameter<edm::InputTag>("muons")));
 
     jetinfo->setElectronsToken(
-            consumes<reco::ElectronCollection>(
+            consumes<pat::ElectronCollection>(
                     iConfig.getParameter<edm::InputTag>("electrons")));
 
     addModule(jetinfo);

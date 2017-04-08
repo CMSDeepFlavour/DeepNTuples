@@ -18,62 +18,26 @@
  */
 class ntuple_JetInfo: public ntuple_content{
 public:
-<<<<<<< HEAD
-    ntuple_JetInfo():ntuple_content(),gluonReduction_(0){}
-=======
     ntuple_JetInfo():ntuple_content(),
     gluonReduction_(0),
-    muons_isLooseMuon_(5,0), 
-    muons_isTightMuon_(5,0), 
-    muons_isSoftMuon_(5,0), 
-    muons_isHighPtMuon_(5,0),
-    muons_pt_(5,.0), 
-    muons_relEta_(5,.0), 
-    muons_relPhi_(5,.0), 
-    muons_energy_(5,.0),
-    electrons_pt_(5,.0), 
-    electrons_relEta_(5,.0), 
-    electrons_relPhi_(5,.0), 
-    electrons_energy_(5,.0)    
+    muons_isLooseMuon_(max_num_lept,0), 
+    muons_isTightMuon_(max_num_lept,0), 
+    muons_isSoftMuon_(max_num_lept,0), 
+    muons_isHighPtMuon_(max_num_lept,0),
+    muons_pt_(max_num_lept,.0), 
+    muons_relEta_(max_num_lept,.0), 
+    muons_relPhi_(max_num_lept,.0), 
+    muons_energy_(max_num_lept,.0),
+    electrons_pt_(max_num_lept,.0), 
+    electrons_relEta_(max_num_lept,.0), 
+    electrons_relPhi_(max_num_lept,.0), 
+    electrons_energy_(max_num_lept,.0)    
     {}
->>>>>>> adding of muon & electron information in the ntuples
 
     void getInput(const edm::ParameterSet& iConfig);
     void initBranches(TTree* );
     void readEvent(const edm::Event& iEvent);
 
-<<<<<<< HEAD
-
-
-    //use either of these functions
-
-    bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0);
-
-    void setAxis2Token(edm::EDGetTokenT<edm::ValueMap<float> > axis2Token) {
-        axis2Token_ = axis2Token;
-    }
-
-    void setMultToken(edm::EDGetTokenT<edm::ValueMap<int> > multToken) {
-        multToken_ = multToken;
-    }
-
-    void setPtDToken(edm::EDGetTokenT<edm::ValueMap<float> > ptDToken) {
-        ptDToken_ = ptDToken;
-    }
-
-    void setQglToken(edm::EDGetTokenT<edm::ValueMap<float> > qglToken) {
-        qglToken_ = qglToken;
-    }
-
-    void setGenJetMatchReclusterToken(
-            edm::EDGetTokenT<edm::Association<reco::GenJetCollection> > genJetMatchReclusterToken) {
-        genJetMatchReclusterToken_ = genJetMatchReclusterToken;
-    }
-
-    void setGenJetMatchWithNuToken(
-            edm::EDGetTokenT<edm::Association<reco::GenJetCollection> > genJetMatchWithNuToken) {
-        genJetMatchWithNuToken_ = genJetMatchWithNuToken;
-=======
     //use either of these functions
 
     bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0);
@@ -110,7 +74,6 @@ public:
 
     void setMuonsToken(edm::EDGetTokenT<pat::MuonCollection> muonsToken) {
         muonsToken_ = muonsToken;
->>>>>>> adding of muon & electron information in the ntuples
     }
 
     void setElectronsToken(edm::EDGetTokenT<pat::ElectronCollection> electronsToken) {
@@ -141,13 +104,9 @@ public:
 
     edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken_;
 
-<<<<<<< HEAD
-=======
     edm::EDGetTokenT<pat::MuonCollection> muonsToken_;       
     edm::EDGetTokenT<pat::ElectronCollection> electronsToken_;
 
-
->>>>>>> adding of muon & electron information in the ntuples
     edm::Handle<edm::Association<reco::GenJetCollection> > genJetMatchRecluster;
     edm::Handle<edm::Association<reco::GenJetCollection> > genJetMatchWithNu;
 
@@ -207,6 +166,7 @@ public:
     float QG_axis2_;
     float QG_mult_;
 
+    const std::size_t max_num_lept = 5;
     std::vector<int> muons_isLooseMuon_;
     std::vector<int> muons_isTightMuon_;
     std::vector<int> muons_isSoftMuon_;
@@ -219,6 +179,9 @@ public:
     std::vector<float> electrons_relEta_; 
     std::vector<float> electrons_relPhi_; 
     std::vector<float> electrons_energy_;
+
+    int muons_number_ = 0;
+    int electrons_number_ = 0;
 
     float gen_pt_Recluster_;
     float gen_pt_WithNu_;
