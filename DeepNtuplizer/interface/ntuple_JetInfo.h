@@ -19,19 +19,7 @@
 class ntuple_JetInfo: public ntuple_content{
 public:
     ntuple_JetInfo():ntuple_content(),
-    gluonReduction_(0),
-    muons_isLooseMuon_(max_num_lept,0), 
-    muons_isTightMuon_(max_num_lept,0), 
-    muons_isSoftMuon_(max_num_lept,0), 
-    muons_isHighPtMuon_(max_num_lept,0),
-    muons_pt_(max_num_lept,.0), 
-    muons_relEta_(max_num_lept,.0), 
-    muons_relPhi_(max_num_lept,.0), 
-    muons_energy_(max_num_lept,.0),
-    electrons_pt_(max_num_lept,.0), 
-    electrons_relEta_(max_num_lept,.0), 
-    electrons_relPhi_(max_num_lept,.0), 
-    electrons_energy_(max_num_lept,.0)    
+    gluonReduction_(0)
     {}
 
     void getInput(const edm::ParameterSet& iConfig);
@@ -166,19 +154,19 @@ public:
     float QG_axis2_;
     float QG_mult_;
 
-    const std::size_t max_num_lept = 5;
-    std::vector<int> muons_isLooseMuon_;
-    std::vector<int> muons_isTightMuon_;
-    std::vector<int> muons_isSoftMuon_;
-    std::vector<int> muons_isHighPtMuon_; 
-    std::vector<float> muons_pt_; 
-    std::vector<float> muons_relEta_; 
-    std::vector<float> muons_relPhi_; 
-    std::vector<float> muons_energy_; 
-    std::vector<float> electrons_pt_; 
-    std::vector<float> electrons_relEta_; 
-    std::vector<float> electrons_relPhi_; 
-    std::vector<float> electrons_energy_;
+    static constexpr std::size_t max_num_lept = 5;
+    int muons_isLooseMuon_[max_num_lept];
+    int muons_isTightMuon_[max_num_lept];
+    int muons_isSoftMuon_[max_num_lept];
+    int muons_isHighPtMuon_[max_num_lept]; 
+    float muons_pt_[max_num_lept]; 
+    float muons_relEta_[max_num_lept]; 
+    float muons_relPhi_[max_num_lept]; 
+    float muons_energy_[max_num_lept]; 
+    float electrons_pt_[max_num_lept]; 
+    float electrons_relEta_[max_num_lept]; 
+    float electrons_relPhi_[max_num_lept]; 
+    float electrons_energy_[max_num_lept];
 
     int muons_number_ = 0;
     int electrons_number_ = 0;
