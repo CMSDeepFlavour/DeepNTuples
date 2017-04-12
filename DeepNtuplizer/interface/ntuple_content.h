@@ -17,6 +17,7 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include <iostream>
 #include <math.h>
 #include <iostream>
@@ -26,7 +27,7 @@
  */
 class ntuple_content{
 public:
-    ntuple_content():vertices_(0),read_(false){}
+    ntuple_content():vertices_(0),pupInfo_(0),rhoInfo_(0),read_(false){}
     virtual ~ntuple_content();
 
     virtual void getInput(const edm::ParameterSet& iConfig){}
@@ -39,6 +40,12 @@ public:
 
     void setPrimaryVertices(const reco::VertexCollection* v){
         vertices_=v;
+    }
+    void setPuInfo(const std::vector<PileupSummaryInfo> *v){
+	pupInfo_ =v;
+    }	
+    void setRhoInfo(const double *v){
+        rhoInfo_ =v;
     }
 
     void setIsRead(bool isread){read_=isread;}
@@ -55,6 +62,8 @@ public:
 
 protected:
     const reco::VertexCollection * vertices()const;
+    const double* rhoInfo()const;
+    const std::vector<PileupSummaryInfo> * pupInfo()const;	
 
 
     template <class T>
@@ -81,6 +90,8 @@ protected:
 
 private:
     const reco::VertexCollection* vertices_;
+    const std::vector<PileupSummaryInfo> * pupInfo_;
+    const double* rhoInfo_;
     bool read_;
     std::vector<TString> allbranches_;
 };

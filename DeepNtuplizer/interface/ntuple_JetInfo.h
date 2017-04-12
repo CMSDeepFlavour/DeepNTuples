@@ -138,6 +138,8 @@ public:
 
     // global variables
     float npv_;
+    float ntrueInt_;
+    float rho_;
     unsigned int event_no_;
     unsigned int jet_no_;
 
