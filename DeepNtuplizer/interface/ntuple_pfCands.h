@@ -115,6 +115,7 @@ private:
     float  Npfcan_pt_[max_pfcand_];
     float  Npfcan_ptrel_[max_pfcand_];
     float  Npfcan_erel_[max_pfcand_];
+    float  Npfcan_puppiw_[max_pfcand_];
     float  Npfcan_phirel_[max_pfcand_];
     float  Npfcan_etarel_[max_pfcand_];
     float  Npfcan_deltaR_[max_pfcand_];
