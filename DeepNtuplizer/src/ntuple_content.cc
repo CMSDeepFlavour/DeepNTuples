@@ -22,3 +22,11 @@ const reco::VertexCollection * ntuple_content::vertices()const{
         return vertices_;
     throw std::runtime_error("ntuple_content: vertices not assigned");
 }
+
+const std::vector<PileupSummaryInfo> * ntuple_content::pupInfo()const{
+	return pupInfo_;
+}
+
+const double * ntuple_content::rhoInfo()const{
+	return rhoInfo_;
+}
