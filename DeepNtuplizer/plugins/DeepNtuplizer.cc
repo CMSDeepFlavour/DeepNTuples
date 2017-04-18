@@ -80,7 +80,7 @@ private:
     // ----------member data ---------------------------
     edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
     edm::EDGetTokenT<edm::View<pat::Jet> >      jetToken_;
-    edm::EDGetTokenT<edm::View<std::vector<PileupSummaryInfo> > > puToken_;
+    edm::EDGetTokenT<std::vector<PileupSummaryInfo>> puToken_;
     edm::EDGetTokenT<double> rhoToken_;
 
 
@@ -98,7 +98,7 @@ private:
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
     jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets"))),
-    puToken_(consumes<edm::View<std::vector<PileupSummaryInfo> >>(iConfig.getParameter<edm::InputTag>("pupInfo"))),
+    puToken_(consumes<std::vector<PileupSummaryInfo >>(iConfig.getParameter<edm::InputTag>("pupInfo"))),
     rhoToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoInfo"))) 
 {
     /*
