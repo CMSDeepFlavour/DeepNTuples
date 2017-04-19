@@ -42,7 +42,20 @@
 #include "DeepNTuples/DeepNtuplizer/interface/ntuple_SV.h"
 
 #include <dirent.h>
+#include <stdlib.h>
 
+TString prependXRootD(const TString& path){
+
+    TString full_path = realpath(path, NULL);
+    if(full_path.BeginsWith("/eos/cms/")){
+        TString append="root://eoscms.cern.ch//";
+        TString s_remove="/eos/cms/";
+        TString newpath (full_path(s_remove.Length(),full_path.Length()));
+        newpath=append+newpath;
+        return newpath;
+    }
+    return path;
+}
 
 void setPreCache(TChain* tree){
     return ; //don't do anything for now
@@ -129,8 +142,10 @@ int main(int argc, char *argv[]){
     std::vector<size_t> entriesperchain(chains.size());
     size_t totalentries=0;
     for(size_t i=0;i<infiles.size();i++){
-        for(const auto& f:infiles.at(i))
-            chains.at(i)->Add(f+"/deepntuplizer/tree");
+        for(const auto& f:infiles.at(i)){
+            TString xrootdedpath=prependXRootD(f);
+            chains.at(i)->Add(xrootdedpath+"/deepntuplizer/tree");
+        }
         for(auto& bi:branchinfos){
             bi->setIsRead(true);
             bi->initBranches(chains.at(i));

@@ -18,13 +18,13 @@
  */
 class ntuple_JetInfo: public ntuple_content{
 public:
-    ntuple_JetInfo():ntuple_content(),gluonReduction_(0){}
+    ntuple_JetInfo():ntuple_content(),
+    gluonReduction_(0)
+    {}
 
     void getInput(const edm::ParameterSet& iConfig);
     void initBranches(TTree* );
     void readEvent(const edm::Event& iEvent);
-
-
 
     //use either of these functions
 
@@ -56,9 +56,16 @@ public:
         genJetMatchWithNuToken_ = genJetMatchWithNuToken;
     }
 
-    void setGenParticlesToken(
-            edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken) {
+    void setGenParticlesToken(edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken) {
         genParticlesToken_ = genParticlesToken;
+    }
+
+    void setMuonsToken(edm::EDGetTokenT<pat::MuonCollection> muonsToken) {
+        muonsToken_ = muonsToken;
+    }
+
+    void setElectronsToken(edm::EDGetTokenT<pat::ElectronCollection> electronsToken) {
+        electronsToken_ = electronsToken;
     }
 
     //private:
@@ -85,16 +92,23 @@ public:
 
     edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken_;
 
+    edm::EDGetTokenT<pat::MuonCollection> muonsToken_;       
+    edm::EDGetTokenT<pat::ElectronCollection> electronsToken_;
+
     edm::Handle<edm::Association<reco::GenJetCollection> > genJetMatchRecluster;
     edm::Handle<edm::Association<reco::GenJetCollection> > genJetMatchWithNu;
 
     edm::Handle<reco::GenParticleCollection> genParticlesHandle;
 
+    edm::Handle<pat::MuonCollection> muonsHandle;
+    edm::Handle<pat::ElectronCollection> electronsHandle;
+
+
     TRandom3 TRandom_;
     float gluonReduction_;
 
-    std::vector < reco::GenParticle> neutrinosLepB;
-    std::vector < reco::GenParticle> neutrinosLepB_C;
+    std::vector <reco::GenParticle> neutrinosLepB;
+    std::vector <reco::GenParticle> neutrinosLepB_C;
 
     // labels (MC truth)
     // regressions pt, Deta, Dphi
@@ -124,6 +138,8 @@ public:
 
     // global variables
     float npv_;
+    float ntrueInt_;
+    float rho_;
     unsigned int event_no_;
     unsigned int jet_no_;
 
@@ -133,11 +149,29 @@ public:
     float  jet_eta_;
 
     float jet_looseId_;
+
     // quark/gluon
     float jet_qgl_;
     float QG_ptD_;
     float QG_axis2_;
     float QG_mult_;
+
+    static constexpr std::size_t max_num_lept = 5;
+    int muons_isLooseMuon_[max_num_lept];
+    int muons_isTightMuon_[max_num_lept];
+    int muons_isSoftMuon_[max_num_lept];
+    int muons_isHighPtMuon_[max_num_lept]; 
+    float muons_pt_[max_num_lept]; 
+    float muons_relEta_[max_num_lept]; 
+    float muons_relPhi_[max_num_lept]; 
+    float muons_energy_[max_num_lept]; 
+    float electrons_pt_[max_num_lept]; 
+    float electrons_relEta_[max_num_lept]; 
+    float electrons_relPhi_[max_num_lept]; 
+    float electrons_energy_[max_num_lept];
+
+    int muons_number_ = 0;
+    int electrons_number_ = 0;
 
     float gen_pt_Recluster_;
     float gen_pt_WithNu_;

@@ -10,6 +10,7 @@
 
 #include "../interface/ntuple_JetInfo.h"
 #include "../interface/helpers.h"
+//#include "../interface/leptonsInJet.h"
 #include <vector>
 #include <algorithm>
 using namespace std;
@@ -31,6 +32,8 @@ void ntuple_JetInfo::initBranches(TTree* tree){
 
     //more general event info, here applied per jet
     addBranch(tree,"npv"    ,&npv_    ,"npv/f"    );
+    addBranch(tree,"rho", &rho_, "rho/f");
+    addBranch(tree,"ntrueInt",&ntrueInt_,"ntrueInt/f");   
     addBranch(tree,"event_no"    ,&event_no_    ,"event_no/i"    );
     addBranch(tree,"jet_no"    ,&jet_no_    ,"jet_no/i"    );
 
@@ -77,6 +80,22 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"QG_mult",  &QG_mult_);  // multiplicity i.e. total num of PFcands reconstructed
     // in the jet
 
+    addBranch(tree,"muons_number", &muons_number_, "muons_number_/i"); 
+    addBranch(tree,"electrons_number", &electrons_number_, "electrons_number_/i"); 
+
+    addBranch(tree,"muons_isLooseMuon", &muons_isLooseMuon_, "muons_isLooseMuon_[muons_number_]/i");
+    addBranch(tree,"muons_isTightMuon", &muons_isTightMuon_, "muons_isTightMuon_[muons_number_]/i");
+    addBranch(tree,"muons_isSoftMuon", &muons_isSoftMuon_, "muons_isSoftMuon_[muons_number_]/i");
+    addBranch(tree,"muons_isHighPtMuon", &muons_isHighPtMuon_, "muons_isHighPtMuon_[muons_number_]/i");
+    addBranch(tree,"muons_pt", &muons_pt_, "muons_pt_[muons_number_]/f");
+    addBranch(tree,"muons_relEta", &muons_relEta_, "muons_relEta_[muons_number_]/f");
+    addBranch(tree,"muons_relPhi", &muons_relPhi_, "muons_relPhi_[muons_number_]/f");
+    addBranch(tree,"muons_energy", &muons_energy_, "muons_energy_[muons_number_]/f");
+    addBranch(tree,"electrons_pt", &electrons_pt_, "electrons_pt_[electrons_number_]/f");
+    addBranch(tree,"electrons_relEta", &electrons_relEta_, "electrons_relEta_[electrons_number_]/f");
+    addBranch(tree,"electrons_relPhi", &electrons_relPhi_, "electrons_relPhi_[electrons_number_]/f");
+    addBranch(tree,"electrons_energy", &electrons_energy_, "electrons_energy_[electrons_number_]/f");    
+
 
     addBranch(tree,"gen_pt_Recluster"    ,&gen_pt_Recluster_    ,"gen_pt_Recluster_/f"    );
     addBranch(tree,"gen_pt_WithNu"    ,&gen_pt_WithNu_    ,"gen_pt_WithNu_/f"    );
@@ -90,6 +109,8 @@ void ntuple_JetInfo::initBranches(TTree* tree){
             addBranch(tree,better_name.c_str(), &entry.second, (better_name+"/F").c_str());
         }
 }
+
+
 void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
 
     iEvent.getByToken(qglToken_, qglHandle);
@@ -97,11 +118,14 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
     iEvent.getByToken(axis2Token_, axis2Handle);
     iEvent.getByToken(multToken_, multHandle);
 
-
     iEvent.getByToken(genJetMatchReclusterToken_, genJetMatchRecluster);
     iEvent.getByToken(genJetMatchWithNuToken_, genJetMatchWithNu);
 
     iEvent.getByToken(genParticlesToken_, genParticlesHandle);
+
+
+    iEvent.getByToken(muonsToken_, muonsHandle);
+    iEvent.getByToken(electronsToken_, electronsHandle);
 
     neutrinosLepB.clear();
     neutrinosLepB_C.clear();
@@ -151,10 +175,18 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         entry.second = catchInfs(jet.bDiscriminator(entry.first),-0.1);
     }
 
-
     npv_ = vertices()->size();
-    jet_no_=jetidx;
+    
+    for (auto const& v : *pupInfo()) {
+        int bx = v.getBunchCrossing();   
+        if (bx == 0) {
+                ntrueInt_ = v.getTrueNumInteractions();
+                }       
+        }
+    rho_ = rhoInfo()[0];
 
+
+    jet_no_=jetidx;
 
     const auto jetRef = reco::CandidatePtr(coll->ptrs().at( jetidx));
     jet_qgl_ = (*qglHandle)[jetRef];
@@ -165,6 +197,36 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     //std::vector<Ptr<pat::Jet> > p= coll->ptrs();
 
     isB_=0; isBB_=0; isC_=0; isUD_=0; isS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0, isUndefined_=0;
+    auto muIds = deep_ntuples::jet_muonsIds(jet,*muonsHandle);
+    auto elecIds = deep_ntuples::jet_electronsIds(jet,*electronsHandle);
+
+    muons_number_ = muIds.size();
+    electrons_number_ = elecIds.size();
+
+    float etasign = 1.;
+    if (jet.eta()<0) etasign = -1.;
+
+    for(std::size_t i=0; i<max_num_lept; i++) {
+        if (i < muIds.size()) {
+            const auto & muon = (*muonsHandle).at(muIds.at(i));
+            muons_isLooseMuon_[i] = muon.isLooseMuon();
+            muons_isTightMuon_[i] = muon.isTightMuon(vertices()->at(0));
+            muons_isSoftMuon_[i] = muon.isSoftMuon(vertices()->at(0));
+            muons_isHighPtMuon_[i] = muon.isHighPtMuon(vertices()->at(0));
+            muons_pt_[i] = muon.pt();
+            muons_relEta_[i] = etasign*(muon.eta()-jet.eta());
+            muons_relPhi_[i] = reco::deltaPhi(muon.phi(),jet.phi()); 
+            muons_energy_[i] = muon.energy()/jet.energy();
+        }
+        if (i < elecIds.size()) {
+            const auto & electron = (*electronsHandle).at(elecIds.at(i));
+            electrons_pt_[i] = electron.pt();
+            electrons_relEta_[i] = etasign*(electron.eta()-jet.eta());
+            electrons_relPhi_[i] = reco::deltaPhi(electron.phi(),jet.phi()); 
+            electrons_energy_[i] = electron.energy()/jet.energy();
+        }
+    }
+
     switch(deep_ntuples::jet_flavour(jet, neutrinosLepB, neutrinosLepB_C)) {
     case deep_ntuples::JetFlavor::UD: isUD_=1; break;
     case deep_ntuples::JetFlavor::S:  isS_=1; break;

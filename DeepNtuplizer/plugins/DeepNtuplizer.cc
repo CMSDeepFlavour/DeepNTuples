@@ -5,6 +5,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+
 #include "../interface/ntuple_content.h"
 #include "../interface/ntuple_SV.h"
 #include "../interface/ntuple_JetInfo.h"
@@ -26,7 +27,8 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
-
+#include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
 
 // for ivf
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -78,6 +80,8 @@ private:
     // ----------member data ---------------------------
     edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
     edm::EDGetTokenT<edm::View<pat::Jet> >      jetToken_;
+    edm::EDGetTokenT<std::vector<PileupSummaryInfo>> puToken_;
+    edm::EDGetTokenT<double> rhoToken_;
 
 
     edm::Service<TFileService> fs;
@@ -89,15 +93,13 @@ private:
         return m;
     }
     std::vector<ntuple_content* > modules_;
-
 };
 
-
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
-												          vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
-												          jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets")))
-
-
+    vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
+    jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets"))),
+    puToken_(consumes<std::vector<PileupSummaryInfo >>(iConfig.getParameter<edm::InputTag>("pupInfo"))),
+    rhoToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoInfo"))) 
 {
     /*
      *  Initialise the modules here
@@ -128,12 +130,21 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
             consumes<reco::GenParticleCollection>(
                     iConfig.getParameter<edm::InputTag>("pruned")));
 
+    jetinfo->setMuonsToken(
+            consumes<pat::MuonCollection>(
+                    iConfig.getParameter<edm::InputTag>("muons")));
+
+    jetinfo->setElectronsToken(
+            consumes<pat::ElectronCollection>(
+                    iConfig.getParameter<edm::InputTag>("electrons")));
+
     addModule(jetinfo);
 
     ntuple_pfCands * pfcands = new ntuple_pfCands();
     pfcands->setSVToken(
             consumes<reco::VertexCompositePtrCandidateCollection>(
                     iConfig.getParameter<edm::InputTag>("secVertices")));
+
     addModule(pfcands);
 
     addModule(new ntuple_bTagVars());
@@ -168,16 +179,24 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(vtxToken_, vertices);
     if (vertices->empty()) return; // skip the event if no PV found
 
+    edm::Handle<std::vector<PileupSummaryInfo> > pupInfo;
+    iEvent.getByToken(puToken_, pupInfo);
+
+    edm::Handle<double> rhoInfo;
+    iEvent.getByToken(rhoToken_,rhoInfo);
+       
+
 
     for(auto& m:modules_){
         m->setPrimaryVertices(vertices.product());
+        m->setPuInfo(pupInfo.product());
+	m->setRhoInfo(rhoInfo.product());
         m->readEvent(iEvent);
         m->readSetup(iSetup);
     }
     edm::Handle<edm::View<pat::Jet> > jets;
     iEvent.getByToken(jetToken_, jets);
-
-
+  
     std::vector<size_t> indices(jets->size());
     for(size_t i=0;i<jets->size();i++)
         indices.at(i)=i;

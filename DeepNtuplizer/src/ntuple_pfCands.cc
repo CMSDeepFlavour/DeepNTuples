@@ -215,6 +215,9 @@ void ntuple_pfCands::initBranches(TTree* tree){
     addBranch(tree,"Npfcan_ptrel", &Npfcan_ptrel_,"Npfcan_ptrel_[n_Npfcand_]/f");
     addBranch(tree,"Npfcan_erel", &Npfcan_erel_,"Npfcan_erel_[n_Npfcand_]/f");
 
+    addBranch(tree,"Npfcan_puppiw", &Npfcan_puppiw_,"Npfcan_puppiw_[n_Npfcand_]/f");
+
+
     addBranch(tree,"Npfcan_phirel",&Npfcan_phirel_,"Npfcan_phirel_[n_Npfcand_]/f");
     addBranch(tree,"Npfcan_etarel",&Npfcan_etarel_,"Npfcan_etarel_[n_Npfcand_]/f");
     addBranch(tree,"Npfcan_deltaR",&Npfcan_deltaR_,"Npfcan_deltaR_[n_Npfcand_]/f");
@@ -394,6 +397,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Npfcan_pt_[n_Npfcand_] = PackedCandidate_->pt();
             Npfcan_ptrel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->pt()/jet.pt()-1,0,-1,0);
             Npfcan_erel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->energy()/jet.energy()-1,0,-1,0);
+            Npfcan_puppiw_[n_Npfcand_] = PackedCandidate_->puppiWeight();
             Npfcan_phirel_[n_Npfcand_] = catchInfsAndBound(fabs(reco::deltaPhi(PackedCandidate_->phi(),jet.phi()))-0.5,0,-2,0);
             Npfcan_etarel_[n_Npfcand_] = catchInfsAndBound(fabs(PackedCandidate_->eta()-jet.eta())-0.5,0,-2,0);
             Npfcan_deltaR_[n_Npfcand_] = catchInfsAndBound(reco::deltaR(*PackedCandidate_,jet)-0.6,0,-0.6,0);
