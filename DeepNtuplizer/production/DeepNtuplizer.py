@@ -13,7 +13,24 @@ options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, 
 options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "job number")
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
 options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "gluon reduction")
-
+options.register(
+    'phaseII', False, 
+    VarParsing.VarParsing.multiplicity.singleton, 
+    VarParsing.VarParsing.varType.bool, 
+    "Run PhaseII"
+    )
+options.register(
+    'AOD', False, 
+    VarParsing.VarParsing.multiplicity.singleton, 
+    VarParsing.VarParsing.varType.bool, 
+    "Run on AOD (PhaseII only)"
+    )
+options.register(
+    'jets', 'slimmedJets', 
+    VarParsing.VarParsing.multiplicity.singleton, 
+    VarParsing.VarParsing.varType.string, 
+    "jets to use"
+    )
 options.register(
 	'inputFiles','',
 	VarParsing.VarParsing.multiplicity.list,
@@ -26,17 +43,26 @@ if hasattr(sys, "argv"):
 
 
 
+if options.phaseII:
+    from Configuration.StandardSequences.Eras import eras
+    process = cms.Process('DNNFiller',eras.Phase2C2_timing)
+else:
+    process = cms.Process("DNNFiller")
 
-process = cms.Process("DNNFiller")
-
-process.load("FWCore.MessageService.MessageLogger_cfi")
-process.load("Configuration.EventContent.EventContent_cff")
-process.load('Configuration.StandardSequences.Services_cff')
-process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-process.load('Configuration.StandardSequences.MagneticField_cff')
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+if options.phaseII and options.AOD:
+    from DeepNTuples.DeepNtuplizer.AODModifierPhaseII import customize
+    process = customize(process)
+elif options.AOD:
+    raise ValueError('running on AOD is only possible for PhaseII samples')
+else:
+    process.load("FWCore.MessageService.MessageLogger_cfi")
+    process.load("Configuration.EventContent.EventContent_cff")
+    process.load('Configuration.StandardSequences.Services_cff')
+    process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+    process.load('Configuration.StandardSequences.MagneticField_cff')
+    process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+    from Configuration.AlCa.GlobalTag import GlobalTag
+    process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 #process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
@@ -79,7 +105,7 @@ process.maxEvents  = cms.untracked.PSet(
 bTagInfos = [
 	'pfImpactParameterTagInfos',
 	'pfInclusiveSecondaryVertexFinderTagInfos',
-	'deepNNTagInfos',
+	'pfDeepCSVTagInfos',
 ]
 bTagDiscriminators = [
 	'softPFMuonBJetTags',
@@ -87,11 +113,11 @@ bTagDiscriminators = [
 	'pfJetBProbabilityBJetTags',
 	'pfJetProbabilityBJetTags',
 	'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-	'deepFlavourJetTags:probudsg', #to be fixed with new names
-	'deepFlavourJetTags:probb', 
-	'deepFlavourJetTags:probc', 
-	'deepFlavourJetTags:probbb', 
-	'deepFlavourJetTags:probcc',
+	'pfDeepCSVJetTags:probudsg', 
+	'pfDeepCSVJetTags:probb', 
+	'pfDeepCSVJetTags:probc', 
+	'pfDeepCSVJetTags:probbb', 
+	'pfDeepCSVJetTags:probcc',
 ]
 jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
 
@@ -99,7 +125,7 @@ from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 updateJetCollection(
         process,
         labelName = "DeepFlavour",
-        jetSource = cms.InputTag('slimmedJets'),#'ak4Jets'
+        jetSource = cms.InputTag(options.jets),#'ak4Jets'
         jetCorrections = jetCorrectionsAK4,
         pfCandidates = cms.InputTag('packedPFCandidates'),
         pvSource = cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -170,8 +196,9 @@ process.TFileService = cms.Service("TFileService",
 
 # DeepNtuplizer
 process.load("DeepNTuples.DeepNtuplizer.DeepNtuplizer_cfi")
-process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour');
+process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour')
 process.deepntuplizer.bDiscriminators = bTagDiscriminators 
 process.deepntuplizer.gluonReduction  = cms.double(options.gluonReduction)
 
 process.p = cms.Path(process.QGTagger + process.genJetSequence*  process.deepntuplizer)
+process.schedule.append(process.p)
