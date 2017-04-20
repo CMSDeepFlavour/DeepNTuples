@@ -67,12 +67,11 @@ for dir in dirs:
     
     nJobs=int(nJobsFile[0].split('.')[1])
     
-    failedjobs=[]
-    idlejobs=[]
-    jobstatus=[]
+    jobstatus_list=[]
     
     for i in range(nJobs):
-        jobstatus.append('L')
+        jobstatus_list.append('L')
+    #print(jobstatus_list)
         
     for clf in clusterfiles:
         jcl=clf.split('_')[-1]
@@ -81,11 +80,13 @@ for dir in dirs:
         
         try:
             idxofjob=clustersandjobs.index(jcl)
-            jobstatus[jidx]=statuses[idxofjob]
+            jobstatus_list[jidx]=statuses[idxofjob]
         except:
-            jobstatus[jidx]='L'
+            jobstatus_list[jidx]='L'
         
     
+    failedjobs=[]
+    idlejobs=[]
     succjobs=[]
     runjobs=[]
     lostjobs=[]
@@ -94,35 +95,86 @@ for dir in dirs:
     
     #stati: idle, running, failed(file), lost(file)
     
-        
+    #print(jobstatus_list)
+    nsucc=0
+    nhold=0
+    nfail=0
+    nlost=0
+    nidle=0
+    nrunning=0
     
-    for i in range(len(stdoutfiles)):
-        filename = stdoutfiles[i]
+    for i in range(nJobs):
+        jobno=i
+        filename = dir+"/batch/con_out."+str(jobno)+ ".out"
         #print (filename)
-        jobno=int(os.path.basename(filename).split('.')[1])
-        jobstat='X'
-        if 'JOBSUB::FAIL' in open(filename).read():
-            failedjobs.append(filename)
-        elif 'JOBSUB::SUCC' in open(filename).read():
+        if os.path.isfile(dir+"/batch/"+str(jobno)+'.succ'):
+            jobstatus_list[jobno]='S'
+        elif os.path.isfile(filename) and  'JOBSUB::FAIL' in open(filename).read():
+            jobstatus_list[jobno]='F'
+        elif os.path.isfile(filename) and 'JOBSUB::SUCC' in open(filename).read():
+            jobstatus_list[jobno]='S'
+            os.system('touch '+dir+"/batch/"+str(jobno)+'.succ')
+        j=jobstatus_list[jobno]
+        if j=='S':
+            nsucc+=1
             succjobs.append(filename)
-        else:
-            jobstat=jobstatus[jobno]
-            if jobstat == 'I':
-                idlejobs.append(filename)
-            elif jobstat == 'R':
-                runjobs.append(filename)
-            elif jobstat == 'H':
-                holdjobs.append(filename)
-            else:
-                lostjobs.append(filename)
+        elif j=='F':
+            nfail+=1
+            failedjobs.append(filename)
+        elif j=='H':
+            nhold+=1
+            holdjobs.append(filename)
+        elif j=='L' or j=='X':
+            nlost+=1
+            lostjobs.append(filename)
+        elif j=='I':
+            nidle+=1
+            idlejobs.append(filename)
+        elif j=='R':
+            nrunning+=1
+            runjobs.append(filename)
     
-    
-    
+    print(jobstatus_list)
 
     ntupleOutDir=os.path.abspath(dir+'/output/')
     
+    #get some numbers
+    
+        
     
     
+    
+    
+    nJobs=nJobs
+    if float(nidle)/float(nJobs)>0.8:
+        print (bcolors.BOLD+'idle:    '  + str(nidle)+bcolors.ENDC)
+    else:
+        print ('idle:    '  + str(nidle))
+    if float(nrunning)/float(nJobs)>0.8:
+        print (bcolors.BOLD+'running: '  + str(nrunning)+bcolors.ENDC)
+    else:
+        print ('running: '  + str(nrunning))
+    if float(nsucc)/float(nJobs)>0.95:
+        print ('\x1b[6;30;42m'+bcolors.BOLD+'success: '  + str(nsucc)+'\x1b[0m')
+    elif float(nsucc)/float(nJobs)>0.9:
+        print (bcolors.BOLD+'success: '  + str(nsucc)+bcolors.ENDC)
+    else:
+        print ('success: '  + str(nsucc))
+    if float(nfail)/float(nJobs)>0.9:
+        print ('\x1b[5;32;31m'+bcolors.BOLD+'failed:  '  + str(nfail)+'\x1b[0m')
+    else:
+        print ('failed:  '  + str(nfail))
+    if float(nlost)/float(nJobs)>0.8:
+        print ('\x1b[5;32;31m'+bcolors.BOLD+'lost:    '  + str(nlost)+'\x1b[0m')
+    else:
+        print ('lost:    '  + str(nlost))
+    if float(nhold)/float(nJobs)>0.8:
+        print (bcolors.BOLD+'hold:    '  + str(nhold)+bcolors.ENDC)
+    else:
+        print ('hold:    '  + str(nhold))
+        
+        
+        
     
     for f in failedjobs:
         jobno=os.path.basename(f).split('.')[1]
@@ -136,50 +188,29 @@ for dir in dirs:
             
             print('resubmitting '+dir+' ' +str(jobno)+ '...')
             resetJobOutput(dir,jobno)
-            cluster=submitjob(dir,'batch/condor_'+ jobno+'.sub')
+            cluster=submitjob(dir,'batch/condor_'+ jobno+'.sub',jobno)
             createClusterInfo(dir,jobno,cluster,False)#single submission
             
         else:
             print('failed job, see: ' + f)
             
-            
+    if action == 'resubmit':
+        for f in lostjobs:
+            jobno=os.path.basename(f).split('.')[1]
+            print('resubmitting '+dir+' ' +str(jobno)+ '...')
+            resetJobOutput(dir,jobno)
+            cluster=submitjob(dir,'batch/condor_'+ jobno+'.sub',jobno)
+            createClusterInfo(dir,jobno,cluster,False)
+                    
             #os.system('cd ' + dir + ' && condor_submit batch/condor_'+ jobno+'.sub && touch batch/con_out.'+ jobno +'.out')
            
-    allValidjobs=nJobs
-    if float(len(idlejobs))/float(allValidjobs)>0.8:
-        print (bcolors.BOLD+'idle:    '  + str(len(idlejobs))+bcolors.ENDC)
-    else:
-        print ('idle:    '  + str(len(idlejobs)))
-    if float(len(runjobs))/float(allValidjobs)>0.8:
-        print (bcolors.BOLD+'running: '  + str(len(runjobs))+bcolors.ENDC)
-    else:
-        print ('running: '  + str(len(runjobs)))
-    if float(len(succjobs))/float(allValidjobs)>0.95:
-        print ('\x1b[6;30;42m'+bcolors.BOLD+'success: '  + str(len(succjobs))+'\x1b[0m')
-    elif float(len(succjobs))/float(allValidjobs)>0.9:
-        print (bcolors.BOLD+'success: '  + str(len(succjobs))+bcolors.ENDC)
-    else:
-        print ('success: '  + str(len(succjobs)))
-    if float(len(failedjobs))/float(allValidjobs)>0.9:
-        print ('\x1b[5;32;31m'+bcolors.BOLD+'failed:  '  + str(len(failedjobs))+'\x1b[0m')
-    else:
-        print ('failed:  '  + str(len(failedjobs)))
-    if float(len(lostjobs))/float(allValidjobs)>0.8:
-        print ('\x1b[5;32;31m'+bcolors.BOLD+'lost:    '  + str(len(lostjobs))+'\x1b[0m')
-    else:
-        print ('lost:    '  + str(len(lostjobs)))
-    if float(len(holdjobs))/float(allValidjobs)>0.8:
-        print (bcolors.BOLD+'hold:    '  + str(len(holdjobs))+bcolors.ENDC)
-    else:
-        print ('hold:    '  + str(len(holdjobs)))
     
-    if (action == 'merge' or len(succjobs)==nJobs or action == 'filelist') and len(succjobs)>0:
+    if (action == 'merge' or nsucc==nJobs or action == 'filelist') and nsucc>0:
          
         succoutfile=[]
         trainvalfiles=[]
         testfiles=[]
         
-        nsucc=len(succjobs)
         
         tocombine=' '
         combinedsize=0

@@ -43,6 +43,8 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+if options.inputScript == '': #this is probably for testing
+	process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.options = cms.untracked.PSet(
    allowUnscheduled = cms.untracked.bool(True),  
@@ -51,13 +53,13 @@ process.options = cms.untracked.PSet(
 
 from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
 
-process.source = cms.Source('PoolSource',
-    fileNames=cms.untracked.vstring (filesRelValTTbarPileUpMINIAODSIM),
-)
+process.load('DeepNTuples.DeepNtuplizer.samples.TTJetsPhase1_cfg') #default input
+
+
 if options.inputFiles:
 	process.source.fileNames = options.inputFiles
 
-if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtuplizer.samples.TEST':
+if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtuplizer.samples.TTJetsPhase1_cfg':
     process.load(options.inputScript)
 
 numberOfFiles = len(process.source.fileNames)
@@ -172,6 +174,8 @@ process.TFileService = cms.Service("TFileService",
 process.load("DeepNTuples.DeepNtuplizer.DeepNtuplizer_cfi")
 process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour');
 process.deepntuplizer.bDiscriminators = bTagDiscriminators 
+process.deepntuplizer.bDiscriminators.append('pfCombinedMVAV2BJetTags')
+
 process.deepntuplizer.gluonReduction  = cms.double(options.gluonReduction)
 
 process.p = cms.Path(process.QGTagger + process.genJetSequence*  process.deepntuplizer)

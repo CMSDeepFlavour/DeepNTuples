@@ -233,6 +233,7 @@ queue 1
              jconf.write(jobcondorfile)
              jconf.close()
              resetJobOutput(jobpath,job)
+             os.system('touch '+jobpath+'/batch/con_out.'+str(job) +'.out')
              
              
         #create script
