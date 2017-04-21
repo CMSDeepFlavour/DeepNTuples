@@ -177,9 +177,9 @@ def doSub():
         
         nJobs=entries[0]
         totalfiles=len(cmssource.source.fileNames)+len(cmssource.source.secondaryFileNames)
-        if nJobs>totalfiles:
-            nJobs=totalfiles
-            print('reduced number of jobs to number of files (',nJobs,')')
+        if int(nJobs)>totalfiles:
+            print('reduced number of jobs to number of files (',totalfiles,') from ', nJobs)
+            nJobs=str(totalfiles)
         
         outputFile=entries[2]
         jobargs=''

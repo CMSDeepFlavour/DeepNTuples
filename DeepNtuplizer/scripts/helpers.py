@@ -34,7 +34,11 @@ def submitjob(path,condorfile,jobno=-1):
     elif jobno>-1:
         os.system('touch '+path +'/batch/'+str(jobno)+".submitted")
         os.system('touch '+path+'/batch/con_out.'+ str(jobno) +'.out')
-    cluster=out.split()[-1][0:-1]
+    cluster=0
+    try:
+        cluster=out.split()[-1][0:-1]
+    except:
+        0
     return cluster
 
 def createClusterInfo(path,job,cluster,batchsub):
