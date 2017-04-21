@@ -114,6 +114,11 @@ for dir in dirs:
         elif os.path.isfile(filename) and 'JOBSUB::SUCC' in open(filename).read():
             jobstatus_list[jobno]='S'
             os.system('touch '+dir+"/batch/"+str(jobno)+'.succ')
+           
+        if jobstatus_list[jobno]=='S' and not os.path.isfile(dir+'/output/'+dir+'_'+str(jobno)+'.root'):
+            jobstatus_list[jobno]='F'
+            os.system('rm -f '+dir+"/batch/"+str(jobno)+'.succ')
+        
         j=jobstatus_list[jobno]
         if j=='S':
             nsucc+=1
@@ -134,7 +139,7 @@ for dir in dirs:
             nrunning+=1
             runjobs.append(filename)
     
-    print(jobstatus_list)
+    #print(jobstatus_list)
 
     ntupleOutDir=os.path.abspath(dir+'/output/')
     

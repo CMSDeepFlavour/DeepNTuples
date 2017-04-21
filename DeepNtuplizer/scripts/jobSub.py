@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 
+from __future__ import print_function
 import sys, os, time
 import shutil
 from pdb import set_trace
@@ -125,7 +126,10 @@ def doSub():
         if len(entries) < 3:
             continue
             
-        nJobs=entries[0]
+        
+        #check if sufficient files
+        
+        
         ######check out from DAS
         samplename=entries[1]
         isdasname=False
@@ -161,6 +165,21 @@ def doSub():
                 sout, serr = dasquery.communicate()
             sample=scriptfile
         
+        
+        
+        sys.path.append(samplescriptdir)
+        sys.path.append(swdir+'/src/DeepNTuples/DeepNtuplizer/python/samples')
+        importsample=sample.split('.')[-1]
+        
+        #print(importsample)
+        cmssource = __import__(importsample)
+        #print(cmssource.source)
+        
+        nJobs=entries[0]
+        totalfiles=len(cmssource.source.fileNames)+len(cmssource.source.secondaryFileNames)
+        if nJobs>totalfiles:
+            nJobs=totalfiles
+            print('reduced number of jobs to number of files (',nJobs,')')
         
         outputFile=entries[2]
         jobargs=''
