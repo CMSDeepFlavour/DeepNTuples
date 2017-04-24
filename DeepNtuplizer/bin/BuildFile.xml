@@ -6,3 +6,5 @@
 <bin name="mergeSamples" file="mergeSamples.cc" />
 <bin name="mergeSamples_parallel" file="mergeSamples_parallel.cc" />
 <bin name="printBranches" file="printBranches.cc" />
+
+<bin name="checkFileList" file="checkFileList.cc" />
