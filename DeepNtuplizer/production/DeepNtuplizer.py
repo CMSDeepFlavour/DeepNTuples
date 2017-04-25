@@ -162,7 +162,22 @@ process.patGenJetMatchRecluster = cms.EDProducer("GenJetMatcher",  # cut on delt
 )
 
 process.genJetSequence = cms.Sequence(process.packedGenParticlesForJetsNoNu*process.ak4GenJetsWithNu*process.ak4GenJetsRecluster*process.patGenJetMatchWithNu*process.patGenJetMatchRecluster)
- 
+
+
+# Very Loose IVF SV collection
+from PhysicsTools.PatAlgos.tools.helpers import loadWithPrefix
+loadWithPrefix(process, 'RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff', "looseIVF")
+process.looseIVFinclusiveCandidateVertexFinder.primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices")
+process.looseIVFinclusiveCandidateVertexFinder.tracks = cms.InputTag("packedPFCandidates")
+process.looseIVFinclusiveCandidateVertexFinder.vertexMinDLen2DSig = cms.double(0.)
+process.looseIVFinclusiveCandidateVertexFinder.vertexMinDLenSig = cms.double(0.)
+process.looseIVFinclusiveCandidateVertexFinder.fitterSigmacut = 20
+
+process.looseIVFcandidateVertexArbitrator.primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices")
+process.looseIVFcandidateVertexArbitrator.tracks = cms.InputTag("packedPFCandidates")
+process.looseIVFcandidateVertexArbitrator.secondaryVertices = cms.InputTag("looseIVFcandidateVertexMerger")
+process.looseIVFcandidateVertexArbitrator.fitterSigmacut = 20
+
 
 outFileName = options.outputFile + '_' + str(options.job) +  '.root'
 print ('Using output file ' + outFileName)
@@ -175,6 +190,7 @@ process.load("DeepNTuples.DeepNtuplizer.DeepNtuplizer_cfi")
 process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour');
 process.deepntuplizer.bDiscriminators = bTagDiscriminators 
 process.deepntuplizer.bDiscriminators.append('pfCombinedMVAV2BJetTags')
+process.deepntuplizer.LooseSVs = cms.InputTag("looseIVFinclusiveCandidateSecondaryVertices")
 
 process.deepntuplizer.gluonReduction  = cms.double(options.gluonReduction)
 
