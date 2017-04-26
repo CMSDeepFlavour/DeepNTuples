@@ -13,7 +13,7 @@
 class ntuple_SV: public ntuple_content{
 public:
 
-    ntuple_SV();
+    ntuple_SV(std::string prefix = "");
     ~ntuple_SV();
 
     void getInput(const edm::ParameterSet& iConfig);
@@ -34,6 +34,7 @@ private:
     // SV candidates
     int   sv_num_;
     float nsv_;
+    std::string prefix_;
 
     static constexpr size_t max_sv=100;
 

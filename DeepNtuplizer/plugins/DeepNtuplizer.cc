@@ -112,6 +112,13 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
             consumes<reco::VertexCompositePtrCandidateCollection>(
                     iConfig.getParameter<edm::InputTag>("secVertices")));
     addModule(svmodule);
+    
+    //Loose IVF vertices
+    ntuple_SV* svmodule_LooseIVF=new ntuple_SV("LooseIVF_");
+    svmodule_LooseIVF->setSVToken(
+            consumes<reco::VertexCompositePtrCandidateCollection>(
+                    iConfig.getParameter<edm::InputTag>("LooseSVs")));
+    addModule(svmodule_LooseIVF);
 
     ntuple_JetInfo* jetinfo=new ntuple_JetInfo();
     jetinfo->setQglToken(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood")));
