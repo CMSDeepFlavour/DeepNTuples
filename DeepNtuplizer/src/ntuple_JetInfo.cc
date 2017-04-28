@@ -276,7 +276,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
       jet_looseId_ = ((NHF<0.99 && NEMF<0.99 && NumConst>1) && ((abs(jet_eta_)<=2.4 && CHF>0 && CHM>0 && CEMF<0.99) || abs(jet_eta_)>2.4) && abs(jet_eta_)<=2.7) ||
           (NHF<0.98 && NEMF>0.01 && NumNeutralParticles>2 && abs(jet_eta_)>2.7 && abs(jet_eta_)<=3.0 ) ||
           (NEMF<0.90 && NumNeutralParticles>10 && abs(jet_eta_)>3.0 );
-    }catch(const edm::Exception &e){
+    }catch(const cms::Exception &e){
       jet_looseId_ = 1;
     }
 

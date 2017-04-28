@@ -13,7 +13,7 @@
 class ntuple_SV: public ntuple_content{
 public:
 
-    ntuple_SV(std::string prefix = "");
+    ntuple_SV(std::string prefix = "", double jetR = 0.4);
     ~ntuple_SV();
 
     void getInput(const edm::ParameterSet& iConfig);

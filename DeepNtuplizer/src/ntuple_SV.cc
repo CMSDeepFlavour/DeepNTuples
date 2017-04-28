@@ -20,7 +20,7 @@
 
 const reco::Vertex * ntuple_SV::spvp_;
 
-ntuple_SV::ntuple_SV(std::string prefix):ntuple_content(),sv_num_(0){
+ntuple_SV::ntuple_SV(std::string prefix, double jetR):ntuple_content(jetR),sv_num_(0){
     prefix_ = prefix;
 }
 ntuple_SV::~ntuple_SV(){}
@@ -89,10 +89,20 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
     float etasign=1;
     etasign++; //avoid unused warning
     if(jet.eta()<0)etasign=-1;
-    
+
+    double jet_radius = jetR();
+    if (jet_radius<0){
+      // subjets: use maxDR(subjet, pfcand)
+      for (unsigned idau=0; idau<jet.numberOfDaughters(); ++idau){
+        double dR = reco::deltaR(*jet.daughter(idau), jet);
+        if (dR>jet_radius)
+          jet_radius = dR;
+      }
+    }
+
     for (const reco::VertexCompositePtrCandidate &sv : cpvtx) {
 
-        if (reco::deltaR(sv,jet)>0.4) { continue; }
+        if (reco::deltaR(sv,jet)>jet_radius) { continue; }
         if((int)max_sv>sv_num_){
 
             sv_pt_[sv_num_]           = sv.pt();
