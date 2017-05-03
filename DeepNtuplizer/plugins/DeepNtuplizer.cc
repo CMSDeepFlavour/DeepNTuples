@@ -11,6 +11,7 @@
 #include "../interface/ntuple_JetInfo.h"
 #include "../interface/ntuple_pfCands.h"
 #include "../interface/ntuple_bTagVars.h"
+#include "../interface/ntuple_FatJetInfo.h"
 
 //ROOT includes
 #include "TTree.h"
@@ -158,6 +159,11 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     addModule(pfcands);
 
     addModule(new ntuple_bTagVars());
+
+    auto *fatjetinfo = new ntuple_FatJetInfo(jetR);
+    fatjetinfo->setGenParticleToken(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("pruned")));
+    fatjetinfo->setFatJetToken(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("fatjets")));
+    addModule(fatjetinfo);
 
     /*
      *

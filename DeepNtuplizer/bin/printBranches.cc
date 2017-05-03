@@ -4,6 +4,7 @@
 #include "../interface/ntuple_SV.h"
 #include "../interface/ntuple_bTagVars.h"
 #include "../interface/ntuple_pfCands.h"
+#include "../interface/ntuple_FatJetInfo.h"
 #include "TFile.h"
 #include <vector>
 #include "TH1F.h"
@@ -18,6 +19,7 @@ int main(int argc, char *argv[]) {
     branchinfos.push_back(new ntuple_SV());
     branchinfos.push_back(new ntuple_bTagVars());
     branchinfos.push_back(new ntuple_pfCands());
+    branchinfos.push_back(new ntuple_FatJetInfo());
 
     if (argc < 3)
         return -1;

@@ -189,6 +189,7 @@ process.TFileService = cms.Service("TFileService",
 # DeepNtuplizer
 process.load("DeepNTuples.DeepNtuplizer.DeepNtuplizer_cfi")
 process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour')
+process.deepntuplizer.fatjets = cms.InputTag('slimmedJetsAK8')
 process.deepntuplizer.jetR = -1  # subjets
 process.deepntuplizer.jetPtMax = 3000
 process.deepntuplizer.bDiscriminators = bTagDiscriminators 
