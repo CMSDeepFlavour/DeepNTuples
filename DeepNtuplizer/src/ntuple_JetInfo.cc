@@ -65,9 +65,9 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     // jet variables
     //b=tree->Branch("jet_pt", &jet_pt_);
     addBranch(tree,"jet_pt", &jet_pt_);
-
     addBranch(tree,"jet_corr_pt", &jet_corr_pt_);
     addBranch(tree,"jet_eta", &jet_eta_);
+    addBranch(tree,"jet_phi", &jet_phi_);
 
 
     //jet id
@@ -259,6 +259,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     jet_pt_ = jet.correctedJet("Uncorrected").pt();
     jet_eta_ = jet.eta();
+    jet_phi_ = jet.phi();
     jet_corr_pt_ = jet.pt();
 
 
