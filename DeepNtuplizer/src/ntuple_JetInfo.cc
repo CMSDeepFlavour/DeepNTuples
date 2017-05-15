@@ -161,7 +161,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     // some cuts to contrin training region
     if ( jet.pt() < jetPtMin_ ||  jet.pt() > jetPtMax_ ) return false;                  // apply jet pT cut
-    if ( jet.eta() < fabs(jetAbsEtaMin_) ||jet.eta() > fabs(jetAbsEtaMax_) ) return false; // apply jet eta cut
+    if ( fabs(jet.eta()) < jetAbsEtaMin_ || fabs(jet.eta()) > jetAbsEtaMax_ ) return false; // apply jet eta cut
 
     // often we have way to many gluons that we do not need. This randomply reduces the gluons
     if (gluonReduction_>0 && jet.partonFlavour()==21)
