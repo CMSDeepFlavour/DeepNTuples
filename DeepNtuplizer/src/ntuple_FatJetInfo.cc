@@ -7,12 +7,16 @@
 
 #include "../interface/ntuple_FatJetInfo.h"
 #include "DeepNTuples/JetAnalysis/interface/JetHelper.h"
+#include <sstream>
+#include <algorithm>
 
+using namespace std;
 using namespace deep_ntuples;
 
 void ntuple_FatJetInfo::getInput(const edm::ParameterSet& iConfig) {
 	if (jetR() > 0) return;
 	minSoftDropMass_ = iConfig.getUntrackedParameter<double>("minSoftDropMass", -1);
+        tagInfoName_=(iConfig.getParameter<string>("tagInfoFJName"));
 }
 
 void ntuple_FatJetInfo::readEvent(const edm::Event& iEvent) {
@@ -28,11 +32,18 @@ void ntuple_FatJetInfo::initBranches(TTree* tree) {
 	// truth labels
 	addBranch(tree, "fj_isLight",        &fj_isLight_         );
 	addBranch(tree, "fj_isW",            &fj_isW_             );
+        addBranch(tree, "fj_isH",            &fj_isH_             );
 	addBranch(tree, "fj_isTop",          &fj_isTop_           );
+	
 
 	// gen-matched particle (top/W/etc.)
 	addBranch(tree, "fj_gen_pt",         &fj_gen_pt_          );
 	addBranch(tree, "fj_gen_eta",        &fj_gen_eta_         );
+
+	//flavor info 
+	addBranch(tree, "flavour", &flavour_);
+        addBranch(tree, "nbHadrons", &nbHadrons_ );
+        addBranch(tree, "ncHadrons", &ncHadrons_ );
 
 	// fatjet kinematics
 	addBranch(tree, "fj_pt",             &fj_pt_              );
@@ -49,6 +60,38 @@ void ntuple_FatJetInfo::initBranches(TTree* tree) {
 
 	// soft drop
 	addBranch(tree, "fj_sdmass",         &fj_sdmass_          );
+
+	//double-b 
+	addBranch(tree, "fj_doubleb", &fj_doubleb_);
+
+	//double-b inputs 
+        addBranch(tree, "fj_z_ratio", &z_ratio_);
+        addBranch(tree, "fj_trackSipdSig_3", &trackSipdSig_3_);
+        addBranch(tree, "fj_trackSipdSig_2", &trackSipdSig_2_);
+        addBranch(tree, "fj_trackSipdSig_1", &trackSipdSig_1_);
+        addBranch(tree, "fj_trackSipdSig_0", &trackSipdSig_0_);
+        addBranch(tree, "fj_trackSipdSig_1_0_", &trackSipdSig_1_0_);
+        addBranch(tree, "fj_trackSipdSig_0_0", &trackSipdSig_0_0_);
+        addBranch(tree, "fj_trackSipdSig_1_1", &trackSipdSig_1_1_);
+        addBranch(tree, "fj_trackSipdSig_0_1", &trackSipdSig_0_1_);
+        addBranch(tree, "fj_trackSip2dSigAboveCharm_0", &trackSip2dSigAboveCharm_0_);
+        addBranch(tree, "fj_trackSip2dSigAboveBottom_0", &trackSip2dSigAboveBottom_0_);
+        addBranch(tree, "fj_trackSip2dSigAboveBottom_1", &trackSip2dSigAboveBottom_1_);
+	addBranch(tree, "fj_tau1_trackEtaRel_0", &tau1_trackEtaRel_0_); 
+        addBranch(tree, "fj_tau1_trackEtaRel_1", &tau1_trackEtaRel_1_); 
+        addBranch(tree, "fj_tau1_trackEtaRel_2", &tau1_trackEtaRel_2_); 
+        addBranch(tree, "fj_tau0_trackEtaRel_0", &tau0_trackEtaRel_0_); 
+        addBranch(tree, "fj_tau0_trackEtaRel_1", &tau0_trackEtaRel_1_); 
+        addBranch(tree, "fj_tau0_trackEtaRel_2", &tau0_trackEtaRel_2_); 
+        addBranch(tree, "fj_tau_vertexMass_0", &tau_vertexMass_0_ );
+        addBranch(tree, "fj_tau_vertexEnergyRatio_0", &tau_vertexEnergyRatio_0_ );
+        addBranch(tree, "fj_tau_vertexDeltaR_0", &tau_vertexDeltaR_0_ );
+        addBranch(tree, "fj_tau_flightDistance2dSig_0", &tau_flightDistance2dSig_0_ );
+        addBranch(tree, "fj_tau_vertexMass_1", &tau_vertexMass_1_  );
+        addBranch(tree, "fj_tau_vertexEnergyRatio_1", &tau_vertexEnergyRatio_1_ );
+        addBranch(tree, "fj_tau_flightDistance2dSig_1", &tau_flightDistance2dSig_1_);
+        addBranch(tree, "fj_jetNTracks", &jetNTracks_);
+        addBranch(tree, "fj_nSV", &nSV_);
 
 	// subjets: soft drop gives up to 2 subjets
 	addBranch(tree, "fj_n_sdsubjets",    &fj_n_sdsubjets_     );
@@ -78,6 +121,17 @@ void ntuple_FatJetInfo::initBranches(TTree* tree) {
 }
 
 bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, const edm::View<pat::Jet>* coll) {
+     
+    if(!jet.hasTagInfo(tagInfoName_)) {
+        stringstream stream;
+        for(auto &lab : jet.tagInfoLabels())
+            stream << lab << ", ";
+        throw cms::Exception("ValueError") << "There is no tagInfo embedded in the jet labelled: " << tagInfoName_ <<
+                ". The available ones are: " << stream.str() << endl;
+    }
+    const reco::ShallowTagInfo* tagInfo = dynamic_cast<const reco::ShallowTagInfo*>(jet.tagInfo(tagInfoName_)); //to be fixed with new names
+    reco::TaggingVariableList vars = tagInfo->taggingVariables();
+
 
 	if (jetR() > 0) return true;
 
@@ -96,6 +150,39 @@ bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, 
 		return true;
 	}
 
+        z_ratio_ = vars.get(reco::btau::z_ratio);
+        trackSipdSig_3_ = vars.get(reco::btau::trackSip3dSig_3);
+        trackSipdSig_2_ = vars.get(reco::btau::trackSip3dSig_2);
+        trackSipdSig_1_ = vars.get(reco::btau::trackSip3dSig_1);
+        trackSipdSig_0_ = vars.get(reco::btau::trackSip3dSig_0);
+        trackSipdSig_1_0_ = vars.get(reco::btau::tau2_trackSip3dSig_0);
+        trackSipdSig_0_0_ = vars.get(reco::btau::tau1_trackSip3dSig_0);
+        trackSipdSig_1_1_ = vars.get(reco::btau::tau2_trackSip3dSig_1);
+        trackSipdSig_0_1_ = vars.get(reco::btau::tau1_trackSip3dSig_1);
+        trackSip2dSigAboveCharm_0_ = vars.get(reco::btau::trackSip2dSigAboveCharm);
+        trackSip2dSigAboveBottom_0_ = vars.get(reco::btau::trackSip2dSigAboveBottom_0);
+        trackSip2dSigAboveBottom_1_ = vars.get(reco::btau::trackSip2dSigAboveBottom_1);
+        tau1_trackEtaRel_0_ = vars.get(reco::btau::tau2_trackEtaRel_0);
+        tau1_trackEtaRel_1_ = vars.get(reco::btau::tau2_trackEtaRel_1);
+        tau1_trackEtaRel_2_ = vars.get(reco::btau::tau2_trackEtaRel_2);
+        tau0_trackEtaRel_0_ = vars.get(reco::btau::tau1_trackEtaRel_0);
+        tau0_trackEtaRel_1_ = vars.get(reco::btau::tau1_trackEtaRel_1);
+        tau0_trackEtaRel_2_ = vars.get(reco::btau::tau1_trackEtaRel_2);
+        tau_vertexMass_0_ = vars.get(reco::btau::tau1_vertexMass);
+        tau_vertexEnergyRatio_0_ = vars.get(reco::btau::tau1_vertexEnergyRatio);
+        tau_vertexDeltaR_0_ = vars.get(reco::btau::tau1_vertexDeltaR);
+        tau_flightDistance2dSig_0_ = vars.get(reco::btau::tau1_flightDistance2dSig);
+        tau_vertexMass_1_ = vars.get(reco::btau::tau2_vertexMass);
+        tau_vertexEnergyRatio_1_ = vars.get(reco::btau::tau2_vertexEnergyRatio);
+        tau_flightDistance2dSig_1_ = vars.get(reco::btau::tau2_flightDistance2dSig);
+        jetNTracks_ = vars.get(reco::btau::jetNTracks);
+        nSV_ = vars.get(reco::btau::jetNSecondaryVertices);
+
+        //flavour_ = fj->partonFlavor();   
+        nbHadrons_ = fj->jetFlavourInfo().getbHadrons().size();
+        ncHadrons_ = fj->jetFlavourInfo().getcHadrons().size();
+
+
 	// preselection on sdmass and n_sd_subjets
 	fj_sdmass_ = fj->userFloat("ak8PFJetsPuppiSoftDropMass");
 //	if (fj_sdmass_ < minSoftDropMass_) return false;
@@ -107,7 +194,8 @@ bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, 
 	auto genmatch = fjmatch_.flavor(fj, *genParticleHandle_);
 	fj_isW_     = genmatch.first == FatJetMatching::W;
 	fj_isTop_   = genmatch.first == FatJetMatching::Top;
-	fj_isLight_ = !(fj_isW_ || fj_isTop_);
+	fj_isH_     = genmatch.first == FatJetMatching::H;
+	fj_isLight_ = !(fj_isW_ || fj_isTop_ || fj_isH_ );
 
 	// gen-matched particle (top/W/etc.)
 	fj_gen_pt_  = genmatch.second ? genmatch.second->pt()  : -999;
@@ -118,6 +206,9 @@ bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, 
 	fj_eta_    = fj->eta();
 	fj_phi_    = fj->phi();
 	fj_mass_   = fj->mass();
+
+	//double-b
+	fj_doubleb_ =fj->bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags");
 
 	// substructure
 	fj_tau1_   = fj->userFloat("NjettinessAK8Puppi:tau1");

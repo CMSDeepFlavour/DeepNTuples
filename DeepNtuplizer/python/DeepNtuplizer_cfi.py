@@ -20,5 +20,6 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                 jetAbsEtaMax = cms.double(2.4),
                                 gluonReduction = cms.double(0.0),
                                 tagInfoName = cms.string('pfDeepCSV'),
+				tagInfoFJName = cms.string('pfBoostedDoubleSVAK8'),
                                 bDiscriminators = cms.vstring(),
                                 )
