@@ -11,6 +11,7 @@
 #include "../interface/ntuple_JetInfo.h"
 #include "../interface/ntuple_pfCands.h"
 #include "../interface/ntuple_bTagVars.h"
+#include "../interface/ntuple_FatJetInfo.h"
 
 //ROOT includes
 #include "TTree.h"
@@ -107,14 +108,17 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
      *  modules don't interact.
      */
 
-    ntuple_SV* svmodule=new ntuple_SV();
+	// read configuration parameters
+	const double jetR = iConfig.getParameter<double>("jetR");
+
+	ntuple_SV* svmodule=new ntuple_SV("", jetR);
     svmodule->setSVToken(
             consumes<reco::VertexCompositePtrCandidateCollection>(
                     iConfig.getParameter<edm::InputTag>("secVertices")));
     addModule(svmodule);
-    
+
     //Loose IVF vertices
-    ntuple_SV* svmodule_LooseIVF=new ntuple_SV("LooseIVF_");
+    ntuple_SV* svmodule_LooseIVF=new ntuple_SV("LooseIVF_", jetR);
     svmodule_LooseIVF->setSVToken(
             consumes<reco::VertexCompositePtrCandidateCollection>(
                     iConfig.getParameter<edm::InputTag>("LooseSVs")));
@@ -155,6 +159,11 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     addModule(pfcands);
 
     addModule(new ntuple_bTagVars());
+
+    auto *fatjetinfo = new ntuple_FatJetInfo(jetR);
+    fatjetinfo->setGenParticleToken(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("pruned")));
+    fatjetinfo->setFatJetToken(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("fatjets")));
+    addModule(fatjetinfo);
 
     /*
      *

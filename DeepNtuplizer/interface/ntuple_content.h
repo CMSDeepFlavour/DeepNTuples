@@ -27,7 +27,8 @@
  */
 class ntuple_content{
 public:
-    ntuple_content():vertices_(0),pupInfo_(0),rhoInfo_(0),read_(false){}
+    ntuple_content():ntuple_content(0.4) {}
+    ntuple_content(double jetR):vertices_(0),jetR_(jetR),pupInfo_(0),rhoInfo_(0),read_(false){}
     virtual ~ntuple_content();
 
     virtual void getInput(const edm::ParameterSet& iConfig){}
@@ -43,7 +44,7 @@ public:
     }
     void setPuInfo(const std::vector<PileupSummaryInfo> *v){
 	pupInfo_ =v;
-    }	
+    }
     void setRhoInfo(const double *v){
         rhoInfo_ =v;
     }
@@ -63,12 +64,13 @@ public:
 protected:
     const reco::VertexCollection * vertices()const;
     const double* rhoInfo()const;
-    const std::vector<PileupSummaryInfo> * pupInfo()const;	
+    const std::vector<PileupSummaryInfo> * pupInfo()const;
 
 
     template <class T>
     void addBranch(TTree* t, const char* name,  T*, const char* leaflist=0);
 
+    double jetR() const { return jetR_; }
 
     static inline const float& catchInfs(const float& in,const float& replace_value){
         if(in==in){
@@ -90,6 +92,7 @@ protected:
 
 private:
     const reco::VertexCollection* vertices_;
+    double jetR_;
     const std::vector<PileupSummaryInfo> * pupInfo_;
     const double* rhoInfo_;
     bool read_;
