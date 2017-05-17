@@ -71,11 +71,19 @@ process.maxEvents  = cms.untracked.PSet(
 )
 
 
-bTagInfos = [
-	'pfImpactParameterTagInfos',
-	'pfInclusiveSecondaryVertexFinderTagInfos',
-	'deepNNTagInfos',
-]
+if int(options.release.replace("_",""))>=840 :
+ bTagInfos = [
+        'pfImpactParameterTagInfos',
+        'pfInclusiveSecondaryVertexFinderTagInfos',
+        'pfDeepCSVTagInfos',
+ ]
+else :
+ bTagInfos = [
+        'pfImpactParameterTagInfos',
+        'pfInclusiveSecondaryVertexFinderTagInfos',
+        'deepNNTagInfos',
+ ]
+
 
 if int(options.release.replace("_",""))>=840 :
  bTagDiscriminators = [

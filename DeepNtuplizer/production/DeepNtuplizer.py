@@ -13,6 +13,10 @@ options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, 
 options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "job number")
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
 options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "gluon reduction")
+options.register('release','8_0_1', VarParsing.VarParsing.multiplicity.singleton,VarParsing.VarParsing.varType.string,"release number (w/o CMSSW)")
+
+print("Using release "+options.release)
+
 
 options.register(
 	'inputFiles','',
@@ -53,7 +57,12 @@ process.options = cms.untracked.PSet(
 
 from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
 
-process.load('DeepNTuples.DeepNtuplizer.samples.TTJetsPhase1_cfg') #default input
+process.source = cms.Source('PoolSource',
+    fileNames=cms.untracked.vstring (filesRelValTTbarPileUpMINIAODSIM),
+)
+
+
+#process.load('DeepNTuples.DeepNtuplizer.samples.TTJetsPhase1_cfg') #default input
 
 
 if options.inputFiles:
@@ -77,24 +86,47 @@ process.maxEvents  = cms.untracked.PSet(
     input = cms.untracked.int32 (options.maxEvents) 
 )
 
-
-bTagInfos = [
+if int(options.release.replace("_",""))>=840 :
+ bTagInfos = [
 	'pfImpactParameterTagInfos',
 	'pfInclusiveSecondaryVertexFinderTagInfos',
 	'pfDeepCSVTagInfos',
-]
-bTagDiscriminators = [
-	'softPFMuonBJetTags',
-	'softPFElectronBJetTags',
-	'pfJetBProbabilityBJetTags',
-	'pfJetProbabilityBJetTags',
-	'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-	'pfDeepCSVJetTags:probudsg',
-	'pfDeepCSVJetTags:probb',
-	'pfDeepCSVJetTags:probc',
-	'pfDeepCSVJetTags:probbb',
-	'pfDeepCSVJetTags:probcc',
-]
+ ]
+else : 
+ bTagInfos = [
+        'pfImpactParameterTagInfos',
+        'pfInclusiveSecondaryVertexFinderTagInfos',
+	'deepNNTagInfos',
+ ]
+
+
+if int(options.release.replace("_",""))>=840 :
+ bTagDiscriminators = [
+     'softPFMuonBJetTags',
+     'softPFElectronBJetTags',
+         'pfJetBProbabilityBJetTags',
+         'pfJetProbabilityBJetTags',
+     'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+         'pfDeepCSVJetTags:probudsg', #to be fixed with new names
+         'pfDeepCSVJetTags:probb',
+         'pfDeepCSVJetTags:probc',
+         'pfDeepCSVJetTags:probbb',
+         'pfDeepCSVJetTags:probcc',
+ ]
+else :
+  bTagDiscriminators = [
+     'softPFMuonBJetTags',
+     'softPFElectronBJetTags',
+         'pfJetBProbabilityBJetTags',
+         'pfJetProbabilityBJetTags',
+     'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+         'deepFlavourJetTags:probudsg', #to be fixed with new names
+         'deepFlavourJetTags:probb',
+         'deepFlavourJetTags:probc',
+         'deepFlavourJetTags:probbb',
+         'deepFlavourJetTags:probcc',
+ ]
+
 jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
@@ -192,6 +224,10 @@ process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour');
 process.deepntuplizer.bDiscriminators = bTagDiscriminators 
 process.deepntuplizer.bDiscriminators.append('pfCombinedMVAV2BJetTags')
 process.deepntuplizer.LooseSVs = cms.InputTag("looseIVFinclusiveCandidateSecondaryVertices")
+
+if int(options.release.replace("_",""))>=840 :
+   process.deepntuplizer.tagInfoName = cms.string('pfDeepCSV')
+
 
 process.deepntuplizer.gluonReduction  = cms.double(options.gluonReduction)
 
