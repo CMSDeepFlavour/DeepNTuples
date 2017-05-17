@@ -55,14 +55,8 @@ process.options = cms.untracked.PSet(
    wantSummary=cms.untracked.bool(False)
 )
 
-from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
 
-process.source = cms.Source('PoolSource',
-    fileNames=cms.untracked.vstring (filesRelValTTbarPileUpMINIAODSIM),
-)
-
-
-#process.load('DeepNTuples.DeepNtuplizer.samples.TTJetsPhase1_cfg') #default input
+process.load('DeepNTuples.DeepNtuplizer.samples.TTJetsPhase1_cfg') #default input
 
 
 if options.inputFiles:
