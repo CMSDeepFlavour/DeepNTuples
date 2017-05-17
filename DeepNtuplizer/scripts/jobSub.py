@@ -150,19 +150,18 @@ def doSub():
             scriptfile=re.sub(r'['+chars+']', '', str(samplename))
             scriptfile=scriptfile
             if not os.path.isfile(samplescriptdir+scriptfile+'.py'):
-                sampleurl='https://cmsweb.cern.ch/das/makepy?dataset='+samplename+'&instance=prod/global'
-                print(scriptfile)
-                #check if already saved a file list from das?
-                ##get from das etc, prepare query
-                print('getting script file from DAS')
-                dasquery = subprocess.Popen(['wget','--certificate',usercertfile,
-                                             '--private-key',userkeyfile,
-                                             '--no-check-certificate',
-                                             '-O',samplescriptdir+scriptfile+'.py',
-                                             sampleurl],
-                                             stdout=subprocess.PIPE, 
-                                             stderr=subprocess.PIPE)
-                sout, serr = dasquery.communicate()
+                cmd = 'dasgoclient -query="file dataset=%s"' % (samplename)
+                dasquery = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                sout = dasquery.communicate()[0]
+                filelist = ['"%s",' % f for f in sout.strip().split('\n')]
+
+                template_sample = os.path.join(os.environ['CMSSW_BASE'], 'src/DeepNTuples/DeepNtuplizer/python/samples/samples_template.py')
+                dest_file = samplescriptdir+scriptfile+'.py'
+                with open(template_sample) as temp:
+                    s = temp.read().replace('_FILES_', '\n'.join(filelist))
+                    with open(dest_file, 'w') as fout:
+                        fout.write(s)
+
             sample=scriptfile
         
         

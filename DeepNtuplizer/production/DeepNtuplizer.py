@@ -81,7 +81,7 @@ process.maxEvents  = cms.untracked.PSet(
 bTagInfos = [
 	'pfImpactParameterTagInfos',
 	'pfInclusiveSecondaryVertexFinderTagInfos',
-	'deepNNTagInfos',
+	'pfDeepCSVTagInfos',
 ]
 bTagDiscriminators = [
 	'softPFMuonBJetTags',
@@ -89,11 +89,11 @@ bTagDiscriminators = [
 	'pfJetBProbabilityBJetTags',
 	'pfJetProbabilityBJetTags',
 	'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-	'deepFlavourJetTags:probudsg', #to be fixed with new names
-	'deepFlavourJetTags:probb', 
-	'deepFlavourJetTags:probc', 
-	'deepFlavourJetTags:probbb', 
-	'deepFlavourJetTags:probcc',
+	'pfDeepCSVJetTags:probudsg',
+	'pfDeepCSVJetTags:probb',
+	'pfDeepCSVJetTags:probc',
+	'pfDeepCSVJetTags:probbb',
+	'pfDeepCSVJetTags:probcc',
 ]
 jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
 
@@ -101,7 +101,8 @@ from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 updateJetCollection(
         process,
         labelName = "DeepFlavour",
-        jetSource = cms.InputTag('slimmedJets'),#'ak4Jets'
+#         jetSource=cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked', 'SubJets'),  # 'subjets from AK8'
+        jetSource = cms.InputTag('slimmedJets'),  # 'ak4Jets'
         jetCorrections = jetCorrectionsAK4,
         pfCandidates = cms.InputTag('packedPFCandidates'),
         pvSource = cms.InputTag("offlineSlimmedPrimaryVertices"),

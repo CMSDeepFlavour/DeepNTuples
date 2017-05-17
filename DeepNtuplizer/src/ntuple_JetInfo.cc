@@ -33,7 +33,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     //more general event info, here applied per jet
     addBranch(tree,"npv"    ,&npv_    ,"npv/f"    );
     addBranch(tree,"rho", &rho_, "rho/f");
-    addBranch(tree,"ntrueInt",&ntrueInt_,"ntrueInt/f");   
+    addBranch(tree,"ntrueInt",&ntrueInt_,"ntrueInt/f");
     addBranch(tree,"event_no"    ,&event_no_    ,"event_no/i"    );
     addBranch(tree,"jet_no"    ,&jet_no_    ,"jet_no/i"    );
 
@@ -80,8 +80,8 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"QG_mult",  &QG_mult_);  // multiplicity i.e. total num of PFcands reconstructed
     // in the jet
 
-    addBranch(tree,"muons_number", &muons_number_, "muons_number_/i"); 
-    addBranch(tree,"electrons_number", &electrons_number_, "electrons_number_/i"); 
+    addBranch(tree,"muons_number", &muons_number_, "muons_number_/i");
+    addBranch(tree,"electrons_number", &electrons_number_, "electrons_number_/i");
 
     addBranch(tree,"muons_isLooseMuon", &muons_isLooseMuon_, "muons_isLooseMuon_[muons_number_]/i");
     addBranch(tree,"muons_isTightMuon", &muons_isTightMuon_, "muons_isTightMuon_[muons_number_]/i");
@@ -94,7 +94,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"electrons_pt", &electrons_pt_, "electrons_pt_[electrons_number_]/f");
     addBranch(tree,"electrons_relEta", &electrons_relEta_, "electrons_relEta_[electrons_number_]/f");
     addBranch(tree,"electrons_relPhi", &electrons_relPhi_, "electrons_relPhi_[electrons_number_]/f");
-    addBranch(tree,"electrons_energy", &electrons_energy_, "electrons_energy_[electrons_number_]/f");    
+    addBranch(tree,"electrons_energy", &electrons_energy_, "electrons_energy_[electrons_number_]/f");
 
 
     addBranch(tree,"gen_pt_Recluster"    ,&gen_pt_Recluster_    ,"gen_pt_Recluster_/f"    );
@@ -130,10 +130,10 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
     neutrinosLepB.clear();
     neutrinosLepB_C.clear();
 
-    for (const reco::Candidate &genC : *genParticlesHandle) {      
+    for (const reco::Candidate &genC : *genParticlesHandle) {
         const reco::GenParticle &gen = static_cast< const reco::GenParticle &>(genC);
         if(abs(gen.pdgId())==12||abs(gen.pdgId())==14||abs(gen.pdgId())==16) {
-            const reco::GenParticle* mother =  static_cast< const reco::GenParticle*> (gen.mother());       
+            const reco::GenParticle* mother =  static_cast< const reco::GenParticle*> (gen.mother());
             if(mother!=NULL) {
                 if((abs(mother->pdgId())>500&&abs(mother->pdgId())<600)||(abs(mother->pdgId())>5000&&abs(mother->pdgId())<6000)) {
                     neutrinosLepB.emplace_back(gen);
@@ -176,12 +176,12 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     }
 
     npv_ = vertices()->size();
-    
+
     for (auto const& v : *pupInfo()) {
-        int bx = v.getBunchCrossing();   
+        int bx = v.getBunchCrossing();
         if (bx == 0) {
                 ntrueInt_ = v.getTrueNumInteractions();
-                }       
+                }
         }
     rho_ = rhoInfo()[0];
 
@@ -215,14 +215,14 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             muons_isHighPtMuon_[i] = muon.isHighPtMuon(vertices()->at(0));
             muons_pt_[i] = muon.pt();
             muons_relEta_[i] = etasign*(muon.eta()-jet.eta());
-            muons_relPhi_[i] = reco::deltaPhi(muon.phi(),jet.phi()); 
+            muons_relPhi_[i] = reco::deltaPhi(muon.phi(),jet.phi());
             muons_energy_[i] = muon.energy()/jet.energy();
         }
         if (i < elecIds.size()) {
             const auto & electron = (*electronsHandle).at(elecIds.at(i));
             electrons_pt_[i] = electron.pt();
             electrons_relEta_[i] = etasign*(electron.eta()-jet.eta());
-            electrons_relPhi_[i] = reco::deltaPhi(electron.phi(),jet.phi()); 
+            electrons_relPhi_[i] = reco::deltaPhi(electron.phi(),jet.phi());
             electrons_energy_[i] = electron.energy()/jet.energy();
         }
     }
@@ -234,8 +234,8 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     case deep_ntuples::JetFlavor::BB: isBB_=1; break;
     case deep_ntuples::JetFlavor::C:  isC_=1; break;
     case deep_ntuples::JetFlavor::G:  isG_=1; break;
-    case deep_ntuples::JetFlavor::LeptonicB: isLeptonicB_=1; break;                                 
-    case deep_ntuples::JetFlavor::LeptonicB_C: isLeptonicB_C_=1; break; 
+    case deep_ntuples::JetFlavor::LeptonicB: isLeptonicB_=1; break;
+    case deep_ntuples::JetFlavor::LeptonicB_C: isLeptonicB_C_=1; break;
     default : isUndefined_=1; break;
     }
 
@@ -248,8 +248,8 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     case deep_ntuples::JetFlavor::BB: isPhysBB_=1; break;
     case deep_ntuples::JetFlavor::C:  isPhysC_=1; break;
     case deep_ntuples::JetFlavor::G:  isPhysG_=1; break;
-    case deep_ntuples::JetFlavor::LeptonicB: isPhysLeptonicB_=1; break;                                 
-    case deep_ntuples::JetFlavor::LeptonicB_C: isPhysLeptonicB_C_=1; break; 
+    case deep_ntuples::JetFlavor::LeptonicB: isPhysLeptonicB_=1; break;
+    case deep_ntuples::JetFlavor::LeptonicB_C: isPhysLeptonicB_C_=1; break;
     default : isPhysUndefined_=1; break;
     }
 
@@ -264,20 +264,22 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 
     //https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016
-    float NHF  = jet.neutralHadronEnergyFraction();
-    float NEMF = jet.neutralEmEnergyFraction();
-    float CHF  = jet.chargedHadronEnergyFraction();
-    //float MUF  = jet.muonEnergyFraction();
-    float CEMF = jet.chargedEmEnergyFraction();
-    float NumConst = jet.chargedMultiplicity()+jet.neutralMultiplicity();
-    float NumNeutralParticles =jet.neutralMultiplicity();
-    float CHM      = jet.chargedMultiplicity(); 
+    try{
+      float NHF  = jet.neutralHadronEnergyFraction();
+      float NEMF = jet.neutralEmEnergyFraction();
+      float CHF  = jet.chargedHadronEnergyFraction();
+      //float MUF  = jet.muonEnergyFraction();
+      float CEMF = jet.chargedEmEnergyFraction();
+      float NumConst = jet.chargedMultiplicity()+jet.neutralMultiplicity();
+      float NumNeutralParticles =jet.neutralMultiplicity();
+      float CHM      = jet.chargedMultiplicity();
 
-    jet_looseId_ = ((NHF<0.99 && NEMF<0.99 && NumConst>1) && ((abs(jet_eta_)<=2.4 && CHF>0 && CHM>0 && CEMF<0.99) || abs(jet_eta_)>2.4) && abs(jet_eta_)<=2.7) ||
-            (NHF<0.98 && NEMF>0.01 && NumNeutralParticles>2 && abs(jet_eta_)>2.7 && abs(jet_eta_)<=3.0 ) ||
-            (NEMF<0.90 && NumNeutralParticles>10 && abs(jet_eta_)>3.0 );
-
-
+      jet_looseId_ = ((NHF<0.99 && NEMF<0.99 && NumConst>1) && ((abs(jet_eta_)<=2.4 && CHF>0 && CHM>0 && CEMF<0.99) || abs(jet_eta_)>2.4) && abs(jet_eta_)<=2.7) ||
+          (NHF<0.98 && NEMF>0.01 && NumNeutralParticles>2 && abs(jet_eta_)>2.7 && abs(jet_eta_)<=3.0 ) ||
+          (NEMF<0.90 && NumNeutralParticles>10 && abs(jet_eta_)>3.0 );
+    }catch(const cms::Exception &e){
+      jet_looseId_ = 1;
+    }
 
 
     gen_pt_ =  jet.genJet()->pt();
