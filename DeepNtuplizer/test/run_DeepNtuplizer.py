@@ -12,6 +12,10 @@ options.register('maxEvents',-1,VarParsing.VarParsing.multiplicity.singleton,Var
 options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "skip N events")
 options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "job number")
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
+options.register('release','8_0_1', VarParsing.VarParsing.multiplicity.singleton,VarParsing.VarParsing.varType.string,"release number (w/o CMSSW)")
+
+print("Using release "+options.release)
+
 
 if hasattr(sys, "argv"):
     options.parseArguments()
@@ -72,18 +76,35 @@ bTagInfos = [
 	'pfInclusiveSecondaryVertexFinderTagInfos',
 	'deepNNTagInfos',
 ]
-bTagDiscriminators = [
+
+if int(options.release.replace("_",""))>=840 :
+ bTagDiscriminators = [
      'softPFMuonBJetTags',
      'softPFElectronBJetTags',
-	 'pfJetBProbabilityBJetTags',
-	 'pfJetProbabilityBJetTags',
+         'pfJetBProbabilityBJetTags',
+         'pfJetProbabilityBJetTags',
      'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-	 'deepFlavourJetTags:probudsg', #to be fixed with new names
-	 'deepFlavourJetTags:probb', 
-	 'deepFlavourJetTags:probc', 
-	 'deepFlavourJetTags:probbb', 
-	 'deepFlavourJetTags:probcc',
-]
+         'pfDeepCSVJetTags:probudsg', #to be fixed with new names
+         'pfDeepCSVJetTags:probb',
+         'pfDeepCSVJetTags:probc',
+         'pfDeepCSVJetTags:probbb',
+         'pfDeepCSVJetTags:probcc',
+ ]
+else :
+  bTagDiscriminators = [
+     'softPFMuonBJetTags',
+     'softPFElectronBJetTags',
+         'pfJetBProbabilityBJetTags',
+         'pfJetProbabilityBJetTags',
+     'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+         'deepFlavourJetTags:probudsg', #to be fixed with new names
+         'deepFlavourJetTags:probb',
+         'deepFlavourJetTags:probc',
+         'deepFlavourJetTags:probbb',
+         'deepFlavourJetTags:probcc',
+ ]
+
+
 
 jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
 
