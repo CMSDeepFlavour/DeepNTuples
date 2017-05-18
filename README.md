@@ -29,20 +29,18 @@ Installation (CMSSW 8_1_X)
 ============
 
 ```
-cmsrel CMSSW_8_0_25
-cd CMSSW_8_0_25/src/
+cmsrel CMSSW_8_1_0
+cd CMSSW_8_1_0/src/
 cmsenv
 git cms-init
+# Add DeepFlavour -- To be updated once the 80X PR is done
+git cms-merge-topic -u cms-btv-pog:DeepFlavour-from-CMSSW_8_1_0
 git clone https://github.com/CMSDeepFlavour/DeepNTuples
 # Add JetToolBox
 cd DeepNTuples
 git submodule init
 git submodule update
 
-# Add DeepFlavour -- To be updated once the 80X PR is done
-cd -
-git cms-merge-topic -u cms-btv-pog:DeepFlavour-from-CMSSW_8_1_0
-cd -
 #compile
 scram b -j 4
 ```
