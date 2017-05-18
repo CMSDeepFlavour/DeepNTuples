@@ -11,6 +11,7 @@
 #include "ntuple_content.h"
 #include "DataFormats/BTauReco/interface/ShallowTagInfo.h"
 #include "DeepNTuples/JetAnalysis/interface/FatJetMatching.h"
+#include "DataFormats/BTauReco/interface/BoostedDoubleSVTagInfo.h"
 
 /*
  * For fatjet specific variables. NOT FILLED for ak4.
@@ -37,7 +38,7 @@ public:
 
 private:
 	double minSoftDropMass_ = 0;
-	std::string tagInfoName_ ;
+	std::string tagInfoFName_ ;
 	deep_ntuples::FatJetMatching fjmatch_;
 	edm::EDGetTokenT<reco::GenParticleCollection>      genParticleToken_;
 	edm::Handle<reco::GenParticleCollection>           genParticleHandle_;

@@ -105,30 +105,32 @@ if int(release.replace("_",""))>=840 :
  bTagDiscriminators = [
      'softPFMuonBJetTags',
      'softPFElectronBJetTags',
-         'pfJetBProbabilityBJetTags',
-         'pfJetProbabilityBJetTags',
+     'pfJetBProbabilityBJetTags',
+     'pfJetProbabilityBJetTags',
      'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-         'pfDeepCSVJetTags:probudsg', #to be fixed with new names
-         'pfDeepCSVJetTags:probb',
-         'pfDeepCSVJetTags:probc',
-         'pfDeepCSVJetTags:probbb',
-         'pfDeepCSVJetTags:probcc',
+     'pfDeepCSVJetTags:probudsg', #to be fixed with new names
+     'pfDeepCSVJetTags:probb',
+     'pfDeepCSVJetTags:probc',
+     'pfDeepCSVJetTags:probbb',
+     'pfDeepCSVJetTags:probcc',
  ]
 else :
   bTagDiscriminators = [
      'softPFMuonBJetTags',
      'softPFElectronBJetTags',
-         'pfJetBProbabilityBJetTags',
-         'pfJetProbabilityBJetTags',
+     'pfJetBProbabilityBJetTags',
+     'pfJetProbabilityBJetTags',
      'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-         'deepFlavourJetTags:probudsg', #to be fixed with new names
-         'deepFlavourJetTags:probb',
-         'deepFlavourJetTags:probc',
-         'deepFlavourJetTags:probbb',
-         'deepFlavourJetTags:probcc',
+     'deepFlavourJetTags:probudsg', #to be fixed with new names
+     'deepFlavourJetTags:probb',
+     'deepFlavourJetTags:probc',
+     'deepFlavourJetTags:probbb',
+     'deepFlavourJetTags:probcc',
  ]
 
 jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
+jetCorrectionsAK8 = ('AK8PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
+
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 updateJetCollection(
@@ -219,14 +221,43 @@ print ('Using output file ' + outFileName)
 process.TFileService = cms.Service("TFileService", 
                                    fileName = cms.string(outFileName))
 
+bTagInfos.append('pfBoostedDoubleSVAK8TagInfos')
+bTagDiscriminators.append('pfBoostedDoubleSecondaryVertexAK8BJetTags') 
+
+### re-do fat jet
+updateJetCollection(
+        process,
+        labelName = "FatPFCHS",
+        jetSource = cms.InputTag('slimmedJetsAK8'),
+        jetCorrections = jetCorrectionsAK8,
+        pfCandidates = cms.InputTag('packedPFCandidates'),
+        pvSource = cms.InputTag("offlineSlimmedPrimaryVertices"),
+        svSource = cms.InputTag('slimmedSecondaryVertices'),
+        muSource = cms.InputTag('slimmedMuons'),
+        elSource = cms.InputTag('slimmedElectrons'),
+        btagInfos = bTagInfos,
+        btagDiscriminators = bTagDiscriminators,
+        explicitJTA = False
+)
+
+if hasattr(process,'updatedPatJetsTransientCorrectedFatPFCHS'):
+        process.updatedPatJetsTransientCorrectedFatPFCHS.addTagInfos = cms.bool(True)
+        process.updatedPatJetsTransientCorrectedFatPFCHS.addBTagInfo = cms.bool(True)
+else:
+        raise ValueError('I could not find updatedPatJetsTransientCorrectedFatPFCHS to embed the tagInfos, please check the cfg')
+
+
+
 # DeepNtuplizer
 process.load("DeepNTuples.DeepNtuplizer.DeepNtuplizer_cfi")
 process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour')
-process.deepntuplizer.fatjets = cms.InputTag('slimmedJetsAK8')
+process.deepntuplizer.fatjets = cms.InputTag('selectedUpdatedPatJetsFatPFCHS')
 process.deepntuplizer.jetR = -1  # subjets
+process.deepntuplizer.runFatJet = cms.bool(True)
 process.deepntuplizer.jetPtMax = 3000
 process.deepntuplizer.bDiscriminators = bTagDiscriminators 
 process.deepntuplizer.bDiscriminators.append('pfCombinedMVAV2BJetTags')
+process.deepntuplizer.bDiscriminators.append('pfBoostedDoubleSecondaryVertexAK8BJetTags')
 process.deepntuplizer.LooseSVs = cms.InputTag("looseIVFinclusiveCandidateSecondaryVertices")
 if int(release.replace("_",""))>=840 :
    process.deepntuplizer.tagInfoName = cms.string('pfDeepCSV')

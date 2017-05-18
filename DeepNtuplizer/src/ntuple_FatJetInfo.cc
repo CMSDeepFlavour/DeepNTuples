@@ -16,12 +16,11 @@ using namespace deep_ntuples;
 void ntuple_FatJetInfo::getInput(const edm::ParameterSet& iConfig) {
 	if (jetR() > 0) return;
 	minSoftDropMass_ = iConfig.getUntrackedParameter<double>("minSoftDropMass", -1);
-        tagInfoName_=(iConfig.getParameter<string>("tagInfoFJName"));
+        tagInfoFName_=(iConfig.getParameter<string>("tagInfoFName"));
 }
 
 void ntuple_FatJetInfo::readEvent(const edm::Event& iEvent) {
 	if (jetR() > 0) return;
-
 	iEvent.getByToken(genParticleToken_, genParticleHandle_);
 	iEvent.getByToken(fatjetToken_, fatjetHandle_);
 }
@@ -70,7 +69,7 @@ void ntuple_FatJetInfo::initBranches(TTree* tree) {
         addBranch(tree, "fj_trackSipdSig_2", &trackSipdSig_2_);
         addBranch(tree, "fj_trackSipdSig_1", &trackSipdSig_1_);
         addBranch(tree, "fj_trackSipdSig_0", &trackSipdSig_0_);
-        addBranch(tree, "fj_trackSipdSig_1_0_", &trackSipdSig_1_0_);
+        addBranch(tree, "fj_trackSipdSig_1_0", &trackSipdSig_1_0_);
         addBranch(tree, "fj_trackSipdSig_0_0", &trackSipdSig_0_0_);
         addBranch(tree, "fj_trackSipdSig_1_1", &trackSipdSig_1_1_);
         addBranch(tree, "fj_trackSipdSig_0_1", &trackSipdSig_0_1_);
@@ -121,17 +120,17 @@ void ntuple_FatJetInfo::initBranches(TTree* tree) {
 }
 
 bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, const edm::View<pat::Jet>* coll) {
-     
-    if(!jet.hasTagInfo(tagInfoName_)) {
+	
+    
+/*     if(!jet.hasTagInfo(tagInfoName_)) {
         stringstream stream;
         for(auto &lab : jet.tagInfoLabels())
             stream << lab << ", ";
-        throw cms::Exception("ValueError") << "There is no tagInfo embedded in the jet labelled: " << tagInfoName_ <<
+        throw cms::Exception("ValueError") << "There is no tagInfo embedded in the jet labelled: " << tagInfoFName_ <<
                 ". The available ones are: " << stream.str() << endl;
     }
-    const reco::ShallowTagInfo* tagInfo = dynamic_cast<const reco::ShallowTagInfo*>(jet.tagInfo(tagInfoName_)); //to be fixed with new names
-    reco::TaggingVariableList vars = tagInfo->taggingVariables();
 
+*/
 
 	if (jetR() > 0) return true;
 
@@ -149,6 +148,11 @@ bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, 
 		fj_pt_ = 0;
 		return true;
 	}
+
+	
+      const reco::BoostedDoubleSVTagInfo *bdsvTagInfo = fj->tagInfoBoostedDoubleSV(tagInfoFName_);  
+     // const reco::ShallowTagInfo* bdsvTagInfo =  dynamic_cast<const reco::ShallowTagInfo*>(jet.tagInfoBoostedDoubleSV(tagInfoFName_));
+      reco::TaggingVariableList vars = bdsvTagInfo->taggingVariables();
 
         z_ratio_ = vars.get(reco::btau::z_ratio);
         trackSipdSig_3_ = vars.get(reco::btau::trackSip3dSig_3);
@@ -182,9 +186,8 @@ bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, 
         nbHadrons_ = fj->jetFlavourInfo().getbHadrons().size();
         ncHadrons_ = fj->jetFlavourInfo().getcHadrons().size();
 
-
 	// preselection on sdmass and n_sd_subjets
-	fj_sdmass_ = fj->userFloat("ak8PFJetsPuppiSoftDropMass");
+	fj_sdmass_ = fj->userFloat("ak8PFJetsCHSSoftDropMass");//ak8PFJetsPuppiSoftDropMass");
 //	if (fj_sdmass_ < minSoftDropMass_) return false;
 
 	auto sdsubjets = fj->subjets();
@@ -211,9 +214,9 @@ bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, 
 	fj_doubleb_ =fj->bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags");
 
 	// substructure
-	fj_tau1_   = fj->userFloat("NjettinessAK8Puppi:tau1");
-	fj_tau2_   = fj->userFloat("NjettinessAK8Puppi:tau2");
-	fj_tau3_   = fj->userFloat("NjettinessAK8Puppi:tau3");
+	fj_tau1_   = fj->userFloat("NjettinessAK8:tau1");
+	fj_tau2_   = fj->userFloat("NjettinessAK8:tau2");
+	fj_tau3_   = fj->userFloat("NjettinessAK8:tau3");
 	fj_tau21_  = fj_tau1_ > 0 ? fj_tau2_/fj_tau1_ : 1.01;
 	fj_tau32_  = fj_tau2_ > 0 ? fj_tau3_/fj_tau2_ : 1.01;
 
