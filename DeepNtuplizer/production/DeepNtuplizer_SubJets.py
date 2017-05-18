@@ -13,9 +13,10 @@ options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, 
 options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "job number")
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
 options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "gluon reduction")
-options.register('release','8_0_1', VarParsing.VarParsing.multiplicity.singleton,VarParsing.VarParsing.varType.string,"release number (w/o CMSSW)")
 
-print("Using release "+options.release)
+import os
+release=os.environ['CMSSW_VERSION'][6:]
+print("Using release "+release)
 
 
 options.register(
@@ -86,7 +87,7 @@ process.maxEvents  = cms.untracked.PSet(
 )
 
 
-if int(options.release.replace("_",""))>=840 :
+if int(release.replace("_",""))>=840 :
  bTagInfos = [
         'pfImpactParameterTagInfos',
         'pfInclusiveSecondaryVertexFinderTagInfos',
@@ -100,7 +101,7 @@ else :
  ]
 
 
-if int(options.release.replace("_",""))>=840 :
+if int(release.replace("_",""))>=840 :
  bTagDiscriminators = [
      'softPFMuonBJetTags',
      'softPFElectronBJetTags',
@@ -227,7 +228,7 @@ process.deepntuplizer.jetPtMax = 3000
 process.deepntuplizer.bDiscriminators = bTagDiscriminators 
 process.deepntuplizer.bDiscriminators.append('pfCombinedMVAV2BJetTags')
 process.deepntuplizer.LooseSVs = cms.InputTag("looseIVFinclusiveCandidateSecondaryVertices")
-if int(options.release.replace("_",""))>=840 :
+if int(release.replace("_",""))>=840 :
    process.deepntuplizer.tagInfoName = cms.string('pfDeepCSV')
 
 
