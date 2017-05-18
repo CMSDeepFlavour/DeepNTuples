@@ -71,11 +71,19 @@ process.maxEvents  = cms.untracked.PSet(
 )
 
 
-bTagInfos = [
-	'pfImpactParameterTagInfos',
-	'pfInclusiveSecondaryVertexFinderTagInfos',
-	'deepNNTagInfos',
-]
+if int(options.release.replace("_",""))>=840 :
+ bTagInfos = [
+        'pfImpactParameterTagInfos',
+        'pfInclusiveSecondaryVertexFinderTagInfos',
+        'pfDeepCSVTagInfos',
+ ]
+else :
+ bTagInfos = [
+        'pfImpactParameterTagInfos',
+        'pfInclusiveSecondaryVertexFinderTagInfos',
+        'deepNNTagInfos',
+ ]
+
 
 if int(options.release.replace("_",""))>=840 :
  bTagDiscriminators = [
@@ -183,7 +191,11 @@ process.TFileService = cms.Service("TFileService",
 
 # DeepNtuplizer
 process.load("DeepNTuples.DeepNtuplizer.DeepNtuplizer_cfi")
+
 process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour');
 process.deepntuplizer.bDiscriminators = bTagDiscriminators 
+
+if int(options.release.replace("_",""))>=840 :
+   process.deepntuplizer.tagInfoName = cms.string('pfDeepCSV')
 
 process.p = cms.Path(process.QGTagger + process.genJetSequence*  process.deepntuplizer)
