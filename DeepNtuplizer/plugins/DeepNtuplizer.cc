@@ -110,6 +110,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
 
 	// read configuration parameters
 	const double jetR = iConfig.getParameter<double>("jetR");
+	const bool  runFatJets_ = iConfig.getParameter<bool>("runFatJet");
 
 	ntuple_SV* svmodule=new ntuple_SV("", jetR);
     svmodule->setSVToken(
@@ -160,11 +161,12 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
 
     addModule(new ntuple_bTagVars());
 
-    auto *fatjetinfo = new ntuple_FatJetInfo(jetR);
-    fatjetinfo->setGenParticleToken(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("pruned")));
-    fatjetinfo->setFatJetToken(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("fatjets")));
-    addModule(fatjetinfo);
-
+    if(runFatJets_){
+	auto *fatjetinfo = new ntuple_FatJetInfo(jetR);
+    	fatjetinfo->setGenParticleToken(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("pruned")));
+        fatjetinfo->setFatJetToken(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("fatjets")));
+         addModule(fatjetinfo);
+     }
     /*
      *
      * Modules initialized

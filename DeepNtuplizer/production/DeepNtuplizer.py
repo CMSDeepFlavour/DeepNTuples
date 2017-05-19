@@ -85,8 +85,7 @@ if int(release.replace("_",""))>=840 :
  bTagInfos = [
 	'pfImpactParameterTagInfos',
 	'pfInclusiveSecondaryVertexFinderTagInfos',
-	'pfDeepCSVTagInfos',
- ]
+	'pfDeepCSVTagInfos' ]
 else : 
  bTagInfos = [
         'pfImpactParameterTagInfos',
