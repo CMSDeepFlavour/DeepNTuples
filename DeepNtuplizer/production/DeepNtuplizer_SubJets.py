@@ -12,10 +12,19 @@ options.register('maxEvents',-1,VarParsing.VarParsing.multiplicity.singleton,Var
 options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "skip N events")
 options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "job number")
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
-options.register('release','8_0_1', VarParsing.VarParsing.multiplicity.singleton,VarParsing.VarParsing.varType.string,"release number (w/o CMSSW)")
+options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "gluon reduction")
 
-print("Using release "+options.release)
+import os
+release=os.environ['CMSSW_VERSION'][6:]
+print("Using release "+release)
 
+
+options.register(
+	'inputFiles','',
+	VarParsing.VarParsing.multiplicity.list,
+	VarParsing.VarParsing.varType.string,
+	"input files (default is the tt RelVal)"
+	)
 
 if hasattr(sys, "argv"):
     options.parseArguments()
@@ -39,6 +48,8 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+if options.inputScript == '': #this is probably for testing
+	process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.options = cms.untracked.PSet(
    allowUnscheduled = cms.untracked.bool(True),  
@@ -46,12 +57,18 @@ process.options = cms.untracked.PSet(
 )
 
 from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
-
 process.source = cms.Source('PoolSource',
     fileNames=cms.untracked.vstring (filesRelValTTbarPileUpMINIAODSIM),
 )
 
-if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtuplizer.samples.TEST':
+
+#process.load('DeepNTuples.DeepNtuplizer.samples.TTJetsPhase1_cfg') #default input
+
+
+if options.inputFiles:
+	process.source.fileNames = options.inputFiles
+
+if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtuplizer.samples.TTJetsPhase1_cfg':
     process.load(options.inputScript)
 
 numberOfFiles = len(process.source.fileNames)
@@ -63,7 +80,6 @@ process.source.fileNames = process.source.fileNames[jobNumber:numberOfFiles:numb
 if options.nJobs > 1:
     print ("running over these files:")
     print (process.source.fileNames)
-#process.source.fileNames = ['file:/uscms/home/verzetti/nobackup/CMSSW_8_0_25/src/DeepNTuples/copy_numEvent100.root']
 
 process.source.skipEvents = cms.untracked.uint32(options.skipEvents)
 process.maxEvents  = cms.untracked.PSet( 
@@ -71,7 +87,7 @@ process.maxEvents  = cms.untracked.PSet(
 )
 
 
-if int(options.release.replace("_",""))>=840 :
+if int(release.replace("_",""))>=840 :
  bTagInfos = [
         'pfImpactParameterTagInfos',
         'pfInclusiveSecondaryVertexFinderTagInfos',
@@ -85,42 +101,43 @@ else :
  ]
 
 
-if int(options.release.replace("_",""))>=840 :
+if int(release.replace("_",""))>=840 :
  bTagDiscriminators = [
      'softPFMuonBJetTags',
      'softPFElectronBJetTags',
-         'pfJetBProbabilityBJetTags',
-         'pfJetProbabilityBJetTags',
+     'pfJetBProbabilityBJetTags',
+     'pfJetProbabilityBJetTags',
      'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-         'pfDeepCSVJetTags:probudsg', #to be fixed with new names
-         'pfDeepCSVJetTags:probb',
-         'pfDeepCSVJetTags:probc',
-         'pfDeepCSVJetTags:probbb',
-         'pfDeepCSVJetTags:probcc',
+     'pfDeepCSVJetTags:probudsg', #to be fixed with new names
+     'pfDeepCSVJetTags:probb',
+     'pfDeepCSVJetTags:probc',
+     'pfDeepCSVJetTags:probbb',
+     'pfDeepCSVJetTags:probcc',
  ]
 else :
   bTagDiscriminators = [
      'softPFMuonBJetTags',
      'softPFElectronBJetTags',
-         'pfJetBProbabilityBJetTags',
-         'pfJetProbabilityBJetTags',
+     'pfJetBProbabilityBJetTags',
+     'pfJetProbabilityBJetTags',
      'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-         'deepFlavourJetTags:probudsg', #to be fixed with new names
-         'deepFlavourJetTags:probb',
-         'deepFlavourJetTags:probc',
-         'deepFlavourJetTags:probbb',
-         'deepFlavourJetTags:probcc',
+     'deepFlavourJetTags:probudsg', #to be fixed with new names
+     'deepFlavourJetTags:probb',
+     'deepFlavourJetTags:probc',
+     'deepFlavourJetTags:probbb',
+     'deepFlavourJetTags:probcc',
  ]
 
-
-
 jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
+jetCorrectionsAK8 = ('AK8PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
+
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 updateJetCollection(
         process,
         labelName = "DeepFlavour",
-        jetSource = cms.InputTag('slimmedJets'),#'ak4Jets'
+        jetSource=cms.InputTag('slimmedJetsAK8PFCHSSoftDropPacked','SubJets'), #slimmedJetsAK8PFPuppiSoftDropPacked', 'SubJets'),  # subjets from AK8
+#         jetSource = cms.InputTag('slimmedJets'),  # 'ak4Jets'
         jetCorrections = jetCorrectionsAK4,
         pfCandidates = cms.InputTag('packedPFCandidates'),
         pvSource = cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -181,7 +198,22 @@ process.patGenJetMatchRecluster = cms.EDProducer("GenJetMatcher",  # cut on delt
 )
 
 process.genJetSequence = cms.Sequence(process.packedGenParticlesForJetsNoNu*process.ak4GenJetsWithNu*process.ak4GenJetsRecluster*process.patGenJetMatchWithNu*process.patGenJetMatchRecluster)
- 
+
+
+# Very Loose IVF SV collection
+from PhysicsTools.PatAlgos.tools.helpers import loadWithPrefix
+loadWithPrefix(process, 'RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff', "looseIVF")
+process.looseIVFinclusiveCandidateVertexFinder.primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices")
+process.looseIVFinclusiveCandidateVertexFinder.tracks = cms.InputTag("packedPFCandidates")
+process.looseIVFinclusiveCandidateVertexFinder.vertexMinDLen2DSig = cms.double(0.)
+process.looseIVFinclusiveCandidateVertexFinder.vertexMinDLenSig = cms.double(0.)
+process.looseIVFinclusiveCandidateVertexFinder.fitterSigmacut = 20
+
+process.looseIVFcandidateVertexArbitrator.primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices")
+process.looseIVFcandidateVertexArbitrator.tracks = cms.InputTag("packedPFCandidates")
+process.looseIVFcandidateVertexArbitrator.secondaryVertices = cms.InputTag("looseIVFcandidateVertexMerger")
+process.looseIVFcandidateVertexArbitrator.fitterSigmacut = 20
+
 
 outFileName = options.outputFile + '_' + str(options.job) +  '.root'
 print ('Using output file ' + outFileName)
@@ -189,13 +221,48 @@ print ('Using output file ' + outFileName)
 process.TFileService = cms.Service("TFileService", 
                                    fileName = cms.string(outFileName))
 
+bTagInfos.append('pfBoostedDoubleSVAK8TagInfos')
+bTagDiscriminators.append('pfBoostedDoubleSecondaryVertexAK8BJetTags') 
+
+### re-do fat jet
+updateJetCollection(
+        process,
+        labelName = "FatPFCHS",
+        jetSource = cms.InputTag('slimmedJetsAK8'),
+        jetCorrections = jetCorrectionsAK8,
+        pfCandidates = cms.InputTag('packedPFCandidates'),
+        pvSource = cms.InputTag("offlineSlimmedPrimaryVertices"),
+        svSource = cms.InputTag('slimmedSecondaryVertices'),
+        muSource = cms.InputTag('slimmedMuons'),
+        elSource = cms.InputTag('slimmedElectrons'),
+        btagInfos = bTagInfos,
+        btagDiscriminators = bTagDiscriminators,
+        explicitJTA = False
+)
+
+if hasattr(process,'updatedPatJetsTransientCorrectedFatPFCHS'):
+        process.updatedPatJetsTransientCorrectedFatPFCHS.addTagInfos = cms.bool(True)
+        process.updatedPatJetsTransientCorrectedFatPFCHS.addBTagInfo = cms.bool(True)
+else:
+        raise ValueError('I could not find updatedPatJetsTransientCorrectedFatPFCHS to embed the tagInfos, please check the cfg')
+
+
+
 # DeepNtuplizer
 process.load("DeepNTuples.DeepNtuplizer.DeepNtuplizer_cfi")
-
-process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour');
+process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour')
+process.deepntuplizer.fatjets = cms.InputTag('selectedUpdatedPatJetsFatPFCHS')
+process.deepntuplizer.jetR = -1  # subjets
+process.deepntuplizer.runFatJet = cms.bool(True)
+process.deepntuplizer.jetPtMax = 3000
 process.deepntuplizer.bDiscriminators = bTagDiscriminators 
-
-if int(options.release.replace("_",""))>=840 :
+process.deepntuplizer.bDiscriminators.append('pfCombinedMVAV2BJetTags')
+process.deepntuplizer.bDiscriminators.append('pfBoostedDoubleSecondaryVertexAK8BJetTags')
+process.deepntuplizer.LooseSVs = cms.InputTag("looseIVFinclusiveCandidateSecondaryVertices")
+if int(release.replace("_",""))>=840 :
    process.deepntuplizer.tagInfoName = cms.string('pfDeepCSV')
+
+
+process.deepntuplizer.gluonReduction  = cms.double(options.gluonReduction)
 
 process.p = cms.Path(process.QGTagger + process.genJetSequence*  process.deepntuplizer)

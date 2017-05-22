@@ -135,6 +135,8 @@ void ntuple_pfCands::initBranches(TTree* tree){
     addBranch(tree,"nCpfcand", &nCpfcand_,"nCpfcand_/f");
 
     addBranch(tree,"Cpfcan_pt", &Cpfcan_pt_,"Cpfcan_pt_[n_Cpfcand_]/f");
+    addBranch(tree,"Cpfcan_eta", &Cpfcan_eta_,"Cpfcan_eta_[n_Cpfcand_]/f");
+    addBranch(tree,"Cpfcan_phi", &Cpfcan_phi_,"Cpfcan_phi_[n_Cpfcand_]/f");
     addBranch(tree,"Cpfcan_ptrel", &Cpfcan_ptrel_,"Cpfcan_ptrel_[n_Cpfcand_]/f");
     addBranch(tree,"Cpfcan_erel", &Cpfcan_erel_,"Cpfcan_erel_[n_Cpfcand_]/f");
     addBranch(tree,"Cpfcan_phirel",&Cpfcan_phirel_,"Cpfcan_phirel_[n_Cpfcand_]/f");
@@ -212,6 +214,8 @@ void ntuple_pfCands::initBranches(TTree* tree){
     addBranch(tree,"nNpfcand", &nNpfcand_,"nNpfcand/f");
 
     addBranch(tree,"Npfcan_pt", &Npfcan_pt_,"Npfcan_pt_[n_Npfcand_]/f");
+    addBranch(tree,"Npfcan_eta", &Npfcan_eta_,"Npfcan_eta_[n_Npfcand_]/f");
+    addBranch(tree,"Npfcan_phi", &Npfcan_phi_,"Npfcan_phi_[n_Npfcand_]/f");
     addBranch(tree,"Npfcan_ptrel", &Npfcan_ptrel_,"Npfcan_ptrel_[n_Npfcand_]/f");
     addBranch(tree,"Npfcan_erel", &Npfcan_erel_,"Npfcan_erel_[n_Npfcand_]/f");
 
@@ -300,6 +304,8 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 
             Cpfcan_pt_[n_Cpfcand_] = PackedCandidate_->pt();
+            Cpfcan_eta_[n_Cpfcand_] = PackedCandidate_->eta();
+            Cpfcan_phi_[n_Cpfcand_] = PackedCandidate_->phi();
             Cpfcan_ptrel_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->pt()/jet.pt()-1,0,-1,0);
             Cpfcan_erel_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->energy()/jet.energy()-1,0,-1,0);
             Cpfcan_phirel_[n_Cpfcand_] = catchInfsAndBound(fabs(reco::deltaPhi(PackedCandidate_->phi(),jet.phi()))-0.5,0,-2,0);
@@ -395,6 +401,8 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         }
         else if(max_pfcand_>n_Npfcand_){// neutral candidates
             Npfcan_pt_[n_Npfcand_] = PackedCandidate_->pt();
+            Npfcan_eta_[n_Npfcand_] = PackedCandidate_->eta();
+            Npfcan_phi_[n_Npfcand_] = PackedCandidate_->phi();
             Npfcan_ptrel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->pt()/jet.pt()-1,0,-1,0);
             Npfcan_erel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->energy()/jet.energy()-1,0,-1,0);
             Npfcan_puppiw_[n_Npfcand_] = PackedCandidate_->puppiWeight();

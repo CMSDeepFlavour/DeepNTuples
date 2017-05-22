@@ -40,6 +40,7 @@
 #include "DeepNTuples/DeepNtuplizer/interface/ntuple_JetInfo.h"
 #include "DeepNTuples/DeepNtuplizer/interface/ntuple_pfCands.h"
 #include "DeepNTuples/DeepNtuplizer/interface/ntuple_SV.h"
+#include "DeepNTuples/DeepNtuplizer/interface/ntuple_FatJetInfo.h"
 
 #include <dirent.h>
 #include <stdlib.h>
@@ -49,6 +50,18 @@
 
 bool debug=false;
 
+TString prependXRootD(const TString& path){
+
+    TString full_path = realpath(path, NULL);
+    if(full_path.BeginsWith("/eos/cms/")){
+        TString append="root://eoscms.cern.ch//";
+        TString s_remove="/eos/cms/";
+        TString newpath (full_path(s_remove.Length(),full_path.Length()));
+        newpath=append+newpath;
+        return newpath;
+    }
+    return path;
+}
 
 void setPreCache(TChain* tree){
     return ; //don't do anything for now
@@ -92,7 +105,7 @@ std::vector<TString> readSampleFile(const TString& file, const TString& addpath)
 std::vector<TChain* > createChains(const std::vector<std::vector<TString> >& infiles,
         std::vector<ntuple_content*>& branchinfos,
         std::vector<size_t>& entriesperchain,
-        size_t& totalentries){
+        size_t& totalentries, bool usexrootd=false){
 
     static int ntimescalled=0;
 
@@ -110,6 +123,7 @@ std::vector<TChain* > createChains(const std::vector<std::vector<TString> >& inf
     branchinfos.push_back(new ntuple_SV());
     branchinfos.push_back(new ntuple_bTagVars());
     branchinfos.push_back(new ntuple_pfCands());
+    branchinfos.push_back(new ntuple_FatJetInfo());
 
     std::vector<TChain* > chains;
     for(size_t i=0;i<infiles.size();i++){
@@ -122,7 +136,9 @@ std::vector<TChain* > createChains(const std::vector<std::vector<TString> >& inf
 
     for(size_t i=0;i<infiles.size();i++){
         for(const auto& f:infiles.at(i)){
-            TString xrootdedpath=f;//prependXRootD(f);
+            TString xrootdedpath=f;
+            if(usexrootd)
+                xrootdedpath=prependXRootD(xrootdedpath);
             chains.at(i)->Add(xrootdedpath+"/deepntuplizer/tree");
         }
         for(auto& bi:branchinfos){
@@ -531,8 +547,6 @@ int main(int argc, char *argv[]){
                 std::cout << nfail << " failed. Aborting.";
             std::cout<<std::endl;
             seccounter=0;
-            if(nfail)
-                exit(-1);
         }
         seccounter++;
         if(nsucc == childpids.size()){
@@ -549,16 +563,34 @@ int main(int argc, char *argv[]){
     std::ofstream outlist((outpath+"/samples.txt").Data());
     //all successful
     //check for .succ files
+    size_t totsucc=0,totfail=0;
     for(size_t i=0;i<childpids.size();i++){
+        if(statuses.at(i)!=js_succ){
+            totfail++;
+            continue;
+        }
+
         TString idxstring="";
         idxstring+=i;
         TString outfilename="ntuple_merged_"+idxstring+".root";
+
+        //check if file is ok
+        TFile * f = new TFile(outpath+"/"+outfilename);
+        if(!f || f->IsZombie()){
+            totfail++;
+            continue;
+        }
+        totsucc++;
         outlist << outfilename<<"\n";
     }
 
 
     outlist << '\n';
     outlist.close();
+
+    std::cout << "finished processing. Total successful merges: "
+            << totsucc << " out of " << childpids.size()
+            << " , failed: "<< totfail << std::endl;
 
     return 0;
 }
