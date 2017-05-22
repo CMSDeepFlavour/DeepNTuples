@@ -84,6 +84,7 @@ private:
     edm::EDGetTokenT<std::vector<PileupSummaryInfo>> puToken_;
     edm::EDGetTokenT<double> rhoToken_;
 
+    std::string t_qgtagger;
 
     edm::Service<TFileService> fs;
     TTree *tree_;
@@ -100,7 +101,8 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
             vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
             jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets"))),
             puToken_(consumes<std::vector<PileupSummaryInfo >>(iConfig.getParameter<edm::InputTag>("pupInfo"))),
-            rhoToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoInfo")))
+            rhoToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoInfo"))), 
+            t_qgtagger(iConfig.getParameter<std::string>("qgtagger"))
 {
     /*
      *  Initialise the modules here
@@ -126,10 +128,10 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     addModule(svmodule_LooseIVF);
 
     ntuple_JetInfo* jetinfo=new ntuple_JetInfo();
-    jetinfo->setQglToken(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood")));
-    jetinfo->setPtDToken(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "qgLikelihood")));
-    jetinfo->setAxis2Token(consumes<edm::ValueMap<float>>(edm::InputTag("QGTagger", "axis2")));
-    jetinfo->setMultToken(consumes<edm::ValueMap<int>>(edm::InputTag("QGTagger", "mult")));
+    jetinfo->setQglToken(consumes<edm::ValueMap<float>>(edm::InputTag(t_qgtagger, "qgLikelihood")));
+    jetinfo->setPtDToken(consumes<edm::ValueMap<float>>(edm::InputTag(t_qgtagger, "qgLikelihood")));
+    jetinfo->setAxis2Token(consumes<edm::ValueMap<float>>(edm::InputTag(t_qgtagger, "axis2")));
+    jetinfo->setMultToken(consumes<edm::ValueMap<int>>(edm::InputTag(t_qgtagger, "mult")));
 
     jetinfo->setGenJetMatchReclusterToken(
             consumes<edm::Association<reco::GenJetCollection> >(
