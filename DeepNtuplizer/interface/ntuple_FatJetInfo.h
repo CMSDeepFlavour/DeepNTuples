@@ -117,6 +117,7 @@ private:
 	float fj_sdsj1_phi_   = 0;
 	float fj_sdsj1_mass_  = 0;
 	float fj_sdsj1_csv_   = 0;
+	float fj_sdsj1_jp_    = 0;
 	float fj_sdsj1_ptD_   = 0;
 	float fj_sdsj1_axis1_ = 0;
 	float fj_sdsj1_axis2_ = 0;
@@ -127,6 +128,7 @@ private:
 	float fj_sdsj2_phi_   = 0;
 	float fj_sdsj2_mass_  = 0;
 	float fj_sdsj2_csv_   = 0;
+	float fj_sdsj2_jp_    = 0;
 	float fj_sdsj2_ptD_   = 0;
 	float fj_sdsj2_axis1_ = 0;
 	float fj_sdsj2_axis2_ = 0;

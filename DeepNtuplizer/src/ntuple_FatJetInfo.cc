@@ -254,6 +254,7 @@ bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, 
 		fj_sdsj1_phi_   = sj1.phi();
 		fj_sdsj1_mass_  = sj1.mass();
 		fj_sdsj1_csv_   = sj1.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+		fj_sdsj1_jp_    = sj1.bDiscriminator("pfJetProbabilityBJetTags");
 		fj_sdsj1_ptD_   = jh1.ptD();
 		fj_sdsj1_axis1_ = jh1.axis1();
 		fj_sdsj1_axis2_ = jh1.axis2();
@@ -266,6 +267,7 @@ bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, 
 		fj_sdsj2_phi_   = sj2.phi();
 		fj_sdsj2_mass_  = sj2.mass();
 		fj_sdsj2_csv_   = sj2.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+		fj_sdsj2_jp_    = sj2.bDiscriminator("pfJetProbabilityBJetTags");
 		fj_sdsj2_ptD_   = jh2.ptD();
 		fj_sdsj2_axis1_ = jh2.axis1();
 		fj_sdsj2_axis2_ = jh2.axis2();
