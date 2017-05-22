@@ -68,6 +68,8 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"jet_corr_pt", &jet_corr_pt_);
     addBranch(tree,"jet_eta", &jet_eta_);
     addBranch(tree,"jet_phi", &jet_phi_);
+    addBranch(tree,"jet_mass", &jet_mass_);
+    addBranch(tree,"jet_energy", &jet_energy_);
 
 
     //jet id
@@ -261,6 +263,8 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     jet_eta_ = jet.eta();
     jet_phi_ = jet.phi();
     jet_corr_pt_ = jet.pt();
+    jet_mass_ = jet.mass();
+    jet_energy_ = jet.energy();
 
 
     //https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016

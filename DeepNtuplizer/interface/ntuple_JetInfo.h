@@ -148,6 +148,8 @@ public:
     float jet_corr_pt_;
     float  jet_eta_;
     float  jet_phi_;
+    float  jet_mass_;
+    float  jet_energy_;
 
     float jet_looseId_;
 
