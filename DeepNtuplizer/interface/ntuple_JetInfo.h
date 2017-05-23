@@ -110,14 +110,20 @@ public:
     std::vector <reco::GenParticle> neutrinosLepB;
     std::vector <reco::GenParticle> neutrinosLepB_C;
 
+    std::vector<reco::GenParticle> gToBB;
+    std::vector<reco::GenParticle> gToCC;
+
     // labels (MC truth)
     // regressions pt, Deta, Dphi
     float gen_pt_;
     float Delta_gen_pt_;
     //classification
     int isB_;
+    int isGBB_;
     int isBB_;
     int isC_;
+    int isGCC_;
+    int isCC_;
     int isUD_;
     int isS_;
     int isG_;
@@ -127,8 +133,11 @@ public:
 
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
     int isPhysB_;
+    int isPhysGBB_;
     int isPhysBB_;
     int isPhysC_;
+    int isPhysGCC_;
+    int isPhysCC_;
     int isPhysUD_;
     int isPhysS_;
     int isPhysG_;

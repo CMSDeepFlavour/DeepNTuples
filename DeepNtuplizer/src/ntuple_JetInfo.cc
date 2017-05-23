@@ -13,6 +13,8 @@
 //#include "../interface/leptonsInJet.h"
 #include <vector>
 #include <algorithm>
+#include "DataFormats/Math/interface/deltaR.h"
+
 using namespace std;
 
 void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
@@ -42,10 +44,13 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
     addBranch(tree,"Delta_gen_pt"    ,&Delta_gen_pt_,"Delta_gen_pt_/f"    );
     addBranch(tree,"isB",&isB_, "isB_/i");
+    addBranch(tree,"isGBB",&isGBB_, "isGBB_/i");
     addBranch(tree,"isBB",&isBB_, "isBB_/i");
     addBranch(tree,"isLeptonicB",&isLeptonicB_, "isLeptonicB_/i");
     addBranch(tree,"isLeptonicB_C",&isLeptonicB_C_, "isLeptonicB_C_/i");
     addBranch(tree,"isC",&isC_, "isC_/i");
+    addBranch(tree,"isGCC",&isGCC_, "isGCC_/i");
+    addBranch(tree,"isCC",&isCC_, "isCC_/i");
     addBranch(tree,"isUD",&isUD_, "isUD_/i");
     addBranch(tree,"isS",&isS_, "isS_/i");
     addBranch(tree,"isG",&isG_, "isG_/i");
@@ -53,10 +58,13 @@ void ntuple_JetInfo::initBranches(TTree* tree){
 
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
     addBranch(tree,"isPhysB",&isPhysB_, "isPhysB_/i");
+    addBranch(tree,"isPhysGBB",&isPhysGBB_, "isPhysGBB_/i");
     addBranch(tree,"isPhysBB",&isPhysBB_, "isPhysBB_/i");
     addBranch(tree,"isPhysLeptonicB",&isPhysLeptonicB_, "isPhysLeptonicB_/i");
     addBranch(tree,"isPhysLeptonicB_C",&isPhysLeptonicB_C_, "isPhysLeptonicB_C_/i");
     addBranch(tree,"isPhysC",&isPhysC_, "isPhysC_/i");
+    addBranch(tree,"isPhysGCC",&isPhysGCC_, "isPhysGCC_/i");
+    addBranch(tree,"isPhysCC",&isPhysCC_, "isPhysCC_/i");
     addBranch(tree,"isPhysUD",&isPhysUD_, "isPhysUD_/i");
     addBranch(tree,"isPhysS",&isPhysS_, "isPhysS_/i");
     addBranch(tree,"isPhysG",&isPhysG_, "isPhysG_/i");
@@ -148,6 +156,21 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
                 std::cout << "No mother" << std::endl;
             }
         }
+
+        int id(std::abs(gen.pdgId())); 
+        int status(gen.status());
+
+        if (id == 21 && status >= 21 && status <= 59) { //// Pythia8 hard scatter, ISR, or FSR
+          if ( gen.numberOfDaughters() == 2 ) {
+            const reco::Candidate* d0 = gen.daughter(0);
+            const reco::Candidate* d1 = gen.daughter(1);
+            if ( std::abs(d0->pdgId()) == 5 && std::abs(d1->pdgId()) == 5 
+                && d0->pdgId()*d1->pdgId() < 0 && reco::deltaR(*d0, *d1) < 0.4) gToBB.push_back(gen) ; 
+            if ( std::abs(d0->pdgId()) == 4 && std::abs(d1->pdgId()) == 4 
+                && d0->pdgId()*d1->pdgId() < 0 && reco::deltaR(*d0, *d1) < 0.4) gToCC.push_back(gen) ; 
+          }
+        }
+
     }
     //technically a branch fill but per event, therefore here
     event_no_=iEvent.id().event();
@@ -198,7 +221,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     //std::vector<Ptr<pat::Jet> > p= coll->ptrs();
 
-    isB_=0; isBB_=0; isC_=0; isUD_=0; isS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0, isUndefined_=0;
+    isB_=0; isGBB_=0; isBB_=0; isC_=0; isGCC_=0; isCC_=0; isUD_=0; isS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0, isUndefined_=0;
     auto muIds = deep_ntuples::jet_muonsIds(jet,*muonsHandle);
     auto elecIds = deep_ntuples::jet_electronsIds(jet,*electronsHandle);
 
@@ -229,12 +252,15 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         }
     }
 
-    switch(deep_ntuples::jet_flavour(jet, neutrinosLepB, neutrinosLepB_C)) {
+    switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C)) {
     case deep_ntuples::JetFlavor::UD: isUD_=1; break;
     case deep_ntuples::JetFlavor::S:  isS_=1; break;
     case deep_ntuples::JetFlavor::B:  isB_=1; break;
     case deep_ntuples::JetFlavor::BB: isBB_=1; break;
+    case deep_ntuples::JetFlavor::GBB: isGBB_=1; break;
     case deep_ntuples::JetFlavor::C:  isC_=1; break;
+    case deep_ntuples::JetFlavor::CC: isCC_=1; break;
+    case deep_ntuples::JetFlavor::GCC: isGCC_=1; break;
     case deep_ntuples::JetFlavor::G:  isG_=1; break;
     case deep_ntuples::JetFlavor::LeptonicB: isLeptonicB_=1; break;
     case deep_ntuples::JetFlavor::LeptonicB_C: isLeptonicB_C_=1; break;
@@ -242,13 +268,16 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     }
 
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
-    isPhysB_=0; isPhysBB_=0; isPhysC_=0; isPhysUD_=0; isPhysS_=0; isPhysG_=0, isPhysLeptonicB_=0, isPhysLeptonicB_C_=0, isPhysUndefined_=0;
-    switch(deep_ntuples::jet_flavour(jet, neutrinosLepB, neutrinosLepB_C, true)) {
+    isPhysB_=0; isPhysBB_=0; isPhysGBB_=0; isPhysC_=0; isPhysCC_=0; isPhysGCC_=0; isPhysUD_=0; isPhysS_=0; isPhysG_=0, isPhysLeptonicB_=0, isPhysLeptonicB_C_=0, isPhysUndefined_=0;
+    switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C, true)) {
     case deep_ntuples::JetFlavor::UD: isPhysUD_=1; break;
     case deep_ntuples::JetFlavor::S:  isPhysS_=1; break;
     case deep_ntuples::JetFlavor::B:  isPhysB_=1; break;
     case deep_ntuples::JetFlavor::BB: isPhysBB_=1; break;
+    case deep_ntuples::JetFlavor::GBB:isPhysGBB_=1; break;
     case deep_ntuples::JetFlavor::C:  isPhysC_=1; break;
+    case deep_ntuples::JetFlavor::CC: isPhysCC_=1; break;
+    case deep_ntuples::JetFlavor::GCC:isPhysGCC_=1; break;
     case deep_ntuples::JetFlavor::G:  isPhysG_=1; break;
     case deep_ntuples::JetFlavor::LeptonicB: isPhysLeptonicB_=1; break;
     case deep_ntuples::JetFlavor::LeptonicB_C: isPhysLeptonicB_C_=1; break;
