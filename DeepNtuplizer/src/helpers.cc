@@ -41,9 +41,9 @@ namespace deep_ntuples {
           if (dr < 0.4) ++ncFromGSP;
         }
 
-        std::cout << " jet pt = " << jet.pt() << " hfl = " << hflav << " pfl = " << pflav << " genpart = " << physflav 
-          << " nbFromGSP = " << nbFromGSP << " ncFromGSP = " << ncFromGSP
-          << " nBhadrons " << nbs << " nCHadrons " << ncs << std::endl;
+        //std::cout << " jet pt = " << jet.pt() << " hfl = " << hflav << " pfl = " << pflav << " genpart = " << physflav 
+        //  << " nbFromGSP = " << nbFromGSP << " ncFromGSP = " << ncFromGSP
+        //  << " nBhadrons " << nbs << " nCHadrons " << ncs << std::endl;
 
         if(hflav == 5) { //B jet
             if(nbs > 1) {
