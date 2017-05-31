@@ -21,7 +21,9 @@ namespace deep_ntuples {
         return electronsIds;
     }
 
-    JetFlavor jet_flavour(const pat::Jet& jet, std::vector<reco::GenParticle> gToBB, std::vector<reco::GenParticle> gToCC, std::vector<reco::GenParticle> neutrinosLepB, std::vector<reco::GenParticle> neutrinosLepB_C, bool usePhysForLightAndUndefined) { 
+    JetFlavor jet_flavour(const pat::Jet& jet, std::vector<reco::GenParticle> gToBB, std::vector<reco::GenParticle> gToCC, 
+        std::vector<reco::GenParticle> neutrinosLepB, std::vector<reco::GenParticle> neutrinosLepB_C, 
+        bool usePhysForLightAndUndefined) { 
         int hflav = abs(jet.hadronFlavour());
         int pflav = abs(jet.partonFlavour());
         int physflav = 0;
