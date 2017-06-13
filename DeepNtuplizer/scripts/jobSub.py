@@ -209,6 +209,7 @@ log                   = batch/con_out.$(ProcId).log
 send_credential        = True
 getenv = True
 use_x509userproxy = True
++JobFlavour = "microcentury"
 queue {njobs}
     """.format(
               batchscriptpath=sheelscp,
@@ -236,6 +237,7 @@ log   = batch/con_out.{job}.log
 send_credential = True
 getenv = True
 use_x509userproxy = True
++JobFlavour = "microcentury"
 queue 1
              """.format(
                   batchscriptpath=sheelscp,
