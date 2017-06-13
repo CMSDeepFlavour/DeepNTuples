@@ -79,10 +79,13 @@ def doSub():
         exit()
         
         
-    #make samples directory
+    #recreates samples directory (removing old one avoids pssible errors in creating importsamples)
     samplescriptdir=os.getenv('HOME')+'/.deepntuples_scripts_tmp'
     if not os.path.isdir(samplescriptdir):
         os.mkdir(samplescriptdir)
+    else:
+	shutil.rmtree(samplescriptdir)
+	os.mkdir(samplescriptdir)
     samplescriptdir+='/'
     
     #https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookStartingGrid
@@ -200,7 +203,10 @@ def doSub():
         
         #link to ntupleOutDir
         os.symlink(ntupleOutDir,jobpath+'/output')
-           
+
+#The maximum wall time of a condor job is defined in the MaxRuntime parameter in seconds.
+# 3 hours (10800s) seems to be currently enough
+
         condorfile ="""executable            = {batchscriptpath}
 arguments             = {configfile} inputScript={sample} outputFile={ntupledir}{outputfile} nJobs={njobs} job=$(ProcId) {options}
 output                = batch/con_out.$(ProcId).out
@@ -209,6 +215,7 @@ log                   = batch/con_out.$(ProcId).log
 send_credential        = True
 getenv = True
 use_x509userproxy = True
++MaxRuntime = 10800
 queue {njobs}
     """.format(
               batchscriptpath=sheelscp,
@@ -236,6 +243,7 @@ log   = batch/con_out.{job}.log
 send_credential = True
 getenv = True
 use_x509userproxy = True
++MaxRuntime = 10800
 queue 1
              """.format(
                   batchscriptpath=sheelscp,
