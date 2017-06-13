@@ -205,7 +205,7 @@ def doSub():
         os.symlink(ntupleOutDir,jobpath+'/output')
 
 #The maximum wall time of a condor job is defined in the MaxRuntime parameter in seconds.
-# 3 hours (10800s) seems to be currently enough for any job
+# 3 hours (10800s) seems to be currently enough
 
         condorfile ="""executable            = {batchscriptpath}
 arguments             = {configfile} inputScript={sample} outputFile={ntupledir}{outputfile} nJobs={njobs} job=$(ProcId) {options}
@@ -215,7 +215,7 @@ log                   = batch/con_out.$(ProcId).log
 send_credential        = True
 getenv = True
 use_x509userproxy = True
-+MaxRuntime = 10800s
++MaxRuntime = 10800
 queue {njobs}
     """.format(
               batchscriptpath=sheelscp,
@@ -243,7 +243,7 @@ log   = batch/con_out.{job}.log
 send_credential = True
 getenv = True
 use_x509userproxy = True
-+MaxRuntime = 10800s
++MaxRuntime = 10800
 queue 1
              """.format(
                   batchscriptpath=sheelscp,
