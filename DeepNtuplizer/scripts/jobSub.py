@@ -79,10 +79,13 @@ def doSub():
         exit()
         
         
-    #make samples directory
+    #recreates samples directory (removing old one avoids pssible errors in creating importsamples)
     samplescriptdir=os.getenv('HOME')+'/.deepntuples_scripts_tmp'
     if not os.path.isdir(samplescriptdir):
         os.mkdir(samplescriptdir)
+    else:
+	shutil.rmtree(samplescriptdir)
+	os.mkdir(samplescriptdir)
     samplescriptdir+='/'
     
     #https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookStartingGrid
