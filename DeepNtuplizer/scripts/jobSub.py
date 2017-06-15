@@ -79,10 +79,13 @@ def doSub():
         exit()
         
         
-    #make samples directory
+    #recreates samples directory (removing old one avoids pssible errors in creating importsamples)
     samplescriptdir=os.getenv('HOME')+'/.deepntuples_scripts_tmp'
     if not os.path.isdir(samplescriptdir):
         os.mkdir(samplescriptdir)
+    else:
+	shutil.rmtree(samplescriptdir)
+	os.mkdir(samplescriptdir)
     samplescriptdir+='/'
     
     #https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookStartingGrid
@@ -150,19 +153,18 @@ def doSub():
             scriptfile=re.sub(r'['+chars+']', '', str(samplename))
             scriptfile=scriptfile
             if not os.path.isfile(samplescriptdir+scriptfile+'.py'):
-                sampleurl='https://cmsweb.cern.ch/das/makepy?dataset='+samplename+'&instance=prod/global'
-                print(scriptfile)
-                #check if already saved a file list from das?
-                ##get from das etc, prepare query
-                print('getting script file from DAS')
-                dasquery = subprocess.Popen(['wget','--certificate',usercertfile,
-                                             '--private-key',userkeyfile,
-                                             '--no-check-certificate',
-                                             '-O',samplescriptdir+scriptfile+'.py',
-                                             sampleurl],
-                                             stdout=subprocess.PIPE, 
-                                             stderr=subprocess.PIPE)
-                sout, serr = dasquery.communicate()
+                cmd = 'dasgoclient -query="file dataset=%s"' % (samplename)
+                dasquery = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                sout = dasquery.communicate()[0]
+                filelist = ['"%s",' % f for f in sout.strip().split('\n')]
+
+                template_sample = os.path.join(os.environ['CMSSW_BASE'], 'src/DeepNTuples/DeepNtuplizer/python/samples/samples_template.py')
+                dest_file = samplescriptdir+scriptfile+'.py'
+                with open(template_sample) as temp:
+                    s = temp.read().replace('_FILES_', '\n'.join(filelist))
+                    with open(dest_file, 'w') as fout:
+                        fout.write(s)
+
             sample=scriptfile
         
         
@@ -201,7 +203,10 @@ def doSub():
         
         #link to ntupleOutDir
         os.symlink(ntupleOutDir,jobpath+'/output')
-           
+
+#The maximum wall time of a condor job is defined in the MaxRuntime parameter in seconds.
+# 3 hours (10800s) seems to be currently enough
+
         condorfile ="""executable            = {batchscriptpath}
 arguments             = {configfile} inputScript={sample} outputFile={ntupledir}{outputfile} nJobs={njobs} job=$(ProcId) {options}
 output                = batch/con_out.$(ProcId).out
@@ -210,6 +215,7 @@ log                   = batch/con_out.$(ProcId).log
 send_credential        = True
 getenv = True
 use_x509userproxy = True
++MaxRuntime = 10800
 queue {njobs}
     """.format(
               batchscriptpath=sheelscp,
@@ -237,6 +243,7 @@ log   = batch/con_out.{job}.log
 send_credential = True
 getenv = True
 use_x509userproxy = True
++MaxRuntime = 10800
 queue 1
              """.format(
                   batchscriptpath=sheelscp,
