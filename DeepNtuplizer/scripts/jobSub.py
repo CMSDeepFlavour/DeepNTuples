@@ -28,8 +28,12 @@ def doSub():
     parser.add_argument('--file',default='samples.cfg',help='file containing a sample list')
     parser.add_argument('--nosubmit',default=False,help='no submission')
     parser.add_argument('--outpath',default='',help='set path to store the .root output')
+    parser.add_argument('--walltime',default='10800',help='set job wall time in seconds')
+
     
     args = parser.parse_args()
+    
+    jobruntime=args.walltime
     
     cernboxpath='/eos/user/'+os.environ['USER'][0]+'/'+os.environ['USER']+'/DeepNtuples'
     if len(args.outpath):
@@ -215,7 +219,7 @@ log                   = batch/con_out.$(ProcId).log
 send_credential        = True
 getenv = True
 use_x509userproxy = True
-+MaxRuntime = 10800
++MaxRuntime = {maxruntime}
 queue {njobs}
     """.format(
               batchscriptpath=sheelscp,
@@ -224,7 +228,8 @@ queue {njobs}
               ntupledir=ntupleOutDir,
               outputfile=outputFile,
               njobs=nJobs, 
-              options=jobargs
+              options=jobargs,
+              maxruntime=jobruntime
               )
         
         conf = open(os.path.join(jobpath, 'condor.sub'), 'w')
@@ -243,7 +248,7 @@ log   = batch/con_out.{job}.log
 send_credential = True
 getenv = True
 use_x509userproxy = True
-+MaxRuntime = 10800
++MaxRuntime= {maxruntime}
 queue 1
              """.format(
                   batchscriptpath=sheelscp,
@@ -253,7 +258,8 @@ queue 1
                   outputfile=outputFile,
                   njobs=nJobs, 
                   options=jobargs,
-                  job=str(job)
+                  job=str(job),
+                  maxruntime=jobruntime
               )
              jconf = open(os.path.join(jobpath+'/batch', 'condor_'+str(job)+'.sub'), 'w')
              jconf.write(jobcondorfile)
