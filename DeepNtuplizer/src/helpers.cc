@@ -21,7 +21,9 @@ namespace deep_ntuples {
         return electronsIds;
     }
 
-    JetFlavor jet_flavour(const pat::Jet& jet, std::vector<reco::GenParticle> neutrinosLepB, std::vector<reco::GenParticle> neutrinosLepB_C, bool usePhysForLightAndUndefined) {
+    JetFlavor jet_flavour(const pat::Jet& jet, std::vector<reco::GenParticle> gToBB, std::vector<reco::GenParticle> gToCC, 
+        std::vector<reco::GenParticle> neutrinosLepB, std::vector<reco::GenParticle> neutrinosLepB_C, 
+        bool usePhysForLightAndUndefined) { 
         int hflav = abs(jet.hadronFlavour());
         int pflav = abs(jet.partonFlavour());
         int physflav = 0;
@@ -29,8 +31,27 @@ namespace deep_ntuples {
         std::size_t nbs = jet.jetFlavourInfo().getbHadrons().size();
         std::size_t ncs = jet.jetFlavourInfo().getcHadrons().size();
 
+        unsigned int nbFromGSP(0);
+        for (reco::GenParticle p : gToBB) {
+          double dr(reco::deltaR(jet, p));
+          if (dr < 0.4) ++nbFromGSP;
+        }
+
+        unsigned int ncFromGSP(0);
+        for (reco::GenParticle p : gToCC) {
+          double dr(reco::deltaR(jet, p));
+          if (dr < 0.4) ++ncFromGSP;
+        }
+
+        //std::cout << " jet pt = " << jet.pt() << " hfl = " << hflav << " pfl = " << pflav << " genpart = " << physflav 
+        //  << " nbFromGSP = " << nbFromGSP << " ncFromGSP = " << ncFromGSP
+        //  << " nBhadrons " << nbs << " nCHadrons " << ncs << std::endl;
+
         if(hflav == 5) { //B jet
-            if(nbs > 1) return JetFlavor::BB;
+            if(nbs > 1) {
+              if (nbFromGSP > 0) return JetFlavor::GBB; 
+              else return JetFlavor::BB;
+            }
             else if(nbs == 1) {
                 for (std::vector<reco::GenParticle>::iterator it = neutrinosLepB.begin(); it != neutrinosLepB.end(); ++it){
                     if(reco::deltaR(it->eta(),it->phi(),jet.eta(),jet.phi()) < 0.4) {
@@ -55,7 +76,11 @@ namespace deep_ntuples {
             }
         }
         else if(hflav == 4) { //C jet
-            return JetFlavor::C;
+            if (ncs > 1) {
+              if (ncFromGSP > 0) return JetFlavor::GCC;
+              else return JetFlavor::CC;
+            }
+            else return JetFlavor::C;
         }
         else { //not a heavy jet
             if(std::abs(pflav) == 4 || std::abs(pflav) == 5 || nbs || ncs) {

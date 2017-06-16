@@ -99,6 +99,7 @@ void ntuple_FatJetInfo::initBranches(TTree* tree) {
 	addBranch(tree, "fj_sdsj1_phi",      &fj_sdsj1_phi_       );
 	addBranch(tree, "fj_sdsj1_mass",     &fj_sdsj1_mass_      );
 	addBranch(tree, "fj_sdsj1_csv",      &fj_sdsj1_csv_       );
+	addBranch(tree, "fj_sdsj1_jp",       &fj_sdsj1_jp_        );
 	addBranch(tree, "fj_sdsj1_ptD",      &fj_sdsj1_ptD_       );
 	addBranch(tree, "fj_sdsj1_axis1",    &fj_sdsj1_axis1_     );
 	addBranch(tree, "fj_sdsj1_axis2",    &fj_sdsj1_axis2_     );
@@ -108,6 +109,7 @@ void ntuple_FatJetInfo::initBranches(TTree* tree) {
 	addBranch(tree, "fj_sdsj2_phi",      &fj_sdsj2_phi_       );
 	addBranch(tree, "fj_sdsj2_mass",     &fj_sdsj2_mass_      );
 	addBranch(tree, "fj_sdsj2_csv",      &fj_sdsj2_csv_       );
+	addBranch(tree, "fj_sdsj2_jp",       &fj_sdsj2_jp_        );
 	addBranch(tree, "fj_sdsj2_ptD",      &fj_sdsj2_ptD_       );
 	addBranch(tree, "fj_sdsj2_axis1",    &fj_sdsj2_axis1_     );
 	addBranch(tree, "fj_sdsj2_axis2",    &fj_sdsj2_axis2_     );
@@ -227,6 +229,7 @@ bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, 
 		fj_sdsj1_phi_   = 0;
 		fj_sdsj1_mass_  = 0;
 		fj_sdsj1_csv_   = 0;
+		fj_sdsj1_jp_    = 0;
 		fj_sdsj1_ptD_   = 0;
 		fj_sdsj1_axis1_ = 0;
 		fj_sdsj1_axis2_ = 0;
@@ -237,6 +240,7 @@ bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, 
 		fj_sdsj2_phi_   = 0;
 		fj_sdsj2_mass_  = 0;
 		fj_sdsj2_csv_   = 0;
+		fj_sdsj2_jp_    = 0;
 		fj_sdsj2_ptD_   = 0;
 		fj_sdsj2_axis1_ = 0;
 		fj_sdsj2_axis2_ = 0;
@@ -254,6 +258,7 @@ bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, 
 		fj_sdsj1_phi_   = sj1.phi();
 		fj_sdsj1_mass_  = sj1.mass();
 		fj_sdsj1_csv_   = sj1.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+		fj_sdsj1_jp_    = sj1.bDiscriminator("pfJetProbabilityBJetTags");
 		fj_sdsj1_ptD_   = jh1.ptD();
 		fj_sdsj1_axis1_ = jh1.axis1();
 		fj_sdsj1_axis2_ = jh1.axis2();
@@ -266,6 +271,7 @@ bool ntuple_FatJetInfo::fillBranches(const pat::Jet& jet, const size_t& jetidx, 
 		fj_sdsj2_phi_   = sj2.phi();
 		fj_sdsj2_mass_  = sj2.mass();
 		fj_sdsj2_csv_   = sj2.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+		fj_sdsj2_jp_    = sj2.bDiscriminator("pfJetProbabilityBJetTags");
 		fj_sdsj2_ptD_   = jh2.ptD();
 		fj_sdsj2_axis1_ = jh2.axis1();
 		fj_sdsj2_axis2_ = jh2.axis2();
