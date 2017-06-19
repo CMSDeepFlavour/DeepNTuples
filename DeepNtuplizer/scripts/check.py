@@ -58,12 +58,13 @@ for dir in dirs:
     if len(dir.split('/'))>1:
         print ('please run this script directly in the parent directory of the job directory')
         exit()
-    
-    stdoutfiles=glob.glob(dir+"/batch/con_out*.out")
-    clusterfiles=glob.glob(dir+"/batch/condorcluster_*")
-    nJobsFile=glob.glob(dir+"/batch/nJobs*")
-    
-    #print (stdoutfiles)
+    with open(dir+'/eosaddress.txt','r') as f:
+	eosaddress=f.readline().strip()
+    dirName=dir
+    dir=eosaddress
+    stdoutfiles=glob.glob(eosaddress+"/batch/con_out*.out")
+    clusterfiles=glob.glob(eosaddress+"/batch/condorcluster_*")
+    nJobsFile=glob.glob(eosaddress+"/batch/nJobs*")
     
     nJobs=int(nJobsFile[0].split('.')[1])
     
@@ -71,7 +72,6 @@ for dir in dirs:
     
     for i in range(nJobs):
         jobstatus_list.append('L')
-    #print(jobstatus_list)
         
     for clf in clusterfiles:
         jcl=clf.split('_')[-1]
@@ -95,7 +95,6 @@ for dir in dirs:
     
     #stati: idle, running, failed(file), lost(file)
     
-    #print(jobstatus_list)
     nsucc=0
     nhold=0
     nfail=0
@@ -106,7 +105,6 @@ for dir in dirs:
     for i in range(nJobs):
         jobno=i
         filename = dir+"/batch/con_out."+str(jobno)+ ".out"
-        #print (filename)
         if os.path.isfile(dir+"/batch/"+str(jobno)+'.succ'):
             jobstatus_list[jobno]='S'
         elif os.path.isfile(filename) and  'JOBSUB::FAIL' in open(filename).read():
@@ -114,8 +112,9 @@ for dir in dirs:
         elif os.path.isfile(filename) and 'JOBSUB::SUCC' in open(filename).read():
             jobstatus_list[jobno]='S'
             os.system('touch '+dir+"/batch/"+str(jobno)+'.succ')
+
            
-        if jobstatus_list[jobno]=='S' and not os.path.isfile(dir+'/output/'+dir+'_'+str(jobno)+'.root'):
+        if jobstatus_list[jobno]=='S' and not os.path.isfile(dir+'/output/'+dirName+'_'+str(jobno)+'.root'):
             jobstatus_list[jobno]='F'
             os.system('rm -f '+dir+"/batch/"+str(jobno)+'.succ')
         
@@ -139,16 +138,11 @@ for dir in dirs:
             nrunning+=1
             runjobs.append(filename)
     
-    #print(jobstatus_list)
 
     ntupleOutDir=os.path.abspath(dir+'/output/')
     
+###
     #get some numbers
-    
-        
-    
-    
-    
     
     nJobs=nJobs
     if float(nidle)/float(nJobs)>0.8:
@@ -224,7 +218,7 @@ for dir in dirs:
             
             f=succjobs[i]
             jobno=os.path.basename(f).split('.')[1]
-            outputFile=dir+'_'+jobno
+            outputFile=dirName+'_'+jobno
             succfilellist.append(outputFile+'.root')
             jobfrac = float(i)/float(nsucc)
             if jobfrac < 0.9:
@@ -233,7 +227,7 @@ for dir in dirs:
                 testfiles.append(outputFile+'.root')
             
             fulloutfile=os.path.join(ntupleOutDir,outputFile+'.root')
-            
+
             combinedsize+=os.path.getsize(fulloutfile)
             if combinedsize < 4e9:
                 tocombine = tocombine+' '+fulloutfile
@@ -262,7 +256,8 @@ for dir in dirs:
         if action == 'merge':
            print('merging...')
            for out in succoutfile:
-               outputroot=ntupleOutDir+'/'+dir+'_merged_'+str(idx)+'.root'
+               outputroot=ntupleOutDir+'/'+dirName+'_merged_'+str(idx)+'.root'
+	       print (outputroot)
                idx+=1
                #can run in parallel
                os.system('hadd '+outputroot+ out) #use subprocess for parallelisatio later
