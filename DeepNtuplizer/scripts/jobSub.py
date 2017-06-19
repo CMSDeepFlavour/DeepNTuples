@@ -29,11 +29,12 @@ def doSub():
     parser.add_argument('--nosubmit',default=False,help='no submission')
     parser.add_argument('--outpath',default='',help='set path to store the .root output')
     parser.add_argument('--walltime',default='10800',help='set job wall time in seconds')
-
+    parser.add_argument('--maxsize',default='2000',help='set maximum allowed size of output ntuple')
     
     args = parser.parse_args()
     
     jobruntime=args.walltime
+    maxSize=args.maxsize
     
     cernboxpath='/eos/user/'+os.environ['USER'][0]+'/'+os.environ['USER']+'/DeepNtuples'
     if len(args.outpath):
@@ -83,7 +84,7 @@ def doSub():
         exit()
         
         
-    #recreates samples directory (removing old one avoids pssible errors in creating importsamples)
+    #recreates samples directory (removing old one avoids possible errors in creating importsamples)
     samplescriptdir=os.getenv('HOME')+'/.deepntuples_scripts_tmp'
     if not os.path.isdir(samplescriptdir):
         os.mkdir(samplescriptdir)
@@ -115,7 +116,6 @@ def doSub():
     
     
     globalOutDir=cernboxpath+'/'+time.strftime('%a_%H%M%S')+'_'+args.jobdir
-    
     
     print ('submitting jobs for '+configFile)
     
@@ -201,25 +201,36 @@ def doSub():
         
         #create full output path on eos
         #print (cernboxpath)
-        ntupleOutDir=globalOutDir+'/'+outputFile+'/'
+        ntupleOutDir=globalOutDir+'/'+outputFile+'/output/'
         os.makedirs(ntupleOutDir)
         #print (ntupleOutDir)
         
         #link to ntupleOutDir
         os.symlink(ntupleOutDir,jobpath+'/output')
 
+
+	#create directory in /tmp/ to host the .out and .log files
+	logDir=globalOutDir+'/'+outputFile+'/batch/' #'/tmp/'+os.environ['USER']+'/batch/'
+	os.mkdir(logDir)
+
+	#create a txt file and save the eos path there
+	address = open(jobpath+'/eosaddress.txt','w')
+	address.write(globalOutDir+'/'+outputFile)
+	address.close()
+
 #The maximum wall time of a condor job is defined in the MaxRuntime parameter in seconds.
 # 3 hours (10800s) seems to be currently enough
 
         condorfile ="""executable            = {batchscriptpath}
-arguments             = {configfile} inputScript={sample} outputFile={ntupledir}{outputfile} nJobs={njobs} job=$(ProcId) {options}
-output                = batch/con_out.$(ProcId).out
-error                 = batch/con_out.$(ProcId).err
-log                   = batch/con_out.$(ProcId).log
-send_credential        = True
+arguments             = {configfile} inputScript={sample} nJobs={njobs} job=$(ProcId) {options}
+output                = {logdir}con_out.$(ProcId).out
+log                   = {logdir}con_out.$(ProcId).log
+send_credential       = True
 getenv = True
 use_x509userproxy = True
 +MaxRuntime = {maxruntime}
+max_transfer_output_mb = {maxsize}
+transfer_output_remaps = "{outputfile}_$(ProcId).root={ntupledir}{outputfile}_$(ProcId).root"
 queue {njobs}
     """.format(
               batchscriptpath=sheelscp,
@@ -229,26 +240,29 @@ queue {njobs}
               outputfile=outputFile,
               njobs=nJobs, 
               options=jobargs,
-              maxruntime=jobruntime
+              maxruntime=jobruntime,
+	      maxsize=maxSize,
+	      logdir=logDir
               )
         
         conf = open(os.path.join(jobpath, 'condor.sub'), 'w')
         conf.write(condorfile)
         conf.close()
         print("wrote condor file for "+outputFile)
-        os.mkdir(jobpath+'/batch')
+        os.symlink(logDir,jobpath+'/batch')
         
         #create individual condor files for resubmission
         for job in range(0,int(nJobs)):
              jobcondorfile ="""executable            = {batchscriptpath}
-arguments = {configfile} inputScript={sample} outputFile={ntupledir}{outputfile} nJobs={njobs} job={job} {options}
-output = batch/con_out.{job}.out
-error  = batch/con_out.{job}.err
-log   = batch/con_out.{job}.log
+arguments = {configfile} inputScript={sample} nJobs={njobs} job={job} {options}
+output = {logdir}con_out.{job}.out
+log   = {logdir}con_out.{job}.log
 send_credential = True
 getenv = True
 use_x509userproxy = True
 +MaxRuntime= {maxruntime}
+max_transfer_output_mb = {maxsize}
+transfer_output_remaps = "{outputfile}_$(ProcId).root={ntupledir}{outputfile}_$(ProcId).root"
 queue 1
              """.format(
                   batchscriptpath=sheelscp,
@@ -259,25 +273,28 @@ queue 1
                   njobs=nJobs, 
                   options=jobargs,
                   job=str(job),
-                  maxruntime=jobruntime
+                  maxruntime=jobruntime,
+                  maxsize=maxSize,
+		  logdir=logDir
               )
-             jconf = open(os.path.join(jobpath+'/batch', 'condor_'+str(job)+'.sub'), 'w')
+	     jconf = open(os.path.join(logDir,'condor_'+str(job)+'.sub'), 'w')
              jconf.write(jobcondorfile)
              jconf.close()
-             resetJobOutput(jobpath,job)
-             os.system('touch '+jobpath+'/batch/con_out.'+str(job) +'.out')
+	     resetJobOutput(globalOutDir+'/'+outputFile+'/',job)
+	     os.system('touch '+logDir+'con_out.'+str(job) +'.out')
              
              
         #create script
         shellscript = """#!/bin/bash
 echo "JOBSUB::RUN job running"
 trap "echo JOBSUB::FAIL job killed" SIGTERM
+export OUTPUT=$PWD/{outputfile}
 cd {basedir}
 eval `scramv1 runtime -sh`
 export PYTHONPATH={sampleScriptdir}:$PYTHONPATH
 which cmsRun
 cd {jobdir}
-cmsRun "$@" 2>&1
+cmsRun "$@" outputFile=$OUTPUT 2>&1
 exitstatus=$?
 if [ $exitstatus != 0 ]
 then
@@ -288,14 +305,15 @@ fi
         """.format(
             sampleScriptdir=samplescriptdir,
             basedir=swdir,
-            jobdir=os.path.abspath(args.jobdir)
+            jobdir=os.path.abspath(args.jobdir),
+	    outputfile=outputFile
             )
         
         shellsc = open(sheelscp, 'w')
         shellsc.write(shellscript)
         shellsc.close()
         os.system('chmod +x '+sheelscp)
-        os.system('touch '+jobpath+'/batch/nJobs.'+str(nJobs))
+	os.system('touch '+logDir+'/nJobs.'+str(nJobs))
         
         #add a 'touch for the .out file to make the check realise it is there
         
@@ -305,7 +323,7 @@ fi
             cluster=submitjob(jobpath,'condor.sub')
             #print(cluster)
             for job in range(0,int(nJobs)):
-               createClusterInfo(jobpath,job,cluster,True)
+	       createClusterInfo(globalOutDir+'/'+outputFile,job,cluster,True)
     
     
     exit()
