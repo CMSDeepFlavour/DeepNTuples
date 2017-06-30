@@ -36,18 +36,19 @@ def doSub():
     jobruntime=args.walltime
     maxSize=args.maxsize
     
-    cernboxpath='/eos/user/'+os.environ['USER'][0]+'/'+os.environ['USER']+'/DeepNtuples'
+    #eosGlobalOutDir='/eos/user/'+os.environ['USER'][0]+'/'+os.environ['USER']+'/DeepNtuples'
+    eosGlobalOutDir='/eos/cms/store/cmst3/group/dehep/DeepJet/NTuples/'
     if len(args.outpath):
-        cernboxpath=args.outpath
-        if not os.path.isdir(cernboxpath):
+        eosGlobalOutDir=args.outpath
+        if not os.path.isdir(eosGlobalOutDir):
             print('please specify a valid output path')
             sys.exit(-1)
     
     
     if os.path.isdir(args.jobdir):
-        print (args.jobdir), 'exists: EXIT'
+        print (args.jobdir, 'exists: EXIT')
         sys.exit(-1)
-    configFile=os.path.abspath(args.configfile)
+    configFile=os.path.realpath(args.configfile)
     
     ###### check for grid certificate
     
@@ -112,10 +113,11 @@ def doSub():
     
     os.mkdir(args.jobdir)
     shutil.copy(configFile, args.jobdir)
-    configFile=os.path.abspath(os.path.join(args.jobdir, os.path.basename(configFile)))
+    configFile=os.path.realpath(os.path.join(args.jobdir, os.path.basename(configFile)))
     
     
-    globalOutDir=cernboxpath+'/'+time.strftime('%a_%H%M%S')+'_'+args.jobdir
+    globalOutDir=eosGlobalOutDir+'/'+time.strftime('%a_%H%M%S')+'_'+args.jobdir
+    globalOutDir=os.path.realpath(globalOutDir)
     
     print ('submitting jobs for '+configFile)
     
@@ -195,42 +197,56 @@ def doSub():
               args.jobdir, 
               outputFile
               )
-        jobpath=os.path.abspath(jobpath)
+        jobpath=os.path.realpath(jobpath)
         os.mkdir(jobpath) 
-        sheelscp=os.path.abspath(os.path.join(jobpath, 'batchscript.sh'))
+        sheelscp=os.path.realpath(os.path.join(jobpath, 'batchscript.sh'))
         
         #create full output path on eos
-        #print (cernboxpath)
+        #print (eosGlobalOutDir)
         ntupleOutDir=globalOutDir+'/'+outputFile+'/output/'
         os.makedirs(ntupleOutDir)
         #print (ntupleOutDir)
         
         #link to ntupleOutDir
         os.symlink(ntupleOutDir,jobpath+'/output')
+        #ntupleOutDir=jobpath+'/output/'
 
+        hostname=os.getenv('HOSTNAME')
+        if not hostname:
+            raise Exception("hostname could not be determined")
 
 	#create directory in /tmp/ to host the .out and .log files
-	logDir=globalOutDir+'/'+outputFile+'/batch/' #'/tmp/'+os.environ['USER']+'/batch/'
-	os.mkdir(logDir)
-
-	#create a txt file and save the eos path there
-	address = open(jobpath+'/eosaddress.txt','w')
-	address.write(globalOutDir+'/'+outputFile)
-	address.close()
-
+	#logDir=globalOutDir+'/'+outputFile+'/batch/' #'/tmp/'+os.environ['USER']+'/batch/'
+        helperdir='/tmp/'+os.environ['USER']+'/'+ str(os.getpid()) +'/'+outputFile+'/batch/'
+        logDir=jobpath+'/batch/'
+        os.makedirs(logDir)
+        os.makedirs(helperdir)
+        os.symlink(helperdir,jobpath+'/helper')
+        infostring='helper files in \n'+helperdir+' on machine\n'+hostname
+        #print(infostring+'\n delete after all jobs are finished (check.py does it automatically)')
+        
+	    #create a txt file and save the eos path there
+        address = open(jobpath+'/hostinfo.txt','w')
+        #address.write(logDir)
+        
+            
+        address.write(hostname)
+        address.close()
+        
+        #print(ntupleOutDir)
 #The maximum wall time of a condor job is defined in the MaxRuntime parameter in seconds.
 # 3 hours (10800s) seems to be currently enough
 
         condorfile ="""executable            = {batchscriptpath}
 arguments             = {configfile} inputScript={sample} nJobs={njobs} job=$(ProcId) {options}
-output                = {logdir}con_out.$(ProcId).out
 log                   = {logdir}con_out.$(ProcId).log
-send_credential       = True
 getenv = True
+environment = "NTUPLEOUTFILEPATH={ntupledir}{outputfile}_$(ProcId).root"
 use_x509userproxy = True
 +MaxRuntime = {maxruntime}
 max_transfer_output_mb = {maxsize}
-transfer_output_remaps = "{outputfile}_$(ProcId).root={ntupledir}{outputfile}_$(ProcId).root"
+transfer_output_remaps = "stdout.txt={logdir}con_out.$(ProcId).out"
+max_retries = 10
 queue {njobs}
     """.format(
               batchscriptpath=sheelscp,
@@ -249,20 +265,19 @@ queue {njobs}
         conf.write(condorfile)
         conf.close()
         print("wrote condor file for "+outputFile)
-        os.symlink(logDir,jobpath+'/batch')
         
         #create individual condor files for resubmission
         for job in range(0,int(nJobs)):
-             jobcondorfile ="""executable            = {batchscriptpath}
+            jobcondorfile ="""executable            = {batchscriptpath}
 arguments = {configfile} inputScript={sample} nJobs={njobs} job={job} {options}
-output = {logdir}con_out.{job}.out
 log   = {logdir}con_out.{job}.log
-send_credential = True
 getenv = True
+environment = "NTUPLEOUTFILEPATH={ntupledir}{outputfile}_{job}.root"
 use_x509userproxy = True
 +MaxRuntime= {maxruntime}
 max_transfer_output_mb = {maxsize}
-transfer_output_remaps = "{outputfile}_$(ProcId).root={ntupledir}{outputfile}_$(ProcId).root"
+transfer_output_remaps = "stdout.txt={logdir}con_out.{job}.out"
+max_retries = 3
 queue 1
              """.format(
                   batchscriptpath=sheelscp,
@@ -275,45 +290,56 @@ queue 1
                   job=str(job),
                   maxruntime=jobruntime,
                   maxsize=maxSize,
-		  logdir=logDir
-              )
-	     jconf = open(os.path.join(logDir,'condor_'+str(job)+'.sub'), 'w')
-             jconf.write(jobcondorfile)
-             jconf.close()
-	     resetJobOutput(globalOutDir+'/'+outputFile+'/',job)
-	     os.system('touch '+logDir+'con_out.'+str(job) +'.out')
+		          logdir=logDir
+                  )
+	    jconf = open(os.path.join(logDir,'condor_'+str(job)+'.sub'), 'w')
+        jconf.write(jobcondorfile)
+        jconf.close()
+        resetJobOutput(jobpath,job)
              
              
         #create script
         shellscript = """#!/bin/bash
+exec > "$PWD/stdout.txt" 2>&1
 echo "JOBSUB::RUN job running"
 trap "echo JOBSUB::FAIL job killed" SIGTERM
-export OUTPUT=$PWD/{outputfile}
+export OUTPUT={outputfile}
 cd {basedir}
 eval `scramv1 runtime -sh`
 export PYTHONPATH={sampleScriptdir}:$PYTHONPATH
 which cmsRun
-cd {jobdir}
-cmsRun "$@" outputFile=$OUTPUT 2>&1
+cd -
+cmsRun "$@" outputFile=$OUTPUT 
 exitstatus=$?
 if [ $exitstatus != 0 ]
 then
-echo JOBSUB::FAIL job failed with status $exitstatus
+   echo JOBSUB::FAIL job failed with status $exitstatus
 else
-echo JOBSUB::SUCC job ended sucessfully
+   pwd
+   ls -ltr $OUTPUT*.root
+   eos cp $OUTPUT*.root $NTUPLEOUTFILEPATH
+   exitstatus=$?
+   rm -f $OUTPUT*.root
+   if [ $exitstatus != 0 ]
+   then
+     echo JOBSUB::FAIL job failed with status $exitstatus
+   else
+     echo JOBSUB::SUCC job ended sucessfully
+   fi
 fi
+exit $exitstatus
         """.format(
             sampleScriptdir=samplescriptdir,
             basedir=swdir,
-            jobdir=os.path.abspath(args.jobdir),
-	    outputfile=outputFile
+            jobdir=os.path.realpath(args.jobdir),
+	        outputfile=outputFile
             )
         
         shellsc = open(sheelscp, 'w')
         shellsc.write(shellscript)
         shellsc.close()
         os.system('chmod +x '+sheelscp)
-	os.system('touch '+logDir+'/nJobs.'+str(nJobs))
+        os.system('touch '+logDir+'/nJobs.'+str(nJobs))
         
         #add a 'touch for the .out file to make the check realise it is there
         
@@ -323,7 +349,7 @@ fi
             cluster=submitjob(jobpath,'condor.sub')
             #print(cluster)
             for job in range(0,int(nJobs)):
-	       createClusterInfo(globalOutDir+'/'+outputFile,job,cluster,True)
+	       createClusterInfo(jobpath,job,cluster,True)
     
     
     exit()

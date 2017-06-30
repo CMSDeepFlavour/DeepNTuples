@@ -168,6 +168,15 @@ public:
     float QG_axis2_;
     float QG_mult_;
 
+
+    float y_multiplicity_;
+    float y_charged_multiplicity_;
+    float y_neutral_multiplicity_;
+    float y_ptD_;
+    float y_axis1_;
+    float y_axis2_;
+    float y_pt_dr_log_;
+
     static constexpr std::size_t max_num_lept = 5;
     int muons_isLooseMuon_[max_num_lept];
     int muons_isTightMuon_[max_num_lept];

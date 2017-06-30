@@ -15,10 +15,10 @@ def resetJobOutput(parentdir,jobno):
     import os
     rootfile=parentdir+'/output/'+parentdir+'_'+str(jobno)+'.root'
     outs=parentdir+'/batch/con_*'+str(jobno)+'.*'
-    clusterf=parentdir+"/batch/condorcluster_"+str(jobno)+'*'
-    submitindicator=parentdir+"/batch/"+str(jobno)+".submitted"
+    clusterf=parentdir+"/helper/condorcluster_"+str(jobno)+'*'
+    submitindicator=parentdir+"/helper/"+str(jobno)+".submitted"
     os.system('rm -f '+rootfile+' '+outs+' '+clusterf+' '+submitindicator)
-    os.system('touch '+parentdir+'/batch/con_out.'+ str(jobno) +'.out')
+    #os.system('touch '+parentdir+'/batch/con_out.'+ str(jobno) +'.out')
     
 
 
@@ -32,8 +32,8 @@ def submitjob(path,condorfile,jobno=-1):
     if err and len(err):
         print (err)
     elif jobno>-1:
-        os.system('touch '+path +'/batch/'+str(jobno)+".submitted")
-        os.system('touch '+path+'/batch/con_out.'+ str(jobno) +'.out')
+        os.system('touch '+path +'/helper/'+str(jobno)+".submitted")
+        #os.system('touch '+path+'/batch/con_out.'+ str(jobno) +'.out')
     cluster=0
     try:
         cluster=out.split()[-1][0:-1]
@@ -46,7 +46,7 @@ def createClusterInfo(path,job,cluster,batchsub):
     addstring='0'
     if batchsub:
         addstring=str(job)
-    clfile= open(os.path.join(path+'/batch', 'condorcluster_'+str(job)+'.'+str(cluster)+'.'+addstring), 'w')
+    clfile= open(os.path.join(path+'/helper', 'condorcluster_'+str(job)+'.'+str(cluster)+'.'+addstring), 'w')
     clfile.write(str(cluster))
     clfile.close()
 

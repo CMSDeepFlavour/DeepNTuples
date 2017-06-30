@@ -16,3 +16,13 @@ namespace deep_ntuples {
 }
 
 #endif //DEEPNTUPLES_DEEPNTUPLIZER_INTERFACE_HELPERS_H_
+
+#include <tuple>
+#include "DataFormats/JetReco/interface/Jet.h"
+namespace yuta{
+
+std::tuple<int, int, int, float, float, float, float>
+calcVariables(const reco::Jet *jet);
+
+
+}

@@ -58,13 +58,16 @@ for dir in dirs:
     if len(dir.split('/'))>1:
         print ('please run this script directly in the parent directory of the job directory')
         exit()
-    with open(dir+'/eosaddress.txt','r') as f:
-	eosaddress=f.readline().strip()
-    dirName=dir
-    dir=eosaddress
-    stdoutfiles=glob.glob(eosaddress+"/batch/con_out*.out")
-    clusterfiles=glob.glob(eosaddress+"/batch/condorcluster_*")
-    nJobsFile=glob.glob(eosaddress+"/batch/nJobs*")
+    with open(dir+'/hostinfo.txt','r') as f:
+        hostname=f.readline().strip()
+        
+    if not hostname == os.getenv('HOSTNAME'):
+        raise Exception("check must be run on host "+hostname)
+    
+    #stdoutfiles=glob.glob(dir+"/batch/con_out*.out")
+    clusterfiles=glob.glob(dir+"/helper/condorcluster_*")
+    nJobsFile=glob.glob(dir+"/batch/nJobs*")
+    
     
     nJobs=int(nJobsFile[0].split('.')[1])
     
@@ -105,18 +108,18 @@ for dir in dirs:
     for i in range(nJobs):
         jobno=i
         filename = dir+"/batch/con_out."+str(jobno)+ ".out"
-        if os.path.isfile(dir+"/batch/"+str(jobno)+'.succ'):
+        if os.path.isfile(dir+"/helper/"+str(jobno)+'.succ'):
+            jobstatus_list[jobno]='S'
+        elif os.path.isfile(filename) and 'JOBSUB::SUCC' in open(filename).read():
             jobstatus_list[jobno]='S'
         elif os.path.isfile(filename) and  'JOBSUB::FAIL' in open(filename).read():
             jobstatus_list[jobno]='F'
-        elif os.path.isfile(filename) and 'JOBSUB::SUCC' in open(filename).read():
-            jobstatus_list[jobno]='S'
             os.system('touch '+dir+"/batch/"+str(jobno)+'.succ')
 
            
-        if jobstatus_list[jobno]=='S' and not os.path.isfile(dir+'/output/'+dirName+'_'+str(jobno)+'.root'):
+        if jobstatus_list[jobno]=='S' and not os.path.isfile(dir+'/output/'+dir+'_'+str(jobno)+'.root'):
             jobstatus_list[jobno]='F'
-            os.system('rm -f '+dir+"/batch/"+str(jobno)+'.succ')
+            os.system('rm -f '+dir+"/helper/"+str(jobno)+'.succ')
         
         j=jobstatus_list[jobno]
         if j=='S':
@@ -218,7 +221,7 @@ for dir in dirs:
             
             f=succjobs[i]
             jobno=os.path.basename(f).split('.')[1]
-            outputFile=dirName+'_'+jobno
+            outputFile=dir+'_'+jobno
             succfilellist.append(outputFile+'.root')
             jobfrac = float(i)/float(nsucc)
             if jobfrac < 0.9:
@@ -256,7 +259,7 @@ for dir in dirs:
         if action == 'merge':
            print('merging...')
            for out in succoutfile:
-               outputroot=ntupleOutDir+'/'+dirName+'_merged_'+str(idx)+'.root'
+               outputroot=ntupleOutDir+'/'+dir+'_merged_'+str(idx)+'.root'
 	       print (outputroot)
                idx+=1
                #can run in parallel
@@ -265,10 +268,15 @@ for dir in dirs:
            print ('merged to '+str(idx) +' files')
             #os.system('hadd '+outputroot+ succoutfile)
              
-             
-             
-          
-          
+        
+            
+    if (action == 'clean'):         
+        tmpdir=os.path.realpath(dir+"/helper")
+        print('removing temp dir '+tmpdir)
+        os.system("rm -rf "+tmpdir)
+    else:
+        print('if no jobs are running anymore, please run "check.py <dirs> --action clean" to clean temporary files')
+              
           
          
          

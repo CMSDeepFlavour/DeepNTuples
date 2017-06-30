@@ -44,12 +44,12 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"gen_pt"    ,&gen_pt_    ,"gen_pt_/f"    );
     addBranch(tree,"Delta_gen_pt"    ,&Delta_gen_pt_,"Delta_gen_pt_/f"    );
     addBranch(tree,"isB",&isB_, "isB_/i");
-    //addBranch(tree,"isGBB",&isGBB_, "isGBB_/i");
+    addBranch(tree,"isGBB",&isGBB_, "isGBB_/i");
     addBranch(tree,"isBB",&isBB_, "isBB_/i");
     addBranch(tree,"isLeptonicB",&isLeptonicB_, "isLeptonicB_/i");
     addBranch(tree,"isLeptonicB_C",&isLeptonicB_C_, "isLeptonicB_C_/i");
     addBranch(tree,"isC",&isC_, "isC_/i");
-    //addBranch(tree,"isGCC",&isGCC_, "isGCC_/i");
+    addBranch(tree,"isGCC",&isGCC_, "isGCC_/i");
     addBranch(tree,"isCC",&isCC_, "isCC_/i");
     addBranch(tree,"isUD",&isUD_, "isUD_/i");
     addBranch(tree,"isS",&isS_, "isS_/i");
@@ -58,12 +58,12 @@ void ntuple_JetInfo::initBranches(TTree* tree){
 
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
     addBranch(tree,"isPhysB",&isPhysB_, "isPhysB_/i");
-    //addBranch(tree,"isPhysGBB",&isPhysGBB_, "isPhysGBB_/i");
+    addBranch(tree,"isPhysGBB",&isPhysGBB_, "isPhysGBB_/i");
     addBranch(tree,"isPhysBB",&isPhysBB_, "isPhysBB_/i");
     addBranch(tree,"isPhysLeptonicB",&isPhysLeptonicB_, "isPhysLeptonicB_/i");
     addBranch(tree,"isPhysLeptonicB_C",&isPhysLeptonicB_C_, "isPhysLeptonicB_C_/i");
     addBranch(tree,"isPhysC",&isPhysC_, "isPhysC_/i");
-    //addBranch(tree,"isPhysGCC",&isPhysGCC_, "isPhysGCC_/i");
+    addBranch(tree,"isPhysGCC",&isPhysGCC_, "isPhysGCC_/i");
     addBranch(tree,"isPhysCC",&isPhysCC_, "isPhysCC_/i");
     addBranch(tree,"isPhysUD",&isPhysUD_, "isPhysUD_/i");
     addBranch(tree,"isPhysS",&isPhysS_, "isPhysS_/i");
@@ -88,6 +88,17 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"QG_ptD",   &QG_ptD_);   // momentum fraction per jet constituent
     addBranch(tree,"QG_axis2", &QG_axis2_); // jet shape i.e. gluon are wider than quarks
     addBranch(tree,"QG_mult",  &QG_mult_);  // multiplicity i.e. total num of PFcands reconstructed
+
+    // yutas quark-gluon info
+    addBranch(tree,"y_multiplicity"    ,&y_multiplicity_,"y_multiplicity_/f"    );
+    addBranch(tree,"y_charged_multiplicity"    ,&y_charged_multiplicity_,"y_charged_multiplicity_/f"    );
+    addBranch(tree,"y_neutral_multiplicity"    ,&y_neutral_multiplicity_,"y_neutral_multiplicity_/f"    );
+    addBranch(tree,"y_ptD"    ,&y_ptD_,"y_ptD_/f"    );
+    addBranch(tree,"y_axis1"    ,&y_axis1_,"y_axis1_/f"    );
+    addBranch(tree,"y_axis2"    ,&y_axis2_,"y_axis2_/f"    );
+    addBranch(tree,"y_pt_dr_log"    ,&y_pt_dr_log_,"y_pt_dr_log_/f"    );
+
+
     // in the jet
 
     addBranch(tree,"muons_number", &muons_number_, "muons_number_/i");
@@ -137,6 +148,11 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
     iEvent.getByToken(muonsToken_, muonsHandle);
     iEvent.getByToken(electronsToken_, electronsHandle);
 
+    event_no_=iEvent.id().event();
+
+    //presumably this whole part can be romoved!
+
+
     neutrinosLepB.clear();
     neutrinosLepB_C.clear();
 
@@ -173,7 +189,6 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
 
     }
     //technically a branch fill but per event, therefore here
-    event_no_=iEvent.id().event();
 }
 
 //use either of these functions
@@ -254,19 +269,17 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     //// Note that jets with gluon->bb (cc) and x->bb (cc) are in the same categories
     switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C)) {
-    case deep_ntuples::JetFlavor::UD: isUD_=1; break;
-    case deep_ntuples::JetFlavor::S:  isS_=1; break;
     case deep_ntuples::JetFlavor::B:  isB_=1; break;
-    case deep_ntuples::JetFlavor::BB: isBB_=1; break;
-    case deep_ntuples::JetFlavor::GBB: isBB_=1; break;
-    //case deep_ntuples::JetFlavor::GBB: isGBB_=1; brea;
-    case deep_ntuples::JetFlavor::C:  isC_=1; break;
-    case deep_ntuples::JetFlavor::CC: isCC_=1; break;
-    case deep_ntuples::JetFlavor::GCC: isCC_=1; break;
-    //case deep_ntuples::JetFlavor::GCC: isGCC_=1; break;
-    case deep_ntuples::JetFlavor::G:  isG_=1; break;
     case deep_ntuples::JetFlavor::LeptonicB: isLeptonicB_=1; break;
     case deep_ntuples::JetFlavor::LeptonicB_C: isLeptonicB_C_=1; break;
+    case deep_ntuples::JetFlavor::GBB: isGBB_=1; break;
+    case deep_ntuples::JetFlavor::BB: isBB_=1; break;
+    case deep_ntuples::JetFlavor::C:  isC_=1; break;
+    case deep_ntuples::JetFlavor::GCC: isGCC_=1; break;
+    case deep_ntuples::JetFlavor::CC: isCC_=1; break;
+    case deep_ntuples::JetFlavor::G:  isG_=1; break;
+    case deep_ntuples::JetFlavor::UD: isUD_=1; break;
+    case deep_ntuples::JetFlavor::S:  isS_=1; break;
     default : isUndefined_=1; break;
     }
 
@@ -278,12 +291,10 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     case deep_ntuples::JetFlavor::S:  isPhysS_=1; break;
     case deep_ntuples::JetFlavor::B:  isPhysB_=1; break;
     case deep_ntuples::JetFlavor::BB: isPhysBB_=1; break;
-    case deep_ntuples::JetFlavor::GBB: isPhysBB_=1; break;
-    //case deep_ntuples::JetFlavor::GBB:isPhysGBB_=1; break;
+    case deep_ntuples::JetFlavor::GBB: isPhysGBB_=1; break;
     case deep_ntuples::JetFlavor::C:  isPhysC_=1; break;
     case deep_ntuples::JetFlavor::CC: isPhysCC_=1; break;
-    case deep_ntuples::JetFlavor::GCC: isPhysCC_=1; break;
-    //case deep_ntuples::JetFlavor::GCC:isPhysGCC_=1; break;
+    case deep_ntuples::JetFlavor::GCC: isPhysGCC_=1; break;
     case deep_ntuples::JetFlavor::G:  isPhysG_=1; break;
     case deep_ntuples::JetFlavor::LeptonicB: isPhysLeptonicB_=1; break;
     case deep_ntuples::JetFlavor::LeptonicB_C: isPhysLeptonicB_C_=1; break;
@@ -341,6 +352,20 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     Delta_gen_pt_Recluster_=gen_pt_Recluster_-jet.pt();
     Delta_gen_pt_WithNu_=gen_pt_WithNu_-jet.pt();
+
+
+
+    auto qgtuple=yuta::calcVariables(&jet);
+    //(multiplicity, charged_multiplicity, neutral_multiplicity, ptD, axis1, axis2, pt_dr_log);
+
+    y_multiplicity_=std::get<0>(qgtuple);
+    y_charged_multiplicity_=std::get<1>(qgtuple);
+    y_neutral_multiplicity_=std::get<2>(qgtuple);
+    y_ptD_    =  std::get<3>(qgtuple);
+    y_axis1_  =  std::get<4>(qgtuple);
+    y_axis2_  =  std::get<5>(qgtuple);
+    y_pt_dr_log_=std::get<6>(qgtuple);
+
 
 
     return true;
