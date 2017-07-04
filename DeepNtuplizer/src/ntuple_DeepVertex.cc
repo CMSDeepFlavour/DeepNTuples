@@ -29,82 +29,85 @@ void ntuple_DeepVertex::getInput(const edm::ParameterSet& iConfig){
 
 void ntuple_DeepVertex::initBranches(TTree* tree){
     
-    addBranch(tree,"n_seeds",&n_seeds, "n_seeds/I");
+    addBranch(tree,"n_seeds",&n_seeds, "n_seeds/i");
+    addBranch(tree,"nSeeds",&nSeeds, "nSeeds/f");
 
-    addBranch(tree,"seed_pt",&seed_pt, "seed_pt[n_seeds]/D");
-    addBranch(tree,"seed_eta",&seed_eta, "seed_eta[n_seeds]/D");
-    addBranch(tree,"seed_phi",&seed_phi, "seed_phi[n_seeds]/D");
-    addBranch(tree,"seed_mass",&seed_mass, "seed_mass[n_seeds]/D");
+    addBranch(tree,"seed_pt",&seed_pt, "seed_pt[n_seeds]/f");
+    addBranch(tree,"seed_eta",&seed_eta, "seed_eta[n_seeds]/f");
+    addBranch(tree,"seed_phi",&seed_phi, "seed_phi[n_seeds]/f");
+    addBranch(tree,"seed_mass",&seed_mass, "seed_mass[n_seeds]/f");
     
-    addBranch(tree,"seed_dz", &seed_dz, "seed_dz[n_seeds]/D");
-    addBranch(tree,"seed_dxy", &seed_dxy, "seed_dxy[n_seeds]/D");
-    addBranch(tree,"seed_3D_ip", &seed_3D_ip, "seed_3D_ip[n_seeds]/D");
-    addBranch(tree,"seed_3D_sip", &seed_3D_sip, "seed_3D_sip[n_seeds]/D");
-    addBranch(tree,"seed_2D_ip", &seed_2D_ip, "seed_2D_ip[n_seeds]/D");
-    addBranch(tree,"seed_2D_sip", &seed_2D_sip, "seed_2D_sip[n_seeds]/D");
+    addBranch(tree,"seed_dz", &seed_dz, "seed_dz[n_seeds]/f");
+    addBranch(tree,"seed_dxy", &seed_dxy, "seed_dxy[n_seeds]/f");
+    addBranch(tree,"seed_3D_ip", &seed_3D_ip, "seed_3D_ip[n_seeds]/f");
+    addBranch(tree,"seed_3D_sip", &seed_3D_sip, "seed_3D_sip[n_seeds]/f");
+    addBranch(tree,"seed_2D_ip", &seed_2D_ip, "seed_2D_ip[n_seeds]/f");
+    addBranch(tree,"seed_2D_sip", &seed_2D_sip, "seed_2D_sip[n_seeds]/f");
     
-    addBranch(tree,"seed_3D_signedIp", &seed_3D_signedIp, "seed_3D_signedIp[n_seeds]/D");
-    addBranch(tree,"seed_3D_signedSip", &seed_3D_signedSip, "seed_3D_signedSip[n_seeds]/D");
-    addBranch(tree,"seed_2D_signedIp", &seed_2D_signedIp, "seed_2D_signedIp[n_seeds]/D");
-    addBranch(tree,"seed_2D_signedSip", &seed_2D_signedSip, "seed_2D_signedSip[n_seeds]/D");
+    addBranch(tree,"seed_3D_signedIp", &seed_3D_signedIp, "seed_3D_signedIp[n_seeds]/f");
+    addBranch(tree,"seed_3D_signedSip", &seed_3D_signedSip, "seed_3D_signedSip[n_seeds]/f");
+    addBranch(tree,"seed_2D_signedIp", &seed_2D_signedIp, "seed_2D_signedIp[n_seeds]/f");
+    addBranch(tree,"seed_2D_signedSip", &seed_2D_signedSip, "seed_2D_signedSip[n_seeds]/f");
     
-    addBranch(tree,"seed_chi2reduced",&seed_chi2reduced, "seed_chi2reduced[n_seeds]/D");
-    addBranch(tree,"seed_nPixelHits",&seed_nPixelHits, "seed_nPixelHits[n_seeds]/D");
-    addBranch(tree,"seed_nHits",&seed_nHits, "seed_nHits[n_seeds]/D");
-    addBranch(tree,"seed_jetAxisDistance",&seed_jetAxisDistance, "seed_jetAxisDistance[n_seeds]/D");
-    addBranch(tree,"seed_jetAxisDlength",&seed_jetAxisDlength, "seed_jetAxisDlength[n_seeds]/D");
+    addBranch(tree,"seed_chi2reduced",&seed_chi2reduced, "seed_chi2reduced[n_seeds]/f");
+    addBranch(tree,"seed_nPixelHits",&seed_nPixelHits, "seed_nPixelHits[n_seeds]/f");
+    addBranch(tree,"seed_nHits",&seed_nHits, "seed_nHits[n_seeds]/f");
+    addBranch(tree,"seed_jetAxisDistance",&seed_jetAxisDistance, "seed_jetAxisDistance[n_seeds]/f");
+    addBranch(tree,"seed_jetAxisDlength",&seed_jetAxisDlength, "seed_jetAxisDlength[n_seeds]/f");
     
-    addBranch(tree,"seed_nNearTracks",&seed_nNearTracks, "seed_nNearTracks[n_seeds]/I");
+    addBranch(tree,"seed_n_NearTracks",&seed_n_NearTracks, "seed_n_NearTracks[n_seeds]/i");
+    addBranch(tree,"seed_nNearTracks",&seed_nNearTracks, "seed_nNearTracks[n_seeds]/f");
     
     
     
     // near Tracks
     
-    addBranch(tree,"n_NearTracksTotal",&n_NearTracksTotal, "n_NearTracksTotal/I");
+    addBranch(tree,"n_NearTracksTotal",&n_NearTracksTotal, "n_NearTracksTotal/i");
+    addBranch(tree,"nNearTracksTotal",&nNearTracksTotal, "nNearTracksTotal/f");
     
-    addBranch(tree,"nearTracks_pt", &nearTracks_pt, "nearTracks_pt[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_eta", &nearTracks_eta, "nearTracks_eta[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_phi", &nearTracks_phi, "nearTracks_phi[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_mass", &nearTracks_mass, "nearTracks_mass[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_dz", &nearTracks_dz, "nearTracks_dz[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_dxy", &nearTracks_dxy, "nearTracks_dxy[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_3D_ip", &nearTracks_3D_ip, "nearTracks_3D_ip[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_3D_sip", &nearTracks_3D_sip, "nearTracks_3D_sip[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_2D_ip", &nearTracks_2D_ip, "nearTracks_2D_ip[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_2D_sip", &nearTracks_2D_sip, "nearTracks_2D_sip[n_NearTracksTotal]/D");
+    addBranch(tree,"nearTracks_pt", &nearTracks_pt, "nearTracks_pt[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_eta", &nearTracks_eta, "nearTracks_eta[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_phi", &nearTracks_phi, "nearTracks_phi[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_mass", &nearTracks_mass, "nearTracks_mass[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_dz", &nearTracks_dz, "nearTracks_dz[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_dxy", &nearTracks_dxy, "nearTracks_dxy[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_3D_ip", &nearTracks_3D_ip, "nearTracks_3D_ip[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_3D_sip", &nearTracks_3D_sip, "nearTracks_3D_sip[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_2D_ip", &nearTracks_2D_ip, "nearTracks_2D_ip[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_2D_sip", &nearTracks_2D_sip, "nearTracks_2D_sip[n_NearTracksTotal]/f");
 
-    addBranch(tree,"nearTracks_PCAdist", &nearTracks_PCAdist, "nearTracks_PCAdist[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAdsig", &nearTracks_PCAdsig, "nearTracks_PCAdsig[n_NearTracksTotal]/D");
+    addBranch(tree,"nearTracks_PCAdist", &nearTracks_PCAdist, "nearTracks_PCAdist[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAdsig", &nearTracks_PCAdsig, "nearTracks_PCAdsig[n_NearTracksTotal]/f");
     
-    addBranch(tree,"nearTracks_PCAonSeed_x", &nearTracks_PCAonSeed_x, "nearTracks_PCAonSeed_x[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAonSeed_y", &nearTracks_PCAonSeed_y, "nearTracks_PCAonSeed_y[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAonSeed_z", &nearTracks_PCAonSeed_z, "nearTracks_PCAonSeed_z[n_NearTracksTotal]/D");
+    addBranch(tree,"nearTracks_PCAonSeed_x", &nearTracks_PCAonSeed_x, "nearTracks_PCAonSeed_x[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAonSeed_y", &nearTracks_PCAonSeed_y, "nearTracks_PCAonSeed_y[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAonSeed_z", &nearTracks_PCAonSeed_z, "nearTracks_PCAonSeed_z[n_NearTracksTotal]/f");
 
-    addBranch(tree,"nearTracks_PCAonSeed_xerr", &nearTracks_PCAonSeed_xerr, "nearTracks_PCAonSeed_xerr[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAonSeed_yerr", &nearTracks_PCAonSeed_yerr, "nearTracks_PCAonSeed_yerr[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAonSeed_zerr", &nearTracks_PCAonSeed_zerr, "nearTracks_PCAonSeed_zerr[n_NearTracksTotal]/D");
+    addBranch(tree,"nearTracks_PCAonSeed_xerr", &nearTracks_PCAonSeed_xerr, "nearTracks_PCAonSeed_xerr[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAonSeed_yerr", &nearTracks_PCAonSeed_yerr, "nearTracks_PCAonSeed_yerr[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAonSeed_zerr", &nearTracks_PCAonSeed_zerr, "nearTracks_PCAonSeed_zerr[n_NearTracksTotal]/f");
 
-    addBranch(tree,"nearTracks_PCAonTrack_x", &nearTracks_PCAonTrack_x, "nearTracks_PCAonTrack_x[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAonTrack_y", &nearTracks_PCAonTrack_y, "nearTracks_PCAonTrack_y[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAonTrack_z", &nearTracks_PCAonTrack_z, "nearTracks_PCAonTrack_z[n_NearTracksTotal]/D");
+    addBranch(tree,"nearTracks_PCAonTrack_x", &nearTracks_PCAonTrack_x, "nearTracks_PCAonTrack_x[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAonTrack_y", &nearTracks_PCAonTrack_y, "nearTracks_PCAonTrack_y[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAonTrack_z", &nearTracks_PCAonTrack_z, "nearTracks_PCAonTrack_z[n_NearTracksTotal]/f");
 
-    addBranch(tree,"nearTracks_PCAonTrack_xerr", &nearTracks_PCAonTrack_xerr, "nearTracks_PCAonTrack_xerr[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAonTrack_yerr", &nearTracks_PCAonTrack_yerr, "nearTracks_PCAonTrack_yerr[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAonTrack_zerr", &nearTracks_PCAonTrack_zerr, "nearTracks_PCAonTrack_zerr[n_NearTracksTotal]/D"); 
+    addBranch(tree,"nearTracks_PCAonTrack_xerr", &nearTracks_PCAonTrack_xerr, "nearTracks_PCAonTrack_xerr[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAonTrack_yerr", &nearTracks_PCAonTrack_yerr, "nearTracks_PCAonTrack_yerr[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAonTrack_zerr", &nearTracks_PCAonTrack_zerr, "nearTracks_PCAonTrack_zerr[n_NearTracksTotal]/f"); 
 
-    addBranch(tree,"nearTracks_dotprodTrack", &nearTracks_dotprodTrack, "nearTracks_dotprodTrack[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_dotprodSeed", &nearTracks_dotprodSeed, "nearTracks_dotprodSeed[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_dotprodTrackSeed2D", &nearTracks_dotprodTrackSeed2D, "nearTracks_dotprodTrackSeed2D[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_dotprodTrackSeed3D", &nearTracks_dotprodTrackSeed3D, "nearTracks_dotprodTrackSeed3D[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_dotprodTrackSeedVectors2D", &nearTracks_dotprodTrackSeedVectors2D, "nearTracks_dotprodTrackSeedVectors2D[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_dotprodTrackSeedVectors3D", &nearTracks_dotprodTrackSeedVectors3D, "nearTracks_dotprodTrackSeedVectors3D[n_NearTracksTotal]/D");
+    addBranch(tree,"nearTracks_dotprodTrack", &nearTracks_dotprodTrack, "nearTracks_dotprodTrack[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_dotprodSeed", &nearTracks_dotprodSeed, "nearTracks_dotprodSeed[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_dotprodTrackSeed2D", &nearTracks_dotprodTrackSeed2D, "nearTracks_dotprodTrackSeed2D[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_dotprodTrackSeed3D", &nearTracks_dotprodTrackSeed3D, "nearTracks_dotprodTrackSeed3D[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_dotprodTrackSeedVectors2D", &nearTracks_dotprodTrackSeedVectors2D, "nearTracks_dotprodTrackSeedVectors2D[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_dotprodTrackSeedVectors3D", &nearTracks_dotprodTrackSeedVectors3D, "nearTracks_dotprodTrackSeedVectors3D[n_NearTracksTotal]/f");
     
-    addBranch(tree,"nearTracks_PCAonSeed_pvd", &nearTracks_PCAonSeed_pvd, "nearTracks_PCAonSeed_pvd[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAonTrack_pvd", &nearTracks_PCAonTrack_pvd, "nearTracks_PCAonTrack_pvd[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAjetAxis_dist",&nearTracks_PCAjetAxis_dist,"nearTracks_PCAjetAxis_dist[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAjetMomenta_dotprod",&nearTracks_PCAjetMomenta_dotprod,"nearTracks_PCAjetMomenta_dotprod[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAjetDirs_DEta",&nearTracks_PCAjetDirs_DEta,"nearTracks_PCAjetDirs_DEta[n_NearTracksTotal]/D");
-    addBranch(tree,"nearTracks_PCAjetDirs_DPhi",&nearTracks_PCAjetDirs_DPhi,"nearTracks_PCAjetDirs_DPhi[n_NearTracksTotal]/D");
+    addBranch(tree,"nearTracks_PCAonSeed_pvd", &nearTracks_PCAonSeed_pvd, "nearTracks_PCAonSeed_pvd[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAonTrack_pvd", &nearTracks_PCAonTrack_pvd, "nearTracks_PCAonTrack_pvd[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAjetAxis_dist",&nearTracks_PCAjetAxis_dist,"nearTracks_PCAjetAxis_dist[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAjetMomenta_dotprod",&nearTracks_PCAjetMomenta_dotprod,"nearTracks_PCAjetMomenta_dotprod[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAjetDirs_DEta",&nearTracks_PCAjetDirs_DEta,"nearTracks_PCAjetDirs_DEta[n_NearTracksTotal]/f");
+    addBranch(tree,"nearTracks_PCAjetDirs_DPhi",&nearTracks_PCAjetDirs_DPhi,"nearTracks_PCAjetDirs_DPhi[n_NearTracksTotal]/f");
 
 
 }
@@ -283,7 +286,7 @@ bool ntuple_DeepVertex::fillBranches(const pat::Jet & jet, const size_t& jetidx,
         if (closest.isValid()) seed_jetAxisDlength[seeds_max_counter]=(closest.globalPosition() - pvp).mag(); 
         else seed_jetAxisDlength[seeds_max_counter]= -99;
         
-        
+        seed_n_NearTracks[seeds_max_counter]=im->second.second.size();
         seed_nNearTracks[seeds_max_counter]=im->second.second.size();
         
         // FILL NEAREAST VARIABLES
@@ -337,8 +340,10 @@ bool ntuple_DeepVertex::fillBranches(const pat::Jet & jet, const size_t& jetidx,
         neartracks_max_counter += im->second.second.size();
         seeds_max_counter++; 
     }
-    n_NearTracksTotal=neartracks_max_counter;
+    n_NearTracksTotal = neartracks_max_counter;
+    nNearTracksTotal = neartracks_max_counter;
     n_seeds = seeds_max_counter;
+    nSeeds = seeds_max_counter;
     
     SortedSeedsMap.clear();
     nearTracks.clear();

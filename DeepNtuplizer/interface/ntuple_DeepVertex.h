@@ -37,75 +37,78 @@ private:
     // seed candidates
     static constexpr size_t max_seeds=10;
     
-    int n_seeds=0;
+    unsigned int n_seeds=0;
+    float nSeeds=0;
     
-    double seed_pt[max_seeds];
-    double seed_eta[max_seeds];
-    double seed_phi[max_seeds];
-    double seed_mass[max_seeds];
+    float seed_pt[max_seeds];
+    float seed_eta[max_seeds];
+    float seed_phi[max_seeds];
+    float seed_mass[max_seeds];
 
-    double seed_dz[max_seeds];
-    double seed_dxy[max_seeds];
-    double seed_3D_ip[max_seeds];
-    double seed_3D_sip[max_seeds];
-    double seed_2D_ip[max_seeds];
-    double seed_2D_sip[max_seeds];
-    double seed_3D_signedIp[max_seeds];
-    double seed_3D_signedSip[max_seeds];
-    double seed_2D_signedIp[max_seeds];
-    double seed_2D_signedSip[max_seeds];
+    float seed_dz[max_seeds];
+    float seed_dxy[max_seeds];
+    float seed_3D_ip[max_seeds];
+    float seed_3D_sip[max_seeds];
+    float seed_2D_ip[max_seeds];
+    float seed_2D_sip[max_seeds];
+    float seed_3D_signedIp[max_seeds];
+    float seed_3D_signedSip[max_seeds];
+    float seed_2D_signedIp[max_seeds];
+    float seed_2D_signedSip[max_seeds];
     //int seed_JetMatch[max_seeds];
  
-    double seed_chi2reduced[max_seeds];
-    double seed_nPixelHits[max_seeds];
-    double seed_nHits[max_seeds];
-    double seed_jetAxisDistance[max_seeds];
-    double seed_jetAxisDlength[max_seeds];
+    float seed_chi2reduced[max_seeds];
+    float seed_nPixelHits[max_seeds];
+    float seed_nHits[max_seeds];
+    float seed_jetAxisDistance[max_seeds];
+    float seed_jetAxisDlength[max_seeds];
     
-    int seed_nNearTracks[max_seeds];
+    unsigned int seed_n_NearTracks[max_seeds];
+    float seed_nNearTracks[max_seeds];
     
     
     //nearest track candidates
     static constexpr size_t max_nearestTrk=200; // 20 per seed
     
-    int n_NearTracksTotal=0;
+    unsigned int n_NearTracksTotal=0;
+    float nNearTracksTotal=0;
     
-    double nearTracks_pt[max_nearestTrk];
-    double nearTracks_eta[max_nearestTrk];
-    double nearTracks_phi[max_nearestTrk];
-    double nearTracks_mass[max_nearestTrk];
-    double nearTracks_dz[max_nearestTrk];
-    double nearTracks_dxy[max_nearestTrk];
-    double nearTracks_3D_ip[max_nearestTrk];
-    double nearTracks_3D_sip[max_nearestTrk];
-    double nearTracks_2D_ip[max_nearestTrk];
-    double nearTracks_2D_sip[max_nearestTrk];
-    double nearTracks_PCAdist[max_nearestTrk];
-    double nearTracks_PCAdsig[max_nearestTrk];      
-    double nearTracks_PCAonSeed_x[max_nearestTrk];
-    double nearTracks_PCAonSeed_y[max_nearestTrk];
-    double nearTracks_PCAonSeed_z[max_nearestTrk];      
-    double nearTracks_PCAonSeed_xerr[max_nearestTrk];
-    double nearTracks_PCAonSeed_yerr[max_nearestTrk];
-    double nearTracks_PCAonSeed_zerr[max_nearestTrk];      
-    double nearTracks_PCAonTrack_x[max_nearestTrk];
-    double nearTracks_PCAonTrack_y[max_nearestTrk];
-    double nearTracks_PCAonTrack_z[max_nearestTrk];      
-    double nearTracks_PCAonTrack_xerr[max_nearestTrk];
-    double nearTracks_PCAonTrack_yerr[max_nearestTrk];
-    double nearTracks_PCAonTrack_zerr[max_nearestTrk]; 
-    double nearTracks_dotprodTrack[max_nearestTrk];
-    double nearTracks_dotprodSeed[max_nearestTrk];
-    double nearTracks_dotprodTrackSeed2D[max_nearestTrk];
-    double nearTracks_dotprodTrackSeed3D[max_nearestTrk];
-    double nearTracks_dotprodTrackSeedVectors2D[max_nearestTrk];
-    double nearTracks_dotprodTrackSeedVectors3D[max_nearestTrk];      
-    double nearTracks_PCAonSeed_pvd[max_nearestTrk];
-    double nearTracks_PCAonTrack_pvd[max_nearestTrk];
-    double nearTracks_PCAjetAxis_dist[max_nearestTrk];
-    double nearTracks_PCAjetMomenta_dotprod[max_nearestTrk];
-    double nearTracks_PCAjetDirs_DEta[max_nearestTrk];
-    double nearTracks_PCAjetDirs_DPhi[max_nearestTrk];
+    float nearTracks_pt[max_nearestTrk];
+    float nearTracks_eta[max_nearestTrk];
+    float nearTracks_phi[max_nearestTrk];
+    float nearTracks_mass[max_nearestTrk];
+    float nearTracks_dz[max_nearestTrk];
+    float nearTracks_dxy[max_nearestTrk];
+    float nearTracks_3D_ip[max_nearestTrk];
+    float nearTracks_3D_sip[max_nearestTrk];
+    float nearTracks_2D_ip[max_nearestTrk];
+    float nearTracks_2D_sip[max_nearestTrk];
+    float nearTracks_PCAdist[max_nearestTrk];
+    float nearTracks_PCAdsig[max_nearestTrk];      
+    float nearTracks_PCAonSeed_x[max_nearestTrk];
+    float nearTracks_PCAonSeed_y[max_nearestTrk];
+    float nearTracks_PCAonSeed_z[max_nearestTrk];      
+    float nearTracks_PCAonSeed_xerr[max_nearestTrk];
+    float nearTracks_PCAonSeed_yerr[max_nearestTrk];
+    float nearTracks_PCAonSeed_zerr[max_nearestTrk];      
+    float nearTracks_PCAonTrack_x[max_nearestTrk];
+    float nearTracks_PCAonTrack_y[max_nearestTrk];
+    float nearTracks_PCAonTrack_z[max_nearestTrk];      
+    float nearTracks_PCAonTrack_xerr[max_nearestTrk];
+    float nearTracks_PCAonTrack_yerr[max_nearestTrk];
+    float nearTracks_PCAonTrack_zerr[max_nearestTrk]; 
+    float nearTracks_dotprodTrack[max_nearestTrk];
+    float nearTracks_dotprodSeed[max_nearestTrk];
+    float nearTracks_dotprodTrackSeed2D[max_nearestTrk];
+    float nearTracks_dotprodTrackSeed3D[max_nearestTrk];
+    float nearTracks_dotprodTrackSeedVectors2D[max_nearestTrk];
+    float nearTracks_dotprodTrackSeedVectors3D[max_nearestTrk];      
+    float nearTracks_PCAonSeed_pvd[max_nearestTrk];
+    float nearTracks_PCAonTrack_pvd[max_nearestTrk];
+    float nearTracks_PCAjetAxis_dist[max_nearestTrk];
+    float nearTracks_PCAjetMomenta_dotprod[max_nearestTrk];
+    float nearTracks_PCAjetDirs_DEta[max_nearestTrk];
+    float nearTracks_PCAjetDirs_DPhi[max_nearestTrk];
     
     
     // IVF cut parameters (HARDCODED?? OR CONFIGURABLE IN PYTHON CONFIG)
