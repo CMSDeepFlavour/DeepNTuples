@@ -155,13 +155,13 @@ bool ntuple_DeepVertex::fillBranches(const pat::Jet & jet, const size_t& jetidx,
         //is the track in the jet cone?
         float angular_distance=std::sqrt(std::pow(jet.eta()-it->track().eta(),2) + std::pow(jet.phi()-it->track().phi(),2) );
         if (angular_distance>jet_radius) { continue; }
-        
+
         // is it a seed track?
         std::pair<bool,Measurement1D> ip = IPTools::absoluteImpactParameter3D(*it, pv);        
         std::pair<bool,Measurement1D> ip2d = IPTools::absoluteTransverseImpactParameter(*it, pv);
-		std::pair<double, Measurement1D> jet_dist =IPTools::jetTrackDistance(*it, direction, pv);                   
+        std::pair<double, Measurement1D> jet_dist =IPTools::jetTrackDistance(*it, direction, pv);                   
         TrajectoryStateOnSurface closest = IPTools::closestApproachToJet(it->impactPointState(),pv, direction,it->field());
-		float length=999;
+        float length=999;
         if (closest.isValid()) length=(closest.globalPosition() - pvp).mag();
         
         // shouldn't it be like this, including the minimal 3DIP cuts? more conform with IVF! https://github.com/cms-sw/cmssw/blob/09c3fce6626f70fd04223e7dacebf0b485f73f54/RecoVertex/AdaptiveVertexFinder/src/TracksClusteringFromDisplacedSeed.cc#L96 
@@ -251,10 +251,7 @@ bool ntuple_DeepVertex::fillBranches(const pat::Jet & jet, const size_t& jetidx,
     unsigned int neartracks_max_counter=0;
     for(std::multimap<double,std::pair<const reco::TransientTrack*,const std::vector<trackVars2> > >::const_iterator im = SortedSeedsMap.begin(); im != SortedSeedsMap.end(); im++){
         
-        if(seeds_max_counter>=10) {
-            //n_seeds = 10;
-            break;
-        }
+        if(seeds_max_counter>=10) break;
         
         std::pair<bool,Measurement1D> ipSigned = IPTools::signedImpactParameter3D(*im->second.first,direction, pv);        
         std::pair<bool,Measurement1D> ip2dSigned = IPTools::signedTransverseImpactParameter(*im->second.first,direction, pv);  
@@ -294,7 +291,7 @@ bool ntuple_DeepVertex::fillBranches(const pat::Jet & jet, const size_t& jetidx,
 
             if((neartracks_max_counter+i)>=200) break;
             
-			nearTracks_pt[neartracks_max_counter+i]=im->second.second.at(i).pt;
+            nearTracks_pt[neartracks_max_counter+i]=im->second.second.at(i).pt;
             nearTracks_eta[neartracks_max_counter+i]=im->second.second.at(i).eta;
             nearTracks_phi[neartracks_max_counter+i]=im->second.second.at(i).phi;
             nearTracks_dz[neartracks_max_counter+i]=im->second.second.at(i).dz;
