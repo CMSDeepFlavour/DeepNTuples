@@ -128,7 +128,7 @@ std::vector<TChain* > mergeDescriptor::createChains(
 
     branchinfos.push_back(new ntuple_JetInfo());
     branchinfos.push_back(new ntuple_SV());
-    branchinfos.push_back(new ntuple_SV("LooseIVF_"));
+    //branchinfos.push_back(new ntuple_SV("LooseIVF_"));
     branchinfos.push_back(new ntuple_bTagVars());
     branchinfos.push_back(new ntuple_pfCands());
 

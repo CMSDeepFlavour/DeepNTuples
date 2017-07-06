@@ -327,6 +327,7 @@ else
      echo JOBSUB::SUCC job ended sucessfully
    fi
 fi
+rm -f $OUTPUT*.root
 exit $exitstatus
         """.format(
             sampleScriptdir=samplescriptdir,

@@ -41,10 +41,21 @@ for j in range(int(nJobs)):
 
 print('successful: ',listsucc)
 
-for j in listtoberun:
-    runstr='merge '+args.outdir+'/mergeconfig '+str(j)
+import multiprocessing as mp
+
+
+def worker(j):
+    print('starting '+str(j))
+    os.system('merge '+args.outdir+'/mergeconfig '+str(j))
+
+
+pool = mp.Pool(processes=mp.cpu_count(),) 
+pool.map(worker, listtoberun)
+
+
     
-    os.system('merge '+args.outdir+'/mergeconfig '+str(j)+"&")
+    
+    
 
 
 
