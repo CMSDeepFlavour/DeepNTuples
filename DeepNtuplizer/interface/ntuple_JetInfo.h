@@ -110,6 +110,7 @@ public:
     std::vector <reco::GenParticle> neutrinosLepB;
     std::vector <reco::GenParticle> neutrinosLepB_C;
 
+    std::vector<reco::GenParticle> hpp_udsgpartons;
     std::vector<reco::GenParticle> gToBB;
     std::vector<reco::GenParticle> gToCC;
 
