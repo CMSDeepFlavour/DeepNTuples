@@ -15,7 +15,7 @@ options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarPa
 options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "gluon reduction")
 
 import os
-release=os.environ['CMSSW_VERSION'][6:]
+release=os.environ['CMSSW_VERSION'][6:11]
 print("Using release "+release)
 
 
