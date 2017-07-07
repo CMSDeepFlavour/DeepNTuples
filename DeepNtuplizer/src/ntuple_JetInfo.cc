@@ -198,8 +198,8 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
         const reco::GenParticle &gen = static_cast< const reco::GenParticle &>(genC);
         int id(std::abs(gen.pdgId())); 
         int status(gen.status());
-        if (hpp_udsgpartons.size()>0 && hpp_udsgpartons.back().status()==11) throw std::runtime_error("ntuple_JetInfo::readEvent: already filled with herwig status 11 partons - that shouldn't happen for PYTHIA?!"); 
         if ( (id==1 || id == 2 || id==3 || id == 21) && (status = 23 )){
+          if (hpp_udsgpartons.size()>0 && hpp_udsgpartons.back().status()==11) throw std::runtime_error("ntuple_JetInfo::readEvent: already filled with herwig status 11 partons - that shouldn't happen for PYTHIA?!"); 
           hpp_udsgpartons.push_back(gen);
         }
     }
