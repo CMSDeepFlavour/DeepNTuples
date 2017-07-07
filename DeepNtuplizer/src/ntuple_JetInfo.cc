@@ -187,6 +187,11 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
           }
         }
 
+        if ( (id==1 || id == 2 || id==3 || id == 21) && (status = 11 )){
+          //std::cout << "found Herwig parton for q/g id " << id << std::endl;
+          hpp_udsgpartons.push_back(gen);
+        }
+
     }
     //technically a branch fill but per event, therefore here
 }
@@ -268,7 +273,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     }
 
     //// Note that jets with gluon->bb (cc) and x->bb (cc) are in the same categories
-    switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C)) {
+    switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C,hpp_udsgpartons)) {
     case deep_ntuples::JetFlavor::B:  isB_=1; break;
     case deep_ntuples::JetFlavor::LeptonicB: isLeptonicB_=1; break;
     case deep_ntuples::JetFlavor::LeptonicB_C: isLeptonicB_C_=1; break;
@@ -286,7 +291,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
     //// Note that jets with gluon->bb (cc) and x->bb (cc) are in the same categories
     isPhysB_=0; isPhysBB_=0; isPhysGBB_=0; isPhysC_=0; isPhysCC_=0; isPhysGCC_=0; isPhysUD_=0; isPhysS_=0; isPhysG_=0, isPhysLeptonicB_=0, isPhysLeptonicB_C_=0, isPhysUndefined_=0;
-    switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C, true)) {
+    switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C, hpp_udsgpartons, true)) {
     case deep_ntuples::JetFlavor::UD: isPhysUD_=1; break;
     case deep_ntuples::JetFlavor::S:  isPhysS_=1; break;
     case deep_ntuples::JetFlavor::B:  isPhysB_=1; break;
