@@ -13,6 +13,12 @@ options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, 
 options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "job number")
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
 options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "gluon reduction")
+options.register(
+    'nCollinearSplits', 0, 
+    VarParsing.VarParsing.multiplicity.singleton, 
+    VarParsing.VarParsing.varType.int, 
+    "number of collinear splits to be applied"
+)
 
 import os
 release=os.environ['CMSSW_VERSION'][6:]
@@ -218,6 +224,7 @@ process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour');
 process.deepntuplizer.bDiscriminators = bTagDiscriminators 
 process.deepntuplizer.bDiscriminators.append('pfCombinedMVAV2BJetTags')
 process.deepntuplizer.LooseSVs = cms.InputTag("looseIVFinclusiveCandidateSecondaryVertices")
+process.deepntuplizer.nCollinear = options.nCollinearSplits
 
 if int(release.replace("_",""))>=840 :
    process.deepntuplizer.tagInfoName = cms.string('pfDeepCSV')

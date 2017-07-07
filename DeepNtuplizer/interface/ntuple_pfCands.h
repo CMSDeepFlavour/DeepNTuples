@@ -32,7 +32,10 @@ public:
     bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0);
 
 private:
+	//config info
+	unsigned int ncollinear_ = 0;
 
+	//other
 
     edm::ESHandle<TransientTrackBuilder> builder;
 

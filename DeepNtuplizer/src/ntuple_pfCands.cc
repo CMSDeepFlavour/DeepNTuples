@@ -17,6 +17,8 @@
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
 #include "TVector3.h"
+//should set seed?
+#include "TRandom3.h"
 
 class TrackInfoBuilder{
 public:
@@ -125,7 +127,7 @@ void ntuple_pfCands::readSetup(const edm::EventSetup& iSetup){
 }
 
 void ntuple_pfCands::getInput(const edm::ParameterSet& iConfig){
-
+	ncollinear_ = (iConfig.getParameter<unsigned int>("nCollinear"));
 }
 
 void ntuple_pfCands::initBranches(TTree* tree){
@@ -256,16 +258,69 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     TrackInfoBuilder trackinfo(builder);
 
+		//create a buffer of collinear candidates to be used
+		std::vector<pat::PackedCandidate*> collinears;
+		std::vector<unsigned int> coll_idxs;
+		collinears.reserve(2*ncollinear_);
+		coll_idxs.reserve(ncollinear_);
+		//draw the indexes to be split
+		for(unsigned int i = 0; i <  ncollinear_; i++){		
+			coll_idxs.push_back(gRandom->Integer(jet.chargedMultiplicity()));
+		}
+		std::sort(coll_idxs.begin(), coll_idxs.end());
+
     //create collection first, to be able to do some sorting
+		unsigned int icharged=0;
+		unsigned int icollinear=0;
     for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++){
         const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
         if(PackedCandidate){
 
             trackinfo.buildTrackInfo(PackedCandidate,jetDir,jetRefTrackDir,pv);
 
+						if(PackedCandidate->charge() != 0 && icollinear != coll_idxs.size()) {
+							//check if this charged must be split
+							if(icharged == coll_idxs[icollinear]) {
+								icollinear++; //increment collinear index
+
+								//make two copies of the candidate and keep them in a tmp buffer
+								pat::PackedCandidate* coll1 = PackedCandidate->clone();
+								pat::PackedCandidate* coll2 = PackedCandidate->clone();
+								collinears.push_back(coll1); 
+								collinears.push_back(coll2);
+
+								float split = gRandom->Rndm();
+
+								//set candidate 1 momentum
+								coll1->setP4(PackedCandidate->p4() * split);
+								sortedall.push_back(
+									sorting::sortingClass<pat::PackedCandidate>(
+										coll1, trackinfo.getTrackSip2dSig(),
+										-mindrsvpfcand(cpvtx,coll1), coll1->pt()/jet.pt()
+										)
+									);
+
+								
+								//set candidate 2 momentum and charge
+								coll2->setP4(PackedCandidate->p4() * (1-split));
+								coll2->setPdgId(111); //charge is imposed by the pdgid... use pi0
+								sortedall.push_back(
+									sorting::sortingClass<pat::PackedCandidate>(
+										coll2, 0.,//neutrals do not have tracks
+										-mindrsvpfcand(cpvtx,coll2), coll2->pt()/jet.pt()
+										)
+									);
+
+								icharged++; //increment charged counter
+								continue; //nothing to do here on
+							}
+
+							icharged++; //increment charged counter
+						}
+
             sortedall.push_back(sorting::sortingClass<pat::PackedCandidate>
-            (PackedCandidate, trackinfo.getTrackSip2dSig(),
-                    -mindrsvpfcand(cpvtx,PackedCandidate), PackedCandidate->pt()/jet.pt()));
+																(PackedCandidate, trackinfo.getTrackSip2dSig(),
+																 -mindrsvpfcand(cpvtx,PackedCandidate), PackedCandidate->pt()/jet.pt()));
 
         }
     }
@@ -422,6 +477,12 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     nCpfcand_=n_Cpfcand_;
     nNpfcand_=n_Npfcand_;
+
+		//clear memory
+		for(auto& ptr : collinears) {
+			delete ptr;
+		} 
+		collinears.clear();
 
     return true; //for making cuts
 }

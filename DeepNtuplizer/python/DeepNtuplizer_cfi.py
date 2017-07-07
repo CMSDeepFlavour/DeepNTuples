@@ -25,4 +25,5 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
 		                tagInfoFName = cms.string('pfBoostedDoubleSVAK8'),
                                 bDiscriminators = cms.vstring(),
                                 qgtagger        = cms.string("QGTagger"),
+                                nCollinear = cms.uint32(0), #no splitting
                                 )
