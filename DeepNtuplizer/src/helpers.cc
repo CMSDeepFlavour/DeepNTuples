@@ -27,7 +27,8 @@ JetFlavor jet_flavour(const pat::Jet& jet, std::vector<reco::GenParticle> gToBB,
         bool usePhysForLightAndUndefined) { 
 
     //temporary quick and dirty fix - define flavor in herwig samples (i.e. with status 11 genpartons) only by these and not fiddle aroudn with the logic of the rest
-  //    std::cout << "dhortcut flavor definition" << std::endl;
+    // NOW ALSO FILL hpp_udsgpartons with PYTHIA status 23 partons, so OVERRIDING ALL FLAVOR DEFINITION SUBLETIES BELOW THE FOLLOWING COUPLE OF LINES
+    //    std::cout << "dhortcut flavor definition" << std::endl;
     //    std::cout << "hpp_udsgpartons.size()" << hpp_udsgpartons.size() << std::endl;
     if (hpp_udsgpartons.size()>0){
       double drtemp = 0.4;      

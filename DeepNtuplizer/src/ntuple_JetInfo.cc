@@ -193,6 +193,16 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
         }
 
     }
+    for (const reco::Candidate &genC : *genParticlesHandle) { // treat flavor definition for PYTHIA the same way as for Herwig++, i.e. follow definition in
+      // https://indico.cern.ch/event/587258/contributions/2366496/attachments/1368896/2075082/QGL_JMAR_9Nov.pdf#search=Giorgia%20Rauco%20AND%20cerntaxonomy%3A%22Indico%2FExperiments%2FCMS%20meetings%2FPH%20%2D%20Physics%2FJets%20and%20missing%20energy%20%28JetMET%29%22
+        const reco::GenParticle &gen = static_cast< const reco::GenParticle &>(genC);
+        int id(std::abs(gen.pdgId())); 
+        int status(gen.status());
+        if ( (id==1 || id == 2 || id==3 || id == 21) && (status = 23 )){
+          if (hpp_udsgpartons.size()>0 && hpp_udsgpartons.back().status()==11) throw std::runtime_error("ntuple_JetInfo::readEvent: already filled with herwig status 11 partons - that shouldn't happen for PYTHIA?!"); 
+          hpp_udsgpartons.push_back(gen);
+        }
+    }
     //technically a branch fill but per event, therefore here
 }
 
