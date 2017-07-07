@@ -259,18 +259,20 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     TrackInfoBuilder trackinfo(builder);
 
 		//create a buffer of collinear candidates to be used
+		//std::cout << "create a buffer of collinear candidates to be used" << std::endl;
 		std::vector<pat::PackedCandidate*> collinears;
 		std::vector<unsigned int> coll_idxs;
 		collinears.reserve(2*ncollinear_);
 		coll_idxs.reserve(ncollinear_);
 		//draw the indexes to be split
 		for(unsigned int i = 0; i <  ncollinear_; i++){		
-			coll_idxs.push_back(gRandom->Integer(jet.chargedMultiplicity()));
+			coll_idxs.push_back(gRandom->Integer(jet.numberOfDaughters()));
 		}
 		std::sort(coll_idxs.begin(), coll_idxs.end());
 
     //create collection first, to be able to do some sorting
-		unsigned int icharged=0;
+		//std::cout << "filling candidates for sorting" << std::endl;
+		// unsigned int icharged=0;
 		unsigned int icollinear=0;
     for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++){
         const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
@@ -278,52 +280,59 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
             trackinfo.buildTrackInfo(PackedCandidate,jetDir,jetRefTrackDir,pv);
 
-						if(PackedCandidate->charge() != 0 && icollinear != coll_idxs.size()) {
-							//check if this charged must be split
-							if(icharged == coll_idxs[icollinear]) {
-								icollinear++; //increment collinear index
+						if(icollinear != coll_idxs.size() && i == coll_idxs[icollinear]) {
+							//std::cout << "injecting" << std::endl;
+							icollinear++; //increment collinear index
+							
+							//make two copies of the candidate and keep them in a tmp buffer
+							pat::PackedCandidate* coll1 = PackedCandidate->clone();
+							pat::PackedCandidate* coll2 = PackedCandidate->clone();
+							collinears.push_back(coll1); 
+							collinears.push_back(coll2);
 
-								//make two copies of the candidate and keep them in a tmp buffer
-								pat::PackedCandidate* coll1 = PackedCandidate->clone();
-								pat::PackedCandidate* coll2 = PackedCandidate->clone();
-								collinears.push_back(coll1); 
-								collinears.push_back(coll2);
-
-								float split = gRandom->Rndm();
-
-								//set candidate 1 momentum
-								coll1->setP4(PackedCandidate->p4() * split);
-								sortedall.push_back(
-									sorting::sortingClass<pat::PackedCandidate>(
-										coll1, trackinfo.getTrackSip2dSig(),
-										-mindrsvpfcand(cpvtx,coll1), coll1->pt()/jet.pt()
-										)
-									);
+							float split = gRandom->Rndm();
+							//
+							// Neutral --> 2 neutrals
+							// Charged --> charged + neutral
+							//
+							
+							//set candidate 1 momentum
+							coll1->setP4(PackedCandidate->p4() * split);
+							sortedall.push_back(
+								sorting::sortingClass<pat::PackedCandidate>(
+									coll1, trackinfo.getTrackSip2dSig(),
+									-mindrsvpfcand(cpvtx,coll1), coll1->pt()/jet.pt()
+									)
+								);
 
 								
-								//set candidate 2 momentum and charge
-								coll2->setP4(PackedCandidate->p4() * (1-split));
-								coll2->setPdgId(111); //charge is imposed by the pdgid... use pi0
-								sortedall.push_back(
-									sorting::sortingClass<pat::PackedCandidate>(
-										coll2, 0.,//neutrals do not have tracks
-										-mindrsvpfcand(cpvtx,coll2), coll2->pt()/jet.pt()
-										)
-									);
-
-								icharged++; //increment charged counter
-								continue; //nothing to do here on
-							}
-
-							icharged++; //increment charged counter
+							//set candidate 2 momentum and charge
+							coll2->setP4(PackedCandidate->p4() * (1-split));
+							coll2->setPdgId(111); //charge is imposed by the pdgid... use pi0
+							sortedall.push_back(
+								sorting::sortingClass<pat::PackedCandidate>(
+									coll2, 0.,//neutrals do not have tracks
+									-mindrsvpfcand(cpvtx,coll2), coll2->pt()/jet.pt()
+									)
+								);
+							// std::cout << "Original: (" << PackedCandidate->pt() << ", " << PackedCandidate->eta() << ", " << PackedCandidate->phi() 
+							// 					<< ") charge: " << PackedCandidate->charge() << std::endl;
+							// std::cout << "Split 1 : (" << coll1->pt() << ", " << coll1->eta() << ", " << coll1->phi() 
+							// 					<< ") charge: " << coll1->charge() << std::endl;
+							// std::cout << "Split 2 : (" << coll2->pt() << ", " << coll2->eta() << ", " << coll2->phi() 
+							// 					<< ") charge: " << coll2->charge() << std::endl;
 						}
-
-            sortedall.push_back(sorting::sortingClass<pat::PackedCandidate>
-																(PackedCandidate, trackinfo.getTrackSip2dSig(),
-																 -mindrsvpfcand(cpvtx,PackedCandidate), PackedCandidate->pt()/jet.pt()));
-
+						else {
+							sortedall.push_back(
+								sorting::sortingClass<pat::PackedCandidate>(
+									PackedCandidate, trackinfo.getTrackSip2dSig(),
+									-mindrsvpfcand(cpvtx,PackedCandidate), PackedCandidate->pt()/jet.pt()
+									)
+								);
+						}
         }
     }
+		//std::cout << "done" << std::endl;
 
     std::sort(sortedall.begin(),sortedall.end(),sorting::sortingClass<pat::PackedCandidate>::compareByABCInv);
 
@@ -479,6 +488,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     nNpfcand_=n_Npfcand_;
 
 		//clear memory
+		//std::cout << "CLREAR MEM" << std::endl;
 		for(auto& ptr : collinears) {
 			delete ptr;
 		} 
