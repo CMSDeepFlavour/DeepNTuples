@@ -9,6 +9,9 @@
 #include <stdexcept>
 #include "../interface/ntuple_content.h"
 
+
+bool ntuple_content::useoffsets=true;
+
 ntuple_content::~ntuple_content(){
 
 

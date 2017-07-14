@@ -42,19 +42,31 @@ int main(int argc, char *argv[]) {
 
     TCanvas cv;
     for (const auto& b : allbranches) {
+        t->SetLineColor(kBlack);
+        t->Draw(b + ">>" + b + "ALL", "", "normalized");
+        TH1F *histoB = (TH1F*) gROOT->FindObject(b + "ALL");
+        histoB->Draw("hist");
+
         t->SetLineColor(kRed);
         t->Draw(b + ">>" + b + "B", "isB+isBB+isLeptonicB+isLeptonicB_C",
-                "normalized");
-        TH1F *histo = (TH1F*) gROOT->FindObject(b + "B");
-        histo->Draw("hist");
+                "same,normalized");
+        histo = (TH1F*) gROOT->FindObject(b + "B");
+        histo->Draw("hist,same");
         t->SetLineColor(kGreen);
         t->Draw(b + ">>" + b + "C", "isC", "same,normalized");
         histo = (TH1F*) gROOT->FindObject(b + "C");
         histo->Draw("hist,same");
         t->SetLineColor(kBlue);
-        t->Draw(b + ">>" + b + "L", "isUD+isS+isG", "same,normalized");
+        t->Draw(b + ">>" + b + "L", "isUD+isS", "same,normalized");
         histo = (TH1F*) gROOT->FindObject(b + "L");
         histo->Draw("hist,same");
+        t->SetLineColor(kMagenta);
+        t->Draw(b + ">>" + b + "G", "isG", "same,normalized");
+        histo = (TH1F*) gROOT->FindObject(b + "G");
+        histo->Draw("hist,same");
+
+        cv.BuildLegend(0.12,0.7,0.3,0.87);
+
         cv.Print(outdir + "/" + b + ".pdf");
     }
 

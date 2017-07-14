@@ -19,8 +19,10 @@
 class ntuple_JetInfo: public ntuple_content{
 public:
     ntuple_JetInfo():ntuple_content(),
-    gluonReduction_(0)
-    {}
+    gluonReduction_(0),
+    useherwcompat_matching_(false),
+    isherwig_(false)
+{}
 
     void getInput(const edm::ParameterSet& iConfig);
     void initBranches(TTree* );
@@ -68,6 +70,13 @@ public:
         electronsToken_ = electronsToken;
     }
 
+    void setUseHerwigCompatibleMatching(const bool use){
+        useherwcompat_matching_=use;
+    }
+    void setIsHerwig(const bool use){
+        isherwig_=use;
+    }
+
     //private:
 
     double                    jetPtMin_;
@@ -112,6 +121,11 @@ public:
 
     std::vector<reco::GenParticle> gToBB;
     std::vector<reco::GenParticle> gToCC;
+
+    bool useherwcompat_matching_;
+    bool isherwig_;
+
+    /////////branches
 
     // labels (MC truth)
     // regressions pt, Deta, Dphi

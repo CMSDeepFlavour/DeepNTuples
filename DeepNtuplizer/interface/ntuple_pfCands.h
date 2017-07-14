@@ -15,8 +15,9 @@
 class ntuple_pfCands: public ntuple_content{
 public:
 
-    ntuple_pfCands():ntuple_content(){}
+    ntuple_pfCands():ntuple_content(),jetradius_(0.4){}
 
+    void setJetRadius(const float& radius){jetradius_=radius;}
     void getInput(const edm::ParameterSet& iConfig);
     void initBranches(TTree* );
     void readEvent(const edm::Event& iEvent);
@@ -33,6 +34,7 @@ public:
 
 private:
 
+    float jetradius_;
 
     edm::ESHandle<TransientTrackBuilder> builder;
 

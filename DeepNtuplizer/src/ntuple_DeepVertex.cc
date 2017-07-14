@@ -251,7 +251,7 @@ bool ntuple_DeepVertex::fillBranches(const pat::Jet & jet, const size_t& jetidx,
     unsigned int neartracks_max_counter=0;
     for(std::multimap<double,std::pair<const reco::TransientTrack*,const std::vector<trackVars2> > >::const_iterator im = SortedSeedsMap.begin(); im != SortedSeedsMap.end(); im++){
         
-        if(seeds_max_counter>=10) break;
+        if(seeds_max_counter>=max_seeds) break;
         
         std::pair<bool,Measurement1D> ipSigned = IPTools::signedImpactParameter3D(*im->second.first,direction, pv);        
         std::pair<bool,Measurement1D> ip2dSigned = IPTools::signedTransverseImpactParameter(*im->second.first,direction, pv);  
@@ -289,7 +289,7 @@ bool ntuple_DeepVertex::fillBranches(const pat::Jet & jet, const size_t& jetidx,
         // FILL NEAREAST VARIABLES
         for(unsigned int i=0; i< im->second.second.size(); i++) {
 
-            if((neartracks_max_counter+i)>=200) break;
+            if((neartracks_max_counter+i)>=max_nearestTrk) break;
             
             nearTracks_pt[neartracks_max_counter+i]=im->second.second.at(i).pt;
             nearTracks_eta[neartracks_max_counter+i]=im->second.second.at(i).eta;

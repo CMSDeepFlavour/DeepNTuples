@@ -306,11 +306,11 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Cpfcan_pt_[n_Cpfcand_] = PackedCandidate_->pt();
             Cpfcan_eta_[n_Cpfcand_] = PackedCandidate_->eta();
             Cpfcan_phi_[n_Cpfcand_] = PackedCandidate_->phi();
-            Cpfcan_ptrel_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->pt()/jet.pt()-1,0,-1,0);
-            Cpfcan_erel_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->energy()/jet.energy()-1,0,-1,0);
-            Cpfcan_phirel_[n_Cpfcand_] = catchInfsAndBound(fabs(reco::deltaPhi(PackedCandidate_->phi(),jet.phi()))-0.5,0,-2,0);
-            Cpfcan_etarel_[n_Cpfcand_] = catchInfsAndBound(fabs(PackedCandidate_->eta()-jet.eta())-0.5,0,-2,0);
-            Cpfcan_deltaR_[n_Cpfcand_] =catchInfsAndBound(reco::deltaR(*PackedCandidate_,jet)-0.6,0,-0.6,0);
+            Cpfcan_ptrel_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->pt()/jet.pt(),0,-1,0,-1);
+            Cpfcan_erel_[n_Cpfcand_] = catchInfsAndBound(PackedCandidate_->energy()/jet.energy(),0,-1,0,-1);
+            Cpfcan_phirel_[n_Cpfcand_] = catchInfsAndBound(fabs(reco::deltaPhi(PackedCandidate_->phi(),jet.phi())),0,-2,0,-0.5);
+            Cpfcan_etarel_[n_Cpfcand_] = catchInfsAndBound(fabs(PackedCandidate_->eta()-jet.eta()),0,-2,0,-0.5);
+            Cpfcan_deltaR_[n_Cpfcand_] =catchInfsAndBound(reco::deltaR(*PackedCandidate_,jet),0,-0.6,0,-0.6);
             Cpfcan_dxy_[n_Cpfcand_] = catchInfsAndBound(fabs(PackedCandidate_->dxy()),0,-50,50);
 
 
@@ -395,7 +395,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             //for some reason this returns the quality enum not a mask.
             Cpfcan_quality_[n_Cpfcand_] = PseudoTrack.qualityMask();
 
-            Cpfcan_drminsv_[n_Cpfcand_] = catchInfsAndBound(drminpfcandsv_-5,0,-5,0);
+            Cpfcan_drminsv_[n_Cpfcand_] = catchInfsAndBound(drminpfcandsv_,0,-0.4,0,-0.4);
 
             n_Cpfcand_++;
         }
@@ -403,17 +403,17 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Npfcan_pt_[n_Npfcand_] = PackedCandidate_->pt();
             Npfcan_eta_[n_Npfcand_] = PackedCandidate_->eta();
             Npfcan_phi_[n_Npfcand_] = PackedCandidate_->phi();
-            Npfcan_ptrel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->pt()/jet.pt()-1,0,-1,0);
-            Npfcan_erel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->energy()/jet.energy()-1,0,-1,0);
+            Npfcan_ptrel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->pt()/jet.pt(),0,-1,0,-1);
+            Npfcan_erel_[n_Npfcand_] = catchInfsAndBound(PackedCandidate_->energy()/jet.energy(),0,-1,0,-1);
             Npfcan_puppiw_[n_Npfcand_] = PackedCandidate_->puppiWeight();
-            Npfcan_phirel_[n_Npfcand_] = catchInfsAndBound(fabs(reco::deltaPhi(PackedCandidate_->phi(),jet.phi()))-0.5,0,-2,0);
-            Npfcan_etarel_[n_Npfcand_] = catchInfsAndBound(fabs(PackedCandidate_->eta()-jet.eta())-0.5,0,-2,0);
-            Npfcan_deltaR_[n_Npfcand_] = catchInfsAndBound(reco::deltaR(*PackedCandidate_,jet)-0.6,0,-0.6,0);
+            Npfcan_phirel_[n_Npfcand_] = catchInfsAndBound(fabs(reco::deltaPhi(PackedCandidate_->phi(),jet.phi())),0,-2,0,-0.5);
+            Npfcan_etarel_[n_Npfcand_] = catchInfsAndBound(fabs(PackedCandidate_->eta()-jet.eta()),0,-2,0,-0.5);
+            Npfcan_deltaR_[n_Npfcand_] = catchInfsAndBound(reco::deltaR(*PackedCandidate_,jet),0,-0.6,0,-0.6);
             Npfcan_isGamma_[n_Npfcand_] = 0;
             if(fabs(PackedCandidate_->pdgId())==22)  Npfcan_isGamma_[n_Npfcand_] = 1;
             Npfcan_HadFrac_[n_Npfcand_] = PackedCandidate_->hcalFraction();
 
-            Npfcan_drminsv_[n_Npfcand_] = catchInfsAndBound(drminpfcandsv_-5,0,-5,0);
+            Npfcan_drminsv_[n_Npfcand_] = catchInfsAndBound(drminpfcandsv_,0,-0.4,0,0.4);
 
             n_Npfcand_++;
         }
@@ -433,7 +433,7 @@ float ntuple_pfCands::mindrsvpfcand(const std::vector<reco::VertexCompositePtrCa
     for (unsigned int i0=0; i0<svs.size(); ++i0) {
 
         float tempdr_ = reco::deltaR(svs[i0],*pfcand);
-        if (tempdr_<mindr_) { mindr_ = tempdr_; }
+        if (tempdr_<mindr_ && jetradius_>tempdr_) { mindr_ = tempdr_; }
 
     }
 

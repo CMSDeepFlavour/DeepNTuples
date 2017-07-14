@@ -61,6 +61,8 @@ public:
         }
     }
 
+    static bool useoffsets;
+
 protected:
     const reco::VertexCollection * vertices()const;
     const double* rhoInfo()const;
@@ -83,10 +85,13 @@ protected:
         return replace_value;
     }
 
-    static inline float catchInfsAndBound(const float& in,const float& replace_value, const float& lowerbound, const float& upperbound){
+    static inline float catchInfsAndBound(const float& in,const float& replace_value,
+            const float& lowerbound, const float& upperbound,const float offset=0){
         float withoutinfs=catchInfs(in,replace_value);
-        if(withoutinfs<lowerbound) return lowerbound;
-        if(withoutinfs>upperbound) return upperbound;
+        if(withoutinfs+offset<lowerbound) return lowerbound;
+        if(withoutinfs+offset>upperbound) return upperbound;
+        if(useoffsets)
+            withoutinfs+=offset;
         return withoutinfs;
     }
 
