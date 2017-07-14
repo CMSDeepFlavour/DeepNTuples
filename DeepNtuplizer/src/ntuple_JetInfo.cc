@@ -152,7 +152,7 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
 
     //presumably this whole part can be romoved!
 
-    hpp_udsgpartons.clear();
+
     neutrinosLepB.clear();
     neutrinosLepB_C.clear();
 
