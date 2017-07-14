@@ -23,29 +23,7 @@ std::vector<std::size_t> jet_electronsIds(const pat::Jet& jet, const std::vector
 
 JetFlavor jet_flavour(const pat::Jet& jet, std::vector<reco::GenParticle> gToBB, std::vector<reco::GenParticle> gToCC,
         std::vector<reco::GenParticle> neutrinosLepB, std::vector<reco::GenParticle> neutrinosLepB_C, 
-        std::vector<reco::GenParticle> hpp_udsgpartons,
         bool usePhysForLightAndUndefined) { 
-
-    //temporary quick and dirty fix - define flavor in herwig samples (i.e. with status 11 genpartons) only by these and not fiddle aroudn with the logic of the rest
-  //    std::cout << "dhortcut flavor definition" << std::endl;
-    //    std::cout << "hpp_udsgpartons.size()" << hpp_udsgpartons.size() << std::endl;
-    if (hpp_udsgpartons.size()>0){
-      double drtemp = 0.4;      
-      JetFlavor flavtemp = JetFlavor::UNDEFINED;
-      for (reco::GenParticle p : hpp_udsgpartons) {
-        double dr(reco::deltaR(jet, p));
-        //        std::cout << "dr " << dr << " pdgid " << std::abs(p.pdgId()) << std::endl; 
-        if (dr < 0.4 && dr < drtemp){
-          int id(std::abs(p.pdgId()));
-          if(id == 21) flavtemp = JetFlavor::G;
-          else if(id == 3) flavtemp = JetFlavor::S;
-          else if(id == 2 || id ==1) flavtemp = JetFlavor::UD;
-          else flavtemp = JetFlavor::UNDEFINED;
-        }
-      }
-      return flavtemp;
-    }
-
     int hflav = abs(jet.hadronFlavour());
     int pflav = abs(jet.partonFlavour());
     int physflav = 0;
