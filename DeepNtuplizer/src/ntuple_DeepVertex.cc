@@ -261,7 +261,8 @@ bool ntuple_DeepVertex::fillBranches(const pat::Jet & jet, const size_t& jetidx,
         seed_pt[seeds_max_counter]=im->second.first->track().pt();
         seed_eta[seeds_max_counter]=im->second.first->track().eta();
         seed_phi[seeds_max_counter]=im->second.first->track().phi();
-        seed_mass[seeds_max_counter]=im->second.second.at(0).seedMass;
+        if (im->second.second.size() != 0){ seed_mass[seeds_max_counter]=im->second.second.at(0).seedMass;}
+        else{seed_mass[seeds_max_counter]=-1;}
         seed_dz[seeds_max_counter]=im->second.first->track().dz(pv.position());
         seed_dxy[seeds_max_counter]=im->second.first->track().dxy(pv.position());
         seed_3D_ip[seeds_max_counter]=ip.second.value();
