@@ -28,7 +28,7 @@ def doSub():
     parser.add_argument('--file',default='samples.cfg',help='file containing a sample list')
     parser.add_argument('--nosubmit',default=False,help='no submission')
     parser.add_argument('--outpath',default='',help='set path to store the .root output')
-    parser.add_argument('--walltime',default='10800',help='set job wall time in seconds')
+    parser.add_argument('--walltime',default='21600',help='set job wall time in seconds')
     parser.add_argument('--maxsize',default='2000',help='set maximum allowed size of output ntuple')
     
     args = parser.parse_args()

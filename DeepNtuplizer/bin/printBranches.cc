@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
         t->SetLineColor(kRed);
         t->Draw(b + ">>" + b + "B", "isB+isBB+isLeptonicB+isLeptonicB_C",
                 "same,normalized");
-        histo = (TH1F*) gROOT->FindObject(b + "B");
+        TH1F* histo = (TH1F*) gROOT->FindObject(b + "B");
         histo->Draw("hist,same");
         t->SetLineColor(kGreen);
         t->Draw(b + ">>" + b + "C", "isC", "same,normalized");
