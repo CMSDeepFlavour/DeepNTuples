@@ -99,6 +99,8 @@ private:
         return m;
     }
     std::vector<ntuple_content* > modules_;
+
+    bool applySelection_;
 };
 
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
@@ -123,6 +125,8 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     const bool isHerwig=iConfig.getParameter<bool>("isHerwig");
 
     ntuple_content::useoffsets = iConfig.getParameter<bool>("useOffsets");
+
+    applySelection_=iConfig.getParameter<bool>("applySelection");
 
     ntuple_SV* svmodule=new ntuple_SV("", jetR);
     svmodule->setSVToken(
@@ -260,7 +264,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             if(! m->fillBranches(jet, jetidx, jets.product()))
                 writejet=false;
         }
-        if(writejet){
+        if((writejet&&applySelection_) || !applySelection_ ){
             tree_->Fill();
             njetsselected_++;
         }

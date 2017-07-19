@@ -177,14 +177,14 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
         int status(gen.status());
 
         if (id == 21 && status >= 21 && status <= 59) { //// Pythia8 hard scatter, ISR, or FSR
-          if ( gen.numberOfDaughters() == 2 ) {
-            const reco::Candidate* d0 = gen.daughter(0);
-            const reco::Candidate* d1 = gen.daughter(1);
-            if ( std::abs(d0->pdgId()) == 5 && std::abs(d1->pdgId()) == 5 
-                && d0->pdgId()*d1->pdgId() < 0 && reco::deltaR(*d0, *d1) < 0.4) gToBB.push_back(gen) ; 
-            if ( std::abs(d0->pdgId()) == 4 && std::abs(d1->pdgId()) == 4 
-                && d0->pdgId()*d1->pdgId() < 0 && reco::deltaR(*d0, *d1) < 0.4) gToCC.push_back(gen) ; 
-          }
+            if ( gen.numberOfDaughters() == 2 ) {
+                const reco::Candidate* d0 = gen.daughter(0);
+                const reco::Candidate* d1 = gen.daughter(1);
+                if ( std::abs(d0->pdgId()) == 5 && std::abs(d1->pdgId()) == 5
+                        && d0->pdgId()*d1->pdgId() < 0 && reco::deltaR(*d0, *d1) < 0.4) gToBB.push_back(gen) ;
+                if ( std::abs(d0->pdgId()) == 4 && std::abs(d1->pdgId()) == 4
+                        && d0->pdgId()*d1->pdgId() < 0 && reco::deltaR(*d0, *d1) < 0.4) gToCC.push_back(gen) ;
+            }
         }
 
     }
@@ -198,16 +198,17 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         throw std::runtime_error("ntuple_JetInfo::fillBranches: no jet collection");
 
     /// cuts ///
+    bool returnval=true;
 
     // some cuts to contrin training region
-    if ( jet.pt() < jetPtMin_ ||  jet.pt() > jetPtMax_ ) return false;                  // apply jet pT cut
-    if ( fabs(jet.eta()) < jetAbsEtaMin_ || fabs(jet.eta()) > jetAbsEtaMax_ ) return false; // apply jet eta cut
+    if ( jet.pt() < jetPtMin_ ||  jet.pt() > jetPtMax_ ) returnval=false;                  // apply jet pT cut
+    if ( fabs(jet.eta()) < jetAbsEtaMin_ || fabs(jet.eta()) > jetAbsEtaMax_ ) returnval=false; // apply jet eta cut
 
     // often we have way to many gluons that we do not need. This randomply reduces the gluons
     if (gluonReduction_>0 && jet.partonFlavour()==21)
-        if(TRandom_.Uniform()>gluonReduction_) return false;
+        if(TRandom_.Uniform()>gluonReduction_) returnval=false;
 
-    if(jet.genJet()==NULL)return false;
+    if(jet.genJet()==NULL)returnval=false;
 
 
     //branch fills
@@ -220,9 +221,9 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     for (auto const& v : *pupInfo()) {
         int bx = v.getBunchCrossing();
         if (bx == 0) {
-                ntrueInt_ = v.getTrueNumInteractions();
-                }
+            ntrueInt_ = v.getTrueNumInteractions();
         }
+    }
     rho_ = rhoInfo()[0];
 
 
@@ -236,7 +237,8 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     //std::vector<Ptr<pat::Jet> > p= coll->ptrs();
 
-    isB_=0; isGBB_=0; isBB_=0; isC_=0; isGCC_=0; isCC_=0; isUD_=0; isS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0, isUndefined_=0;
+    isB_=0; isGBB_=0; isBB_=0; isC_=0; isGCC_=0; isCC_=0; isUD_=0;
+    isS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0, isUndefined_=1;
     auto muIds = deep_ntuples::jet_muonsIds(jet,*muonsHandle);
     auto elecIds = deep_ntuples::jet_electronsIds(jet,*electronsHandle);
 
@@ -268,40 +270,45 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     }
 
     //// Note that jets with gluon->bb (cc) and x->bb (cc) are in the same categories
-    switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C)) {
-    case deep_ntuples::JetFlavor::B:  isB_=1; break;
-    case deep_ntuples::JetFlavor::LeptonicB: isLeptonicB_=1; break;
-    case deep_ntuples::JetFlavor::LeptonicB_C: isLeptonicB_C_=1; break;
-    case deep_ntuples::JetFlavor::GBB: isGBB_=1; break;
-    case deep_ntuples::JetFlavor::BB: isBB_=1; break;
-    case deep_ntuples::JetFlavor::C:  isC_=1; break;
-    case deep_ntuples::JetFlavor::GCC: isGCC_=1; break;
-    case deep_ntuples::JetFlavor::CC: isCC_=1; break;
-    case deep_ntuples::JetFlavor::G:  isG_=1; break;
-    case deep_ntuples::JetFlavor::UD: isUD_=1; break;
-    case deep_ntuples::JetFlavor::S:  isS_=1; break;
-    default : isUndefined_=1; break;
+    if(jet.genJet()){
+        switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C)) {
+        case deep_ntuples::JetFlavor::B:  isB_=1; break;
+        case deep_ntuples::JetFlavor::LeptonicB: isLeptonicB_=1; break;
+        case deep_ntuples::JetFlavor::LeptonicB_C: isLeptonicB_C_=1; break;
+        case deep_ntuples::JetFlavor::GBB: isGBB_=1; break;
+        case deep_ntuples::JetFlavor::BB: isBB_=1; break;
+        case deep_ntuples::JetFlavor::C:  isC_=1; break;
+        case deep_ntuples::JetFlavor::GCC: isGCC_=1; break;
+        case deep_ntuples::JetFlavor::CC: isCC_=1; break;
+        case deep_ntuples::JetFlavor::G:  isG_=1; break;
+        case deep_ntuples::JetFlavor::UD: isUD_=1; break;
+        case deep_ntuples::JetFlavor::S:  isS_=1; break;
+        default : isUndefined_=1; break;
+        }
     }
 
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
     //// Note that jets with gluon->bb (cc) and x->bb (cc) are in the same categories
-    isPhysB_=0; isPhysBB_=0; isPhysGBB_=0; isPhysC_=0; isPhysCC_=0; isPhysGCC_=0; isPhysUD_=0; isPhysS_=0; isPhysG_=0, isPhysLeptonicB_=0, isPhysLeptonicB_C_=0, isPhysUndefined_=0;
-    switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C, true)) {
-    case deep_ntuples::JetFlavor::UD: isPhysUD_=1; break;
-    case deep_ntuples::JetFlavor::S:  isPhysS_=1; break;
-    case deep_ntuples::JetFlavor::B:  isPhysB_=1; break;
-    case deep_ntuples::JetFlavor::BB: isPhysBB_=1; break;
-    case deep_ntuples::JetFlavor::GBB: isPhysGBB_=1; break;
-    case deep_ntuples::JetFlavor::C:  isPhysC_=1; break;
-    case deep_ntuples::JetFlavor::CC: isPhysCC_=1; break;
-    case deep_ntuples::JetFlavor::GCC: isPhysGCC_=1; break;
-    case deep_ntuples::JetFlavor::G:  isPhysG_=1; break;
-    case deep_ntuples::JetFlavor::LeptonicB: isPhysLeptonicB_=1; break;
-    case deep_ntuples::JetFlavor::LeptonicB_C: isPhysLeptonicB_C_=1; break;
-    default : isPhysUndefined_=1; break;
+    isPhysB_=0; isPhysBB_=0; isPhysGBB_=0; isPhysC_=0; isPhysCC_=0;
+    isPhysGCC_=0; isPhysUD_=0; isPhysS_=0; isPhysG_=0, isPhysLeptonicB_=0, isPhysLeptonicB_C_=0, isPhysUndefined_=1;
+    if(jet.genJet()){
+        switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C, true)) {
+        case deep_ntuples::JetFlavor::UD: isPhysUD_=1; break;
+        case deep_ntuples::JetFlavor::S:  isPhysS_=1; break;
+        case deep_ntuples::JetFlavor::B:  isPhysB_=1; break;
+        case deep_ntuples::JetFlavor::BB: isPhysBB_=1; break;
+        case deep_ntuples::JetFlavor::GBB: isPhysGBB_=1; break;
+        case deep_ntuples::JetFlavor::C:  isPhysC_=1; break;
+        case deep_ntuples::JetFlavor::CC: isPhysCC_=1; break;
+        case deep_ntuples::JetFlavor::GCC: isPhysGCC_=1; break;
+        case deep_ntuples::JetFlavor::G:  isPhysG_=1; break;
+        case deep_ntuples::JetFlavor::LeptonicB: isPhysLeptonicB_=1; break;
+        case deep_ntuples::JetFlavor::LeptonicB_C: isPhysLeptonicB_C_=1; break;
+        default : isPhysUndefined_=1; break;
+        }
     }
 
-    if(isUndefined_ && isPhysUndefined_) return false; //skip event, if neither standard flavor definition nor physics definition fallback define a "proper flavor"
+    if(isUndefined_ && isPhysUndefined_) returnval=false; //skip event, if neither standard flavor definition nor physics definition fallback define a "proper flavor"
 
     pat::JetCollection h;
 
@@ -315,44 +322,51 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     //https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016
     try{
-      float NHF  = jet.neutralHadronEnergyFraction();
-      float NEMF = jet.neutralEmEnergyFraction();
-      float CHF  = jet.chargedHadronEnergyFraction();
-      //float MUF  = jet.muonEnergyFraction();
-      float CEMF = jet.chargedEmEnergyFraction();
-      float NumConst = jet.chargedMultiplicity()+jet.neutralMultiplicity();
-      float NumNeutralParticles =jet.neutralMultiplicity();
-      float CHM      = jet.chargedMultiplicity();
+        float NHF  = jet.neutralHadronEnergyFraction();
+        float NEMF = jet.neutralEmEnergyFraction();
+        float CHF  = jet.chargedHadronEnergyFraction();
+        //float MUF  = jet.muonEnergyFraction();
+        float CEMF = jet.chargedEmEnergyFraction();
+        float NumConst = jet.chargedMultiplicity()+jet.neutralMultiplicity();
+        float NumNeutralParticles =jet.neutralMultiplicity();
+        float CHM      = jet.chargedMultiplicity();
 
-      jet_looseId_ = ((NHF<0.99 && NEMF<0.99 && NumConst>1) && ((abs(jet_eta_)<=2.4 && CHF>0 && CHM>0 && CEMF<0.99) || abs(jet_eta_)>2.4) && abs(jet_eta_)<=2.7) ||
-          (NHF<0.98 && NEMF>0.01 && NumNeutralParticles>2 && abs(jet_eta_)>2.7 && abs(jet_eta_)<=3.0 ) ||
-          (NEMF<0.90 && NumNeutralParticles>10 && abs(jet_eta_)>3.0 );
+        jet_looseId_ = ((NHF<0.99 && NEMF<0.99 && NumConst>1) && ((abs(jet_eta_)<=2.4 && CHF>0 && CHM>0 && CEMF<0.99) || abs(jet_eta_)>2.4) && abs(jet_eta_)<=2.7) ||
+                (NHF<0.98 && NEMF>0.01 && NumNeutralParticles>2 && abs(jet_eta_)>2.7 && abs(jet_eta_)<=3.0 ) ||
+                (NEMF<0.90 && NumNeutralParticles>10 && abs(jet_eta_)>3.0 );
     }catch(const cms::Exception &e){
-      jet_looseId_ = 1;
+        jet_looseId_ = 1;
     }
 
 
-    gen_pt_ =  jet.genJet()->pt();
-    Delta_gen_pt_ =  jet.genJet()->pt()- jet_pt_;
+    gen_pt_ =  0;
+    Delta_gen_pt_ =  0;
+    gen_pt_Recluster_=0;
+    gen_pt_WithNu_=0;
+    Delta_gen_pt_Recluster_=0;
+    Delta_gen_pt_WithNu_=0;
 
+    if(jet.genJet()){
+        gen_pt_ =  jet.genJet()->pt();
+        Delta_gen_pt_ =  jet.genJet()->pt()- jet_pt_;
 
-    const edm::RefToBase<pat::Jet> patJetRef = coll->refAt(jetidx);
-    reco::GenJetRef genjetRecluster = (*genJetMatchRecluster)[patJetRef];
+        const edm::RefToBase<pat::Jet> patJetRef = coll->refAt(jetidx);
+        reco::GenJetRef genjetRecluster = (*genJetMatchRecluster)[patJetRef];
 
-    gen_pt_Recluster_ = 0.;
-    if (genjetRecluster.isNonnull() && genjetRecluster.isAvailable()) {
-        gen_pt_Recluster_ = genjetRecluster->pt();
+        gen_pt_Recluster_ = 0.;
+        if (genjetRecluster.isNonnull() && genjetRecluster.isAvailable()) {
+            gen_pt_Recluster_ = genjetRecluster->pt();
+        }
+        reco::GenJetRef genjetWithNu = (*genJetMatchWithNu)[patJetRef];
+
+        gen_pt_WithNu_ = 0.;
+        if (genjetWithNu.isNonnull() && genjetWithNu.isAvailable()) {
+            gen_pt_WithNu_ = genjetWithNu->pt();
+        }
+
+        Delta_gen_pt_Recluster_=gen_pt_Recluster_-jet.pt();
+        Delta_gen_pt_WithNu_=gen_pt_WithNu_-jet.pt();
     }
-    reco::GenJetRef genjetWithNu = (*genJetMatchWithNu)[patJetRef];
-
-    gen_pt_WithNu_ = 0.;
-    if (genjetWithNu.isNonnull() && genjetWithNu.isAvailable()) {
-        gen_pt_WithNu_ = genjetWithNu->pt();
-    }
-
-    Delta_gen_pt_Recluster_=gen_pt_Recluster_-jet.pt();
-    Delta_gen_pt_WithNu_=gen_pt_WithNu_-jet.pt();
-
 
 
     auto qgtuple=yuta::calcVariables(&jet);
@@ -368,5 +382,5 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 
 
-    return true;
+    return returnval;
 }
