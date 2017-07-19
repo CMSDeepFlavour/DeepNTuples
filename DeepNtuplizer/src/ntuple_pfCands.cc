@@ -413,7 +413,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             if(fabs(PackedCandidate_->pdgId())==22)  Npfcan_isGamma_[n_Npfcand_] = 1;
             Npfcan_HadFrac_[n_Npfcand_] = PackedCandidate_->hcalFraction();
 
-            Npfcan_drminsv_[n_Npfcand_] = catchInfsAndBound(drminpfcandsv_,0,-0.4,0,0.4);
+            Npfcan_drminsv_[n_Npfcand_] = catchInfsAndBound(drminpfcandsv_,0,-0.4,0,-0.4);
 
             n_Npfcand_++;
         }

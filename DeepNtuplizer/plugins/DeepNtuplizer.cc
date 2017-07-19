@@ -141,7 +141,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     // DeepVertex info
     ntuple_DeepVertex* deepvertexmodule=new ntuple_DeepVertex(jetR);
     deepvertexmodule->setCandidatesToken(consumes<edm::View<pat::PackedCandidate> >(iConfig.getParameter<edm::InputTag>("candidates")));
-    addModule(deepvertexmodule);
+   // addModule(deepvertexmodule);
 
     ntuple_JetInfo* jetinfo=new ntuple_JetInfo();
     jetinfo->setQglToken(consumes<edm::ValueMap<float>>(edm::InputTag(t_qgtagger, "qgLikelihood")));
