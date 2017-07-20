@@ -245,7 +245,8 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     for(size_t i=0;i<jets->size();i++)
         indices.at(i)=i;
 
-    std::random_shuffle (indices.begin(),indices.end());
+    if(applySelection_)
+        std::random_shuffle (indices.begin(),indices.end());
 
     edm::View<pat::Jet>::const_iterator jetIter;
     // loop over the jets

@@ -40,8 +40,11 @@ dirs=args.dirs
 
 action=args.action
 
-print('getting condor batch status...\n')
-clustersandjobs,statuses=getCondorStatus()
+issgesched = len(os.getenv('SGE_CELL','')) > 0
+
+if not  issgesched:
+    print('getting condor batch status...\n')
+    clustersandjobs,statuses=getCondorStatus()
 
 #if len(clustersandjobs) < 1:
 #    raise Exception("condor_q not available, cannot check job status")

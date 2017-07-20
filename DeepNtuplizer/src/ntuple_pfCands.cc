@@ -256,9 +256,22 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     TrackInfoBuilder trackinfo(builder);
 
-    //create collection first, to be able to do some sorting
+    std::vector<pat::PackedCandidate> alljetconstituents;
+    float dummytemp=0;
     for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++){
         const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
+        if(PackedCandidate){
+            //force unpacking
+            dummytemp=PackedCandidate->phi();
+            dummytemp++;
+            alljetconstituents.push_back(*PackedCandidate);
+        }
+    }
+    dummytemp--;
+
+    //create collection first, to be able to do some sorting
+    for (unsigned int i = 0; i <  alljetconstituents.size(); i++){
+        const pat::PackedCandidate* PackedCandidate =  &alljetconstituents.at(i);
         if(PackedCandidate){
 
             trackinfo.buildTrackInfo(PackedCandidate,jetDir,jetRefTrackDir,pv);

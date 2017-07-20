@@ -18,6 +18,7 @@ def doSub():
     from argparse import ArgumentParser as argps
 
     swdir = os.path.realpath(os.environ['CMSSW_BASE'])
+    issgesched = len(os.getenv('SGE_CELL','')) > 0
     jobid = 'jobid' #os.environ['jobid']
     inputdir = os.path.join(swdir, 'inputs')
     inputdir = os.path.join(inputdir, jobid)
@@ -244,7 +245,7 @@ use_x509userproxy = True
 +MaxRuntime = {maxruntime}
 max_transfer_output_mb = {maxsize}
 transfer_output_remaps = "stdout.txt={logdir}con_out.$(ProcId).out"
-max_retries = 10
+max_retries = 20
 queue {njobs}
     """.format(
               batchscriptpath=sheelscp,
@@ -263,6 +264,8 @@ queue {njobs}
         conf.write(condorfile)
         conf.close()
         print("wrote condor file for "+outputFile)
+        
+        allsgescripts=[]
         
         #create individual condor files for resubmission
         for job in range(0,int(nJobs)):
@@ -290,18 +293,75 @@ queue 1
                   maxsize=maxSize,
 		          logdir=logDir
                   )
-	    jconf = open(os.path.join(logDir,'condor_'+str(job)+'.sub'), 'w')
-        jconf.write(jobcondorfile)
-        jconf.close()
-        resetJobOutput(jobpath,job)
+            jconf = open(os.path.join(logDir,'condor_'+str(job)+'.sub'), 'w')
+            jconf.write(jobcondorfile)
+            jconf.close()
+        
+            jobsgefile="""
+#!/bin/sh
+#
+#(make sure the right shell will be used)
+#$ -S /bin/sh
+#$ -l site=hh
+#$ -l distro=sld6
+#
+#(the cpu time for this job)
+#$ -l h_rt=05:55:00
+#
+#(the maximum memory usage of this job)
+#$ -l h_vmem=2047M
+#
+#(stderr and stdout are merged together to stdout)
+#$ -j y
+#$ -m a
+#$ -cwd -V
+#( -l h_stack=1536M) #try with small stack
+#$ -pe local 6 -R y
+#$ -P af-cms
+
+export LOGDIR={logdir}
+export JOB={job}
+export NTUPLEOUTFILEPATH={ntupledir}{outputfile}_{job}.root
+
+{batchscriptpath} {configfile} inputScript={sample} nJobs={njobs} job={job} {options}
+            """.format(
+                  batchscriptpath=sheelscp,
+                  configfile=configFile, 
+                  sample=sample,
+                  ntupledir=ntupleOutDir,
+                  outputfile=outputFile,
+                  njobs=nJobs, 
+                  options=jobargs,
+                  job=str(job),
+                  #maxruntime=jobruntime,
+                  #maxsize=maxSize,
+                  logdir=logDir
+                  )
+            if issgesched or True:
+                sgefile=os.path.join(logDir,'sge_'+str(job)+'.sh')
+                jconf = open(sgefile, 'w')
+                jconf.write(jobsgefile)
+                jconf.close()
+                allsgescripts.append(sgefile)
+        
+            resetJobOutput(jobpath,job)
              
              
         #create script
         shellscript = """#!/bin/bash
+        
+workdir=""
+if [ $SGE_CELL ]
+then
+workdir=mktemp -d -t DeepNTuplesXXXXXX        
+cd $workdir
+workdir=$workdir"/"
+fi
+
 exec > "$PWD/stdout.txt" 2>&1
 echo "JOBSUB::RUN job running"
 trap "echo JOBSUB::FAIL job killed" SIGTERM
-export OUTPUT={outputfile}
+export OUTPUT="${workdir}{outputfile}"
 cd {basedir}
 eval `scramv1 runtime -sh`
 export PYTHONPATH={sampleScriptdir}:$PYTHONPATH
@@ -315,7 +375,12 @@ then
 else
    pwd
    ls -ltr $OUTPUT*.root
-   eos cp $OUTPUT*.root $NTUPLEOUTFILEPATH
+   if [ $SGE_CELL ]
+   then
+     cp $OUTPUT*.root $NTUPLEOUTFILEPATH
+   else
+     eos cp $OUTPUT*.root $NTUPLEOUTFILEPATH
+   fi
    exitstatus=$?
    rm -f $OUTPUT*.root
    if [ $exitstatus != 0 ]
@@ -326,6 +391,12 @@ else
    fi
 fi
 rm -f $OUTPUT*.root
+if [ $workdir ]
+then
+# JOB is only defined for SGE submit
+cp $workdir/stdout.txt $LOGDIR/con_out.$JOB.out
+rm -rf $workdir
+fi
 exit $exitstatus
         """.format(
             sampleScriptdir=samplescriptdir,
@@ -340,16 +411,26 @@ exit $exitstatus
         os.system('chmod +x '+sheelscp)
         os.system('touch '+logDir+'/nJobs.'+str(nJobs))
         
+        sgelist=open(jobpath+'/sge_sub.sh','w')
+        for line in allsgescripts:
+            sgelist.write('qsub '+line)
+        sgelist.close()
+        
         #add a 'touch for the .out file to make the check realise it is there
         
-        if not args.nosubmit:
+        if not args.nosubmit and not issgesched:
             print('submitting '+outputFile)
              #os.system('cd ' + jobpath + ' && echo condor_submit condor.sub') # gives back submitted to cluster XXX message - use
             cluster=submitjob(jobpath,'condor.sub')
             #print(cluster)
             for job in range(0,int(nJobs)):
-	       createClusterInfo(jobpath,job,cluster,True)
+                createClusterInfo(jobpath,job,cluster,True)
     
-    
+        
+        if not args.nosubmit and issgesched:
+            pass
+        
     exit()
+    
+    
 doSub()
