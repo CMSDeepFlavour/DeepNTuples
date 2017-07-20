@@ -235,6 +235,7 @@ void ntuple_pfCands::initBranches(TTree* tree){
 void ntuple_pfCands::readEvent(const edm::Event& iEvent){
 
     iEvent.getByToken(svToken_, secVertices);
+    cpvtx=*secVertices;
 
 }
 
@@ -244,7 +245,6 @@ void ntuple_pfCands::readEvent(const edm::Event& iEvent){
 
 bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  edm::View<pat::Jet> * coll){
 
-    reco::VertexCompositePtrCandidateCollection cpvtx=*secVertices;
 
     float etasign = 1.;
     if (jet.eta()<0) etasign =-1.;
@@ -290,10 +290,12 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     for (const auto& s:sortedall){
 
         const auto& PackedCandidate_=s.get();
+
         if(!PackedCandidate_)continue;
 
-        // get the dr with the closest sv
-        float drminpfcandsv_ = mindrsvpfcand(cpvtx,PackedCandidate_);
+        //here it crashes - sometimes...
+       // float testphi= PackedCandidate_->phi();
+        float drminpfcandsv_ = -s.sortValB;//mindrsvpfcand(cpvtx,PackedCandidate_);
 
         /// This might include more than PF candidates, e.g. Reco muons and could
         /// be double counting. Needs to be checked.!!!!
@@ -302,6 +304,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         if(PackedCandidate_->charge()!=0 && max_pfcand_>n_Cpfcand_){
 
 
+            trackinfo.buildTrackInfo(PackedCandidate_,jetDir,jetRefTrackDir,pv);
 
             Cpfcan_pt_[n_Cpfcand_] = PackedCandidate_->pt();
             Cpfcan_eta_[n_Cpfcand_] = PackedCandidate_->eta();
@@ -359,7 +362,6 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Cpfcan_dlambdadz_[n_Cpfcand_]=  catchInfs(myCov[1][4],-0.03); //zero if pvAssociationQuality ==7 ?
 
 
-            trackinfo.buildTrackInfo(PackedCandidate_,jetDir,jetRefTrackDir,pv);
 
             Cpfcan_BtagPf_trackMomentum_[n_Cpfcand_]   =catchInfsAndBound(trackinfo.getTrackMomentum(),0,0 ,1000);
             Cpfcan_BtagPf_trackEta_[n_Cpfcand_]        =catchInfsAndBound(trackinfo.getTrackEta()   ,  0,-5,5);
@@ -430,9 +432,10 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 float ntuple_pfCands::mindrsvpfcand(const std::vector<reco::VertexCompositePtrCandidate>& svs, const pat::PackedCandidate* pfcand) {
 
     float mindr_ = jetradius_;
-    for (unsigned int i0=0; i0<svs.size(); ++i0) {
+    for (unsigned int i=0; i<svs.size(); ++i) {
         if(!pfcand) continue;
-        float tempdr_ = reco::deltaR(svs.at(i0),*pfcand);
+        //if(!svs.at(i)) continue;
+        float tempdr_ = reco::deltaR(svs.at(i),*pfcand);
         if (tempdr_<mindr_) { mindr_ = tempdr_; }
 
     }

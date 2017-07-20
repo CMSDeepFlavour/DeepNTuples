@@ -204,6 +204,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     if ( jet.pt() < jetPtMin_ ||  jet.pt() > jetPtMax_ ) returnval=false;                  // apply jet pT cut
     if ( fabs(jet.eta()) < jetAbsEtaMin_ || fabs(jet.eta()) > jetAbsEtaMax_ ) returnval=false; // apply jet eta cut
 
+
     // often we have way to many gluons that we do not need. This randomply reduces the gluons
     if (gluonReduction_>0 && jet.partonFlavour()==21)
         if(TRandom_.Uniform()>gluonReduction_) returnval=false;
@@ -238,7 +239,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     //std::vector<Ptr<pat::Jet> > p= coll->ptrs();
 
     isB_=0; isGBB_=0; isBB_=0; isC_=0; isGCC_=0; isCC_=0; isUD_=0;
-    isS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0, isUndefined_=1;
+    isS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0, isUndefined_=0;
     auto muIds = deep_ntuples::jet_muonsIds(jet,*muonsHandle);
     auto elecIds = deep_ntuples::jet_electronsIds(jet,*electronsHandle);
 
@@ -270,7 +271,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     }
 
     //// Note that jets with gluon->bb (cc) and x->bb (cc) are in the same categories
-    if(jet.genJet()){
+    if(jet.genJet()!=NULL){
         switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C)) {
         case deep_ntuples::JetFlavor::B:  isB_=1; break;
         case deep_ntuples::JetFlavor::LeptonicB: isLeptonicB_=1; break;
@@ -290,8 +291,8 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
     //// Note that jets with gluon->bb (cc) and x->bb (cc) are in the same categories
     isPhysB_=0; isPhysBB_=0; isPhysGBB_=0; isPhysC_=0; isPhysCC_=0;
-    isPhysGCC_=0; isPhysUD_=0; isPhysS_=0; isPhysG_=0, isPhysLeptonicB_=0, isPhysLeptonicB_C_=0, isPhysUndefined_=1;
-    if(jet.genJet()){
+    isPhysGCC_=0; isPhysUD_=0; isPhysS_=0; isPhysG_=0, isPhysLeptonicB_=0, isPhysLeptonicB_C_=0, isPhysUndefined_=0;
+    if(jet.genJet()!=NULL){
         switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C, true)) {
         case deep_ntuples::JetFlavor::UD: isPhysUD_=1; break;
         case deep_ntuples::JetFlavor::S:  isPhysS_=1; break;
@@ -306,6 +307,10 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         case deep_ntuples::JetFlavor::LeptonicB_C: isPhysLeptonicB_C_=1; break;
         default : isPhysUndefined_=1; break;
         }
+    }
+
+    if(!jet.genJet()){//for data
+        isUndefined_=1;isPhysUndefined_=1;
     }
 
     if(isUndefined_ && isPhysUndefined_) returnval=false; //skip event, if neither standard flavor definition nor physics definition fallback define a "proper flavor"
@@ -379,7 +384,6 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     y_axis1_  =  std::get<4>(qgtuple);
     y_axis2_  =  std::get<5>(qgtuple);
     y_pt_dr_log_=std::get<6>(qgtuple);
-
 
 
     return returnval;

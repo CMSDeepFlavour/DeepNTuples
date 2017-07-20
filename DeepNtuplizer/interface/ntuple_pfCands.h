@@ -131,6 +131,7 @@ private:
 
     edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> svToken_;
     edm::Handle<reco::VertexCompositePtrCandidateCollection> secVertices;
+    reco::VertexCompositePtrCandidateCollection cpvtx;
 
     float mindrsvpfcand(const std::vector<reco::VertexCompositePtrCandidate>& svs, const pat::PackedCandidate* pfcand);
 

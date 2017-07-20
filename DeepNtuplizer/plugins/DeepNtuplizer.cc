@@ -143,8 +143,8 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     //addModule(svmodule_LooseIVF);
 
     // DeepVertex info
-    ntuple_DeepVertex* deepvertexmodule=new ntuple_DeepVertex(jetR);
-    deepvertexmodule->setCandidatesToken(consumes<edm::View<pat::PackedCandidate> >(iConfig.getParameter<edm::InputTag>("candidates")));
+   // ntuple_DeepVertex* deepvertexmodule=new ntuple_DeepVertex(jetR);
+   // deepvertexmodule->setCandidatesToken(consumes<edm::View<pat::PackedCandidate> >(iConfig.getParameter<edm::InputTag>("candidates")));
    // addModule(deepvertexmodule);
 
     ntuple_JetInfo* jetinfo=new ntuple_JetInfo();
@@ -264,7 +264,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             if(! m->fillBranches(jet, jetidx, jets.product()))
                 writejet=false;
         }
-        if((writejet&&applySelection_) || !applySelection_ ){
+        if( (writejet&&applySelection_) || !applySelection_ ){
             tree_->Fill();
             njetsselected_++;
         }
