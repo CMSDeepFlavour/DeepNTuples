@@ -60,7 +60,6 @@ void ntuple_SV::initBranches(TTree* tree){
 
 void ntuple_SV::readEvent(const edm::Event& iEvent){
 
-    iEvent.getByToken(svToken_, secVertices);
 
 }
 
@@ -83,7 +82,7 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
 
     sv_num_ = 0;
 
-    reco::VertexCompositePtrCandidateCollection cpvtx=*secVertices;
+    reco::VertexCompositePtrCandidateCollection cpvtx=*secVertices();
 
     spvp_ =   & vertices()->at(0);
     std::sort(cpvtx.begin(),cpvtx.end(),ntuple_SV::compareDxyDxyErr);

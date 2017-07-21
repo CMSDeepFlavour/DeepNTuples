@@ -244,6 +244,7 @@ environment = "NTUPLEOUTFILEPATH={ntupledir}{outputfile}_$(ProcId).root"
 use_x509userproxy = True
 +MaxRuntime = {maxruntime}
 max_transfer_output_mb = {maxsize}
+RequestCpus = 2
 transfer_output_remaps = "stdout.txt={logdir}con_out.$(ProcId).out"
 max_retries = 20
 queue {njobs}
@@ -276,6 +277,7 @@ getenv = True
 environment = "NTUPLEOUTFILEPATH={ntupledir}{outputfile}_{job}.root"
 use_x509userproxy = True
 +MaxRuntime= {maxruntime}
+RequestCpus = 2
 max_transfer_output_mb = {maxsize}
 transfer_output_remaps = "stdout.txt={logdir}con_out.{job}.out"
 max_retries = 3
@@ -368,7 +370,7 @@ eval `scramv1 runtime -sh`
 export PYTHONPATH={sampleScriptdir}:$PYTHONPATH
 which cmsRun
 cd -
-cmsRun "$@" outputFile=$OUTPUT 
+cmsRun -n 1 "$@" outputFile=$OUTPUT 
 exitstatus=$?
 if [ $exitstatus != 0 ]
 then

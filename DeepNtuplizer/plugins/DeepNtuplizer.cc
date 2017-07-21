@@ -81,6 +81,7 @@ private:
 
     // ----------member data ---------------------------
     edm::EDGetTokenT<reco::VertexCollection> vtxToken_;
+    edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> svToken_;
     edm::EDGetTokenT<edm::View<pat::Jet> >      jetToken_;
     edm::EDGetTokenT<std::vector<PileupSummaryInfo>> puToken_;
     edm::EDGetTokenT<double> rhoToken_;
@@ -104,11 +105,13 @@ private:
 };
 
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
-                    vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
-                    jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets"))),
-                    puToken_(consumes<std::vector<PileupSummaryInfo >>(iConfig.getParameter<edm::InputTag>("pupInfo"))),
-                    rhoToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoInfo"))),
-                    t_qgtagger(iConfig.getParameter<std::string>("qgtagger"))
+                            vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
+                            svToken_(consumes<reco::VertexCompositePtrCandidateCollection>(
+                                    iConfig.getParameter<edm::InputTag>("secVertices"))),
+                                    jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets"))),
+                                    puToken_(consumes<std::vector<PileupSummaryInfo >>(iConfig.getParameter<edm::InputTag>("pupInfo"))),
+                                    rhoToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoInfo"))),
+                                    t_qgtagger(iConfig.getParameter<std::string>("qgtagger"))
 {
     /*
      *  Initialise the modules here
@@ -129,9 +132,6 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     applySelection_=iConfig.getParameter<bool>("applySelection");
 
     ntuple_SV* svmodule=new ntuple_SV("", jetR);
-    svmodule->setSVToken(
-            consumes<reco::VertexCompositePtrCandidateCollection>(
-                    iConfig.getParameter<edm::InputTag>("secVertices")));
     addModule(svmodule);
 
     //Loose IVF vertices
@@ -143,9 +143,9 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     //addModule(svmodule_LooseIVF);
 
     // DeepVertex info
-   // ntuple_DeepVertex* deepvertexmodule=new ntuple_DeepVertex(jetR);
-   // deepvertexmodule->setCandidatesToken(consumes<edm::View<pat::PackedCandidate> >(iConfig.getParameter<edm::InputTag>("candidates")));
-   // addModule(deepvertexmodule);
+    // ntuple_DeepVertex* deepvertexmodule=new ntuple_DeepVertex(jetR);
+    // deepvertexmodule->setCandidatesToken(consumes<edm::View<pat::PackedCandidate> >(iConfig.getParameter<edm::InputTag>("candidates")));
+    // addModule(deepvertexmodule);
 
     ntuple_JetInfo* jetinfo=new ntuple_JetInfo();
     jetinfo->setQglToken(consumes<edm::ValueMap<float>>(edm::InputTag(t_qgtagger, "qgLikelihood")));
@@ -178,9 +178,6 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     addModule(jetinfo);
 
     ntuple_pfCands * pfcands = new ntuple_pfCands();
-    pfcands->setSVToken(
-            consumes<reco::VertexCompositePtrCandidateCollection>(
-                    iConfig.getParameter<edm::InputTag>("secVertices")));
     pfcands->setJetRadius(jetR);
 
     addModule(pfcands);
@@ -207,6 +204,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
 
 DeepNtuplizer::~DeepNtuplizer()
 {
+    return;
     for(auto& m:modules_)
         delete m;
 }
@@ -223,23 +221,26 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(vtxToken_, vertices);
     if (vertices->empty()) return; // skip the event if no PV found
 
+    edm::Handle<std::vector<reco::VertexCompositePtrCandidate> > secvertices;
+    iEvent.getByToken(svToken_, secvertices);
+
     edm::Handle<std::vector<PileupSummaryInfo> > pupInfo;
     iEvent.getByToken(puToken_, pupInfo);
 
     edm::Handle<double> rhoInfo;
     iEvent.getByToken(rhoToken_,rhoInfo);
 
-
+    edm::Handle<edm::View<pat::Jet> > jets;
+    iEvent.getByToken(jetToken_, jets);
 
     for(auto& m:modules_){
         m->setPrimaryVertices(vertices.product());
+        m->setSecVertices(secvertices.product());
         m->setPuInfo(pupInfo.product());
         m->setRhoInfo(rhoInfo.product());
-        m->readEvent(iEvent);
         m->readSetup(iSetup);
+        m->readEvent(iEvent);
     }
-    edm::Handle<edm::View<pat::Jet> > jets;
-    iEvent.getByToken(jetToken_, jets);
 
     std::vector<size_t> indices(jets->size());
     for(size_t i=0;i<jets->size();i++)

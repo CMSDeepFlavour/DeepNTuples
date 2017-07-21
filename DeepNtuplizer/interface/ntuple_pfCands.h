@@ -23,10 +23,6 @@ public:
     void readEvent(const edm::Event& iEvent);
     void readSetup(const edm::EventSetup& iSetup);
 
-    void setSVToken(const edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> & t){
-        svToken_=t;
-    }
-
 
     //use either of these functions
 
@@ -41,7 +37,7 @@ private:
     unsigned int n_Cpfcand_;
     float nCpfcand_;
 
-    static constexpr size_t max_pfcand_=100;
+    static constexpr size_t max_pfcand_=50;
 
     float  Cpfcan_pt_[max_pfcand_];
     float  Cpfcan_eta_[max_pfcand_];
@@ -129,11 +125,8 @@ private:
     float  Npfcan_HadFrac_[max_pfcand_];
     float  Npfcan_drminsv_[max_pfcand_];
 
-    edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> svToken_;
-    edm::Handle<reco::VertexCompositePtrCandidateCollection> secVertices;
-    reco::VertexCompositePtrCandidateCollection cpvtx;
 
-    float mindrsvpfcand(const std::vector<reco::VertexCompositePtrCandidate>& svs, const pat::PackedCandidate* pfcand);
+    float mindrsvpfcand(const pat::PackedCandidate* pfcand);
 
 };
 

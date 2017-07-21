@@ -44,9 +44,7 @@ public:
 
     void buildTrackInfo(const pat::PackedCandidate* PackedCandidate_ ,const math::XYZVector&  jetDir, GlobalVector refjetdirection, const reco::Vertex & pv){
         const reco::Track & PseudoTrack =  PackedCandidate_->pseudoTrack();
-        //                       const reco::Track * pf_track=PackedCandidate_->bestTrack();
-        //edm::ESHandle<TransientTrackBuilder> builder;
-        //iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", builder);
+
         reco::TransientTrack transientTrack;
         transientTrack=builder->build(PseudoTrack);
         Measurement1D meas_ip2d=IPTools::signedTransverseImpactParameter(transientTrack, refjetdirection, pv).second;
@@ -66,15 +64,15 @@ public:
         trackDeltaR_=reco::deltaR(trackMom, jetDir);
         trackPtRatio_=trackMom3.Perp(jetDir3) / trackMag;
         trackPParRatio_=jetDir.Dot(trackMom) / trackMag;
-        trackSip2dVal_=static_cast<float>(meas_ip2d.value());
+        trackSip2dVal_=(meas_ip2d.value());
 
-        trackSip2dSig_=static_cast<float>(meas_ip2d.significance());
-        trackSip3dVal_=static_cast<float>(meas_ip3d.value());
+        trackSip2dSig_=(meas_ip2d.significance());
+        trackSip3dVal_=(meas_ip3d.value());
 
 
-        trackSip3dSig_=static_cast<float>(meas_ip3d.significance());
-        trackJetDistVal_=static_cast<float>(jetdist.value());
-        trackJetDistSig_=static_cast<float>(jetdist.significance());
+        trackSip3dSig_=meas_ip3d.significance();
+        trackJetDistVal_= jetdist.value();
+        trackJetDistSig_= jetdist.significance();
 
     }
 
@@ -234,8 +232,7 @@ void ntuple_pfCands::initBranches(TTree* tree){
 
 void ntuple_pfCands::readEvent(const edm::Event& iEvent){
 
-    iEvent.getByToken(svToken_, secVertices);
-    cpvtx=*secVertices;
+
 
 }
 
@@ -267,12 +264,12 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             if(PackedCandidate->charge()!=0){
                 sortedcharged.push_back(sorting::sortingClass<size_t>
                 (i, trackinfo.getTrackSip2dSig(),
-                        -mindrsvpfcand(cpvtx,PackedCandidate), PackedCandidate->pt()/jet.pt()));
+                        -mindrsvpfcand(PackedCandidate), PackedCandidate->pt()/jet.pt()));
             }
             else{
                 sortedneutrals.push_back(sorting::sortingClass<size_t>
                 (i, trackinfo.getTrackSip2dSig(),
-                        -mindrsvpfcand(cpvtx,PackedCandidate), PackedCandidate->pt()/jet.pt()));
+                        -mindrsvpfcand(PackedCandidate), PackedCandidate->pt()/jet.pt()));
             }
 
         }
@@ -297,7 +294,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         if(!PackedCandidate_)continue;
 
         // get the dr with the closest sv
-        float drminpfcandsv_ = mindrsvpfcand(cpvtx,PackedCandidate_);
+        float drminpfcandsv_ = mindrsvpfcand(PackedCandidate_);
 
         /// This might include more than PF candidates, e.g. Reco muons and could
         /// be double counting. Needs to be checked.!!!!
@@ -450,13 +447,13 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 }
 
 
-float ntuple_pfCands::mindrsvpfcand(const std::vector<reco::VertexCompositePtrCandidate>& svs, const pat::PackedCandidate* pfcand) {
+float ntuple_pfCands::mindrsvpfcand(const pat::PackedCandidate* pfcand) {
 
     float mindr_ = jetradius_;
-    for (unsigned int i=0; i<svs.size(); ++i) {
+    for (unsigned int i=0; i<secVertices()->size(); ++i) {
         if(!pfcand) continue;
         //if(!svs.at(i)) continue;
-        float tempdr_ = reco::deltaR(svs.at(i),*pfcand);
+        float tempdr_ = reco::deltaR(secVertices()->at(i),*pfcand);
         if (tempdr_<mindr_) { mindr_ = tempdr_; }
 
     }

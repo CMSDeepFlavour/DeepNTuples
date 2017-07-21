@@ -25,9 +25,6 @@ public:
     bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0);
 
 
-    void setSVToken(const edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> & t){
-        svToken_=t;
-    }
 
 private:
 
@@ -36,7 +33,7 @@ private:
     float nsv_;
     std::string prefix_;
 
-    static constexpr size_t max_sv=100;
+    static constexpr size_t max_sv=10;
 
     float sv_pt_[max_sv];
     float sv_eta_[max_sv];
@@ -61,14 +58,6 @@ private:
     float sv_enratio_[max_sv];
 
 
-    // TODO (comment of Markus Stoye) add information to PF candidates on which tracks were used !!!
-    // this will come later LG
-
-    //tokens to be defined from main analyzer
-    edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> svToken_;
-
-    //helper:
-    edm::Handle<reco::VertexCompositePtrCandidateCollection> secVertices;
 
     static const reco::Vertex * spvp_;
 

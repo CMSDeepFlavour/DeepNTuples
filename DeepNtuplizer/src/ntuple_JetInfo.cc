@@ -231,10 +231,12 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     jet_no_=jetidx;
 
     const auto jetRef = reco::CandidatePtr(coll->ptrs().at( jetidx));
+
     jet_qgl_ = (*qglHandle)[jetRef];
     QG_ptD_ = (*ptDHandle)[jetRef];
     QG_axis2_ = (*axis2Handle)[jetRef];
     QG_mult_ = (*multHandle)[jetRef];
+
 
     //std::vector<Ptr<pat::Jet> > p= coll->ptrs();
 
