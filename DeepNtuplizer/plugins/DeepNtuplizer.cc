@@ -135,10 +135,10 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     addModule(svmodule);
 
     //Loose IVF vertices
-    ntuple_SV* svmodule_LooseIVF=new ntuple_SV("LooseIVF_", jetR);
-    svmodule_LooseIVF->setSVToken(
-            consumes<reco::VertexCompositePtrCandidateCollection>(
-                    iConfig.getParameter<edm::InputTag>("LooseSVs")));
+    //ntuple_SV* svmodule_LooseIVF=new ntuple_SV("LooseIVF_", jetR);
+    //svmodule_LooseIVF->setSVToken(
+    //        consumes<reco::VertexCompositePtrCandidateCollection>(
+    //                iConfig.getParameter<edm::InputTag>("LooseSVs")));
     //removed LooseIVF module
     //addModule(svmodule_LooseIVF);
 

@@ -271,7 +271,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     //create collection first, to be able to do some sorting
     for (unsigned int i = 0; i <  alljetconstituents.size(); i++){
-        const pat::PackedCandidate* PackedCandidate =  &alljetconstituents.at(i);
+        pat::PackedCandidate* PackedCandidate =  &alljetconstituents.at(i);
         if(PackedCandidate){
 
             trackinfo.buildTrackInfo(PackedCandidate,jetDir,jetRefTrackDir,pv);
