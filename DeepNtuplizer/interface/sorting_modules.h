@@ -39,9 +39,8 @@ public:
 
     //hierarchical sort
     static bool compareByABC(sortingClass a, sortingClass b){
-        if(std::isnormal(a.sortValA) && std::isnormal(b.sortValA)){
-            if(a.sortValA!=b.sortValA)
-                return CompareA(a,b);
+        if(std::isnormal(a.sortValA) && std::isnormal(b.sortValA) && a.sortValA!=b.sortValA){
+            return CompareA(a,b);
         }
         else if(!std::isnormal(a.sortValA) && std::isnormal(b.sortValA)){
             return true;
@@ -50,9 +49,8 @@ public:
             return false;
         }
         else{
-            if(std::isnormal(a.sortValB) && std::isnormal(b.sortValB)){
-                if(a.sortValB!=b.sortValB)
-                    return CompareB(a,b);
+            if(std::isnormal(a.sortValB) && std::isnormal(b.sortValB) && a.sortValB!=b.sortValB){
+                return CompareB(a,b);
             }
             else if(!std::isnormal(a.sortValB) && std::isnormal(b.sortValB)){
                 return true;
@@ -62,8 +60,8 @@ public:
             }
             else{
                 if(std::isnormal(a.sortValC) && std::isnormal(b.sortValC)){
-                    if(a.sortValC!=b.sortValC)
-                        return CompareC(a,b);
+                    // here no check if both the same anymore
+                    return CompareC(a,b);
                 }
                 else if(!std::isnormal(a.sortValC) && std::isnormal(b.sortValC)){
                     return true;

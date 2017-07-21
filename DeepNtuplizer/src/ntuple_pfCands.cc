@@ -429,7 +429,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
 float ntuple_pfCands::mindrsvpfcand(const std::vector<reco::VertexCompositePtrCandidate> svs, const pat::PackedCandidate* pfcand) {
 
-    float mindr_ = 999.;
+    float mindr_ = 0.4;//999.;
     for (unsigned int i0=0; i0<svs.size(); ++i0) {
 
         float tempdr_ = reco::deltaR(svs[i0],*pfcand);

@@ -41,11 +41,28 @@ for j in range(int(nJobs)):
 
 print('successful: ',listsucc)
 
-for j in listtoberun:
-    runstr='merge '+args.outdir+'/mergeconfig '+str(j)
-    
-    os.system('merge '+args.outdir+'/mergeconfig '+str(j)+"&")
+import multiprocessing as mp
 
+
+def worker(j):
+    print('starting '+str(j))
+    os.system('merge '+args.outdir+'/mergeconfig '+str(j))
+
+
+pool = mp.Pool(processes=mp.cpu_count(),) 
+pool.map(worker, listtoberun)
+
+
+for j in range(int(nJobs)):
+    if os.path.exists(args.outdir+'/'+str(j)+'.succ'):
+        listsucc.append(j)
+    
+if len(listsucc) == int(nJobs):
+    print('merge successful, creating file list')
+    file=open(args.outdir+'/samples.txt','w')
+    for filenumber in listsucc:
+        file.write('ntuple_merged_'+str(filenumber)+'.root')
+    file.close()
 
 
 
