@@ -192,14 +192,19 @@ for dir in dirs:
         elif action == 'resubmit':
             
             print('resubmitting '+dir+' ' +str(jobno)+ '...')
-            resetJobOutput(dir,jobno)
-            cluster=submitjob(dir,'batch/condor_'+ jobno+'.sub',jobno)
-            createClusterInfo(dir,jobno,cluster,False)#single submission
+            if issgesched:
+                resubfile=dir+'/batch/sge_'+ str(jobno)+'.sh'
+                resetJobOutput(dir,jobno)
+                os.system('qsub '+resubfile)
+            else:
+                resetJobOutput(dir,jobno)
+                cluster=submitjob(dir,'batch/condor_'+ jobno+'.sub',jobno)
+                createClusterInfo(dir,jobno,cluster,False)#single submission
             
         else:
             print('failed job, see: ' + f)
             
-    if action == 'resubmit':
+    if action == 'resubmit' and not issgesched:
         for f in lostjobs:
             jobno=os.path.basename(f).split('.')[1]
             print('resubmitting '+dir+' ' +str(jobno)+ '...')

@@ -309,8 +309,8 @@ queue 1
 #$ -l h_rt=05:55:00
 #
 #(the maximum memory usage of this job)
-#$ -l h_vmem=2047M
-#
+#$ -l h_vmem=4096M
+#$ -l cvmfs
 #(stderr and stdout are merged together to stdout)
 #$ -j y
 #$ -m a
