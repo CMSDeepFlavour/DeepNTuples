@@ -28,14 +28,13 @@ bool comparePt(T a, T b){
 template <class T>
 class sortingClass{
 public:
-    sortingClass(const T*t, float sortA, float sortB=0, float sortC=0){
-        t_=t;
+    sortingClass(const T& t, float sortA, float sortB=0, float sortC=0):t_(t){
         sortValA=sortA;
         sortValB=sortB;
         sortValC=sortC;
     }
 
-    const T* get()const{return t_;}
+    const T& get()const{return t_;}
 
     //hierarchical sort
     static bool compareByABC(sortingClass a, sortingClass b){
@@ -92,8 +91,12 @@ public:
     static bool CompareC(sortingClass a, sortingClass b){
         return a.sortValC<b.sortValC;
     }
-    const T* t_;
+    T t_;
 };
+
+
+
+std::vector<size_t> invertSortingVector(const std::vector<sortingClass<size_t> > & in);
 
 
 template<class T>
