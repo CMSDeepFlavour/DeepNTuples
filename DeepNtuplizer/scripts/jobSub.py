@@ -316,7 +316,7 @@ queue 1
 #$ -m a
 #$ -cwd -V
 #( -l h_stack=1536M) #try with small stack
-#$ -pe local 6 -R y
+#$ -pe local 1 -R y
 #$ -P af-cms
 
 export LOGDIR={logdir}
@@ -343,6 +343,7 @@ export NTUPLEOUTFILEPATH={ntupledir}{outputfile}_{job}.root
                 jconf.write(jobsgefile)
                 jconf.close()
                 allsgescripts.append(sgefile)
+                os.system('chmod +x '+sgefile)
         
             resetJobOutput(jobpath,job)
              
@@ -353,7 +354,7 @@ export NTUPLEOUTFILEPATH={ntupledir}{outputfile}_{job}.root
 workdir=""
 if [ $SGE_CELL ]
 then
-workdir=mktemp -d -t DeepNTuplesXXXXXX        
+workdir=`mktemp -d -t DeepNTuplesXXXXXX`        
 cd $workdir
 workdir=$workdir"/"
 fi
@@ -361,7 +362,7 @@ fi
 exec > "$PWD/stdout.txt" 2>&1
 echo "JOBSUB::RUN job running"
 trap "echo JOBSUB::FAIL job killed" SIGTERM
-export OUTPUT="${workdir}{outputfile}"
+export OUTPUT=$workdir"{outputfile}"
 cd {basedir}
 eval `scramv1 runtime -sh`
 export PYTHONPATH={sampleScriptdir}:$PYTHONPATH
@@ -413,7 +414,8 @@ exit $exitstatus
         
         sgelist=open(jobpath+'/sge_sub.sh','w')
         for line in allsgescripts:
-            sgelist.write('qsub '+line)
+            sgelist.write('qsub '+line+'\n')
+        os.system('chmod +x '+jobpath+'/sge_sub.sh')
         sgelist.close()
         
         #add a 'touch for the .out file to make the check realise it is there
