@@ -32,7 +32,7 @@ private:
         std::vector<T> vals = from.getList(name ,false);
         size_t size=std::min(vals.size(),max);
         if(size > 0){
-            for(size_t i=0;i<vals.size();i++){
+            for(size_t i=0;i<size;i++){
                 to[i]=catchInfs(vals.at(i),-0.1);
             }
         }
