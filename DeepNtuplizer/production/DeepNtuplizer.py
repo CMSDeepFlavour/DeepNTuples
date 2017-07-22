@@ -49,7 +49,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 10
 if options.inputScript == '': #this is probably for testing
 	process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
@@ -228,5 +228,13 @@ if int(release.replace("_",""))>=840 :
 
 
 process.deepntuplizer.gluonReduction  = cms.double(options.gluonReduction)
+
+#1631
+process.ProfilerService = cms.Service (
+      "ProfilerService",
+       firstEvent = cms.untracked.int32(1631),
+       lastEvent = cms.untracked.int32(1641),
+       paths = cms.untracked.vstring('p') 
+)
 
 process.p = cms.Path(process.QGTagger + process.genJetSequence*  process.deepntuplizer)

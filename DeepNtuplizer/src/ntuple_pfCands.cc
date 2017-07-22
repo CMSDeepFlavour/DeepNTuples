@@ -93,7 +93,7 @@ public:
 
 private:
 
-    edm::ESHandle<TransientTrackBuilder> builder;
+    edm::ESHandle<TransientTrackBuilder>& builder;
 
     float trackMomentum_;
     float trackEta_;
@@ -163,6 +163,7 @@ void ntuple_pfCands::initBranches(TTree* tree){
     addBranch(tree,"Cpfcan_vertex_etarel",&Cpfcan_vertex_etarel_,"Cpfcan_vertex_etarel_[n_Cpfcand_]/f");
     /**///addBranch(tree,"Cpfcan_vertexRef_mass",&Cpfcan_vertexRef_mass_,"Cpfcan_vertexRef_mass_[n_Cpfcand_]/f");
 
+    /*
     addBranch(tree,"Cpfcan_dptdpt",&Cpfcan_dptdpt_,"Cpfcan_dptdpt_[n_Cpfcand_]/f");
     addBranch(tree,"Cpfcan_detadeta",&Cpfcan_detadeta_,"Cpfcan_detadeta_[n_Cpfcand_]/f");
     addBranch(tree,"Cpfcan_dphidphi",&Cpfcan_dphidphi_,"Cpfcan_dphidphi_[n_Cpfcand_]/f");
@@ -173,7 +174,7 @@ void ntuple_pfCands::initBranches(TTree* tree){
     addBranch(tree,"Cpfcan_dxydz",&Cpfcan_dxydz_,"Cpfcan_dxydz_[n_Cpfcand_]/f");
     addBranch(tree,"Cpfcan_dphidxy",&Cpfcan_dphidxy_,"Cpfcan_dphidxy_[n_Cpfcand_]/f");
     addBranch(tree,"Cpfcan_dlambdadz",&Cpfcan_dlambdadz_,"Cpfcan_dlambdadz_[n_Cpfcand_]/f");
-
+     */
 
 
 
@@ -233,6 +234,8 @@ void ntuple_pfCands::initBranches(TTree* tree){
 void ntuple_pfCands::readEvent(const edm::Event& iEvent){
 
 
+    n_Npfcand_=0;
+    n_Cpfcand_=0;
 
 }
 
@@ -252,37 +255,40 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     std::vector<sorting::sortingClass<size_t> > sortedcharged, sortedneutrals;
 
-    TrackInfoBuilder trackinfo(builder);
 
+
+    TrackInfoBuilder trackinfo(builder);
     //create collection first, to be able to do some sorting
     for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++){
         const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
         if(PackedCandidate){
 
-            trackinfo.buildTrackInfo(PackedCandidate,jetDir,jetRefTrackDir,pv);
-
             if(PackedCandidate->charge()!=0){
+                trackinfo.buildTrackInfo(PackedCandidate,jetDir,jetRefTrackDir,pv);
                 sortedcharged.push_back(sorting::sortingClass<size_t>
                 (i, trackinfo.getTrackSip2dSig(),
                         -mindrsvpfcand(PackedCandidate), PackedCandidate->pt()/jet.pt()));
             }
             else{
                 sortedneutrals.push_back(sorting::sortingClass<size_t>
-                (i, trackinfo.getTrackSip2dSig(),
-                        -mindrsvpfcand(PackedCandidate), PackedCandidate->pt()/jet.pt()));
+                (i, -1, -mindrsvpfcand(PackedCandidate), PackedCandidate->pt()/jet.pt()));
             }
-
         }
     }
+
     std::sort(sortedcharged.begin(),sortedcharged.end(),sorting::sortingClass<size_t>::compareByABCInv);
     std::sort(sortedneutrals.begin(),sortedneutrals.end(),sorting::sortingClass<size_t>::compareByABCInv);
-
-    std::vector<size_t> sortedchargedindices=sorting::invertSortingVector(sortedcharged);
-    std::vector<size_t> sortedneutralsindices=sorting::invertSortingVector(sortedneutrals);
 
     // counts neutral and charged candicates
     n_Cpfcand_ = std::min(sortedcharged.size(),max_pfcand_);
     n_Npfcand_ = std::min(sortedneutrals.size(),max_pfcand_);
+
+    std::vector<size_t> sortedchargedindices,sortedneutralsindices;
+
+        sortedchargedindices=sorting::invertSortingVector(sortedcharged);
+        sortedneutralsindices=sorting::invertSortingVector(sortedneutrals);
+
+
 
 
 
@@ -296,6 +302,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         // get the dr with the closest sv
         float drminpfcandsv_ = mindrsvpfcand(PackedCandidate_);
 
+
         /// This might include more than PF candidates, e.g. Reco muons and could
         /// be double counting. Needs to be checked.!!!!
         ///
@@ -306,7 +313,6 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             if(fillntupleentry>=max_pfcand_) continue;
 
 
-            trackinfo.buildTrackInfo(PackedCandidate_,jetDir,jetRefTrackDir,pv);
 
             Cpfcan_pt_[fillntupleentry] = PackedCandidate_->pt();
             Cpfcan_eta_[fillntupleentry] = PackedCandidate_->eta();
@@ -344,7 +350,9 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
             Cpfcan_puppiw_[fillntupleentry] = PackedCandidate_->puppiWeight();
 
+
             const reco::Track & PseudoTrack =  PackedCandidate_->pseudoTrack();
+            /*
             reco::Track::CovarianceMatrix myCov = PseudoTrack.covariance ();
             //https://github.com/cms-sw/cmssw/blob/CMSSW_9_0_X/DataFormats/PatCandidates/interface/PackedCandidate.h#L394
 
@@ -352,18 +360,14 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Cpfcan_detadeta_[fillntupleentry]=   catchInfsAndBound(myCov[1][1],0,-1,0.01);
             Cpfcan_dphidphi_[fillntupleentry]=   catchInfsAndBound(myCov[2][2],0,-1,0.1);
 
-            /*
-             * what makes the most sense here if a track is used in the fit... cerntainly no btag
-             * for now leave it a t zero
-             * infs and nans are set to poor quality
-             */
             Cpfcan_dxydxy_[fillntupleentry] =    catchInfsAndBound(myCov[3][3],7.,-1,7); //zero if pvAssociationQuality ==7 ?
             Cpfcan_dzdz_[fillntupleentry] =      catchInfsAndBound(myCov[4][4],6.5,-1,6.5); //zero if pvAssociationQuality ==7 ?
             Cpfcan_dxydz_[fillntupleentry] =     catchInfsAndBound(myCov[3][4],6.,-6,6); //zero if pvAssociationQuality ==7 ?
             Cpfcan_dphidxy_[fillntupleentry] =   catchInfs(myCov[2][3],-0.03); //zero if pvAssociationQuality ==7 ?
             Cpfcan_dlambdadz_[fillntupleentry]=  catchInfs(myCov[1][4],-0.03); //zero if pvAssociationQuality ==7 ?
+             */
 
-
+            trackinfo.buildTrackInfo(PackedCandidate_,jetDir,jetRefTrackDir,pv);
 
             Cpfcan_BtagPf_trackMomentum_[fillntupleentry]   =catchInfsAndBound(trackinfo.getTrackMomentum(),0,0 ,1000);
             Cpfcan_BtagPf_trackEta_[fillntupleentry]        =catchInfsAndBound(trackinfo.getTrackEta()   ,  0,-5,5);
@@ -404,6 +408,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         }
         else{// neutral candidates
 
+
             size_t fillntupleentry= sortedneutralsindices.at(i);
             if(fillntupleentry>=max_pfcand_) continue;
 
@@ -438,7 +443,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     for(size_t i=0;i<n_Npfcand_;i++){
         std::cout << Npfcan_drminsv_[i] << " " << Npfcan_ptrel_[i]<<std::endl;
     }
-*/
+     */
 
     nCpfcand_=n_Cpfcand_;
     nNpfcand_=n_Npfcand_;
