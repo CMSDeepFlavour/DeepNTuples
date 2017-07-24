@@ -15,7 +15,8 @@
 class ntuple_pfCands: public ntuple_content{
 public:
 
-    ntuple_pfCands():ntuple_content(),jetradius_(0.4){}
+    ntuple_pfCands():ntuple_content(),jetradius_(0.4),
+    n_Cpfcand_(0),n_Npfcand_(0){}
 
     void setJetRadius(const float& radius){jetradius_=radius;}
     void getInput(const edm::ParameterSet& iConfig);

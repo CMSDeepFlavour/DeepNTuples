@@ -78,6 +78,9 @@ bool ntuple_SV::compareDxyDxyErr(const reco::VertexCompositePtrCandidate &sva,co
 
 bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  edm::View<pat::Jet> * coll){
 
+
+    const float jet_uncorr_e=jet.correctedJet("Uncorrected").energy();
+
     const reco::Vertex & pv =    vertices()->at(0);
 
     sv_num_ = 0;
@@ -126,7 +129,7 @@ bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  
             sv_costhetasvpv_[sv_num_] = vertexDdotP(sv,pv); // the pointing angle (i.e. the angle between the sum of the momentum
             // of the tracks in the SV and the flight direction betwen PV and SV)
 
-            sv_enratio_[sv_num_]=sv.energy()/jet.energy();
+            sv_enratio_[sv_num_]=sv.energy()/jet_uncorr_e;
 
 
 
