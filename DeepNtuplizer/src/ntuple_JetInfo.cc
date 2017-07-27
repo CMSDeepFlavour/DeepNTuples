@@ -155,6 +155,8 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
 
     neutrinosLepB.clear();
     neutrinosLepB_C.clear();
+    gToBB.clear();
+    gToCC.clear();
 
     for (const reco::Candidate &genC : *genParticlesHandle) {
         const reco::GenParticle &gen = static_cast< const reco::GenParticle &>(genC);
