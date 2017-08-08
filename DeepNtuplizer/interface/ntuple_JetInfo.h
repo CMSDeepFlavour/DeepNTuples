@@ -123,6 +123,11 @@ public:
     std::vector<reco::GenParticle> gToCC;
     std::vector<reco::GenParticle> alltaus_;
 
+    std::vector<reco::GenParticle> Bhadron_;
+    std::vector<reco::GenParticle> Bhadron_daughter_;
+
+
+
     bool useherwcompat_matching_;
     bool isherwig_;
 
@@ -143,6 +148,7 @@ public:
     int isS_;
     int isG_;
     int isUndefined_;
+    float genDecay_;
     int isLeptonicB_;
     int isLeptonicB_C_;
     int isTau_;

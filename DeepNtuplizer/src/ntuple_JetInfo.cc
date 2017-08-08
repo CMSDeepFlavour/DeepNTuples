@@ -56,6 +56,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"isS",&isS_, "isS_/i");
     addBranch(tree,"isG",&isG_, "isG_/i");
     addBranch(tree,"isUndefined",&isUndefined_, "isUndefined_/i");
+    addBranch(tree,"genDecay",&genDecay_, "genDecay_/f");
 
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
     addBranch(tree,"isPhysB",&isPhysB_, "isPhysB_/i");
@@ -152,7 +153,7 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
 
     event_no_=iEvent.id().event();
 
-    //presumably this whole part can be romoved!
+    //presumably this whole part can be removed!
 
 
     neutrinosLepB.clear();
@@ -160,8 +161,56 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
     gToBB.clear();
     gToCC.clear();
     alltaus_.clear();
+    Bhadron_.clear();
+    Bhadron_daughter_.clear();
 
-    for (const reco::Candidate &genC : *genParticlesHandle) {
+    //std::cout << " start search for a b in this event "<<std::endl;
+ for (const reco::Candidate &genC : *genParticlesHandle)
+   {
+     const reco::GenParticle &gen = static_cast< const reco::GenParticle &>(genC);
+     
+     if((abs(gen.pdgId())>500&&abs(gen.pdgId())<600)||(abs(gen.pdgId())>5000&&abs(gen.pdgId())<6000)) {
+
+       //std::cout<<gen.end_vertex()<<endl;
+
+       Bhadron_.push_back(gen);
+       if(gen.numberOfDaughters()>0){
+     
+	 if( (abs(gen.daughter(0)->pdgId())>500&&abs(gen.daughter(0)->pdgId())<600)||(abs(gen.daughter(0)->pdgId())>5000&&abs(gen.daughter(0)->pdgId())<6000))
+	   {
+	     if(gen.daughter(0)->numberOfDaughters()>0)
+	       {
+		
+		 const reco::GenParticle &daughter_ = static_cast< const reco::GenParticle &>(*(gen.daughter(0)->daughter(0)));
+		 
+		 if(daughter_.vx()!=gen.vx())
+		   { 
+		     Bhadron_daughter_.push_back(daughter_);
+		   }
+		 //	 else {
+		 //  std::cout << "only b daughters " << endl;
+		 // }
+	       }
+	     else  Bhadron_daughter_.push_back(gen);
+	     
+	   }
+	 else{
+	   //  std::cout<<gen.daughter(0)->vx()<< " oh  " <<gen.vx()<<" "<<gen.pt() <<" "<<  gen.daughter(0)->pdgId() <<std::endl; 
+	  
+	   const reco::GenParticle &daughter_ = static_cast< const reco::GenParticle &>(*gen.daughter(0));
+	   Bhadron_daughter_.push_back(daughter_);
+	 }
+
+       }// if daughter is there
+       else {
+	 
+	 //std::cout << " lonly B hadron, has NO daughter??? "<<std::endl;
+	 Bhadron_daughter_.push_back(gen);
+       }
+     }
+   }
+
+ for (const reco::Candidate &genC : *genParticlesHandle) {
         const reco::GenParticle &gen = static_cast< const reco::GenParticle &>(genC);
         if(abs(gen.pdgId())==12||abs(gen.pdgId())==14||abs(gen.pdgId())==16) {
             const reco::GenParticle* mother =  static_cast< const reco::GenParticle*> (gen.mother());
@@ -337,6 +386,28 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     jet_corr_pt_ = jet.pt();
     jet_mass_ = jet.mass();
     jet_energy_ = jet.energy();
+    int iterIndex = 0;
+
+    genDecay_ = -1.;
+    // std::cout << "looking for a B"<<jet.eta()<< " "<<jet.phi() <<std::endl;
+    for  (std::vector<reco::GenParticle>::const_iterator it = Bhadron_.begin(); it != Bhadron_.end(); ++it){
+      if(reco::deltaR(it->eta(),it->phi(),jet.eta(),jet.phi()) < 0.4) 
+	{
+	  //  std::cout <<it->eta()<<" "<<it->phi()<< " "<<reco::deltaR(it->eta(),it->phi(),jet.eta(),jet.phi())<<" "<< sqrt(Bhadron_daughter_[iterIndex].vx()*Bhadron_daughter_[iterIndex].vx()+Bhadron_daughter_[iterIndex].vy()*Bhadron_daughter_[iterIndex].vy())<< " dXY "<<  iterIndex << std::endl;
+	  if(Bhadron_daughter_[iterIndex].vx()!=it->vx()){
+	    float vx = Bhadron_daughter_[iterIndex].vx()-it->vx();
+	    float vy = Bhadron_daughter_[iterIndex].vy()-it->vy();
+	    
+	    
+	    genDecay_= sqrt(vx*vx+vy*vy);}
+	  else {
+	    // std::cout << "b hadron without daughter matched"<<std::endl;
+	    genDecay_= -0.1;
+	  }
+	  break;
+	}
+      iterIndex++;
+    }
 
 
     //https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016
@@ -398,6 +469,9 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     y_axis1_  =  std::get<4>(qgtuple);
     y_axis2_  =  std::get<5>(qgtuple);
     y_pt_dr_log_=std::get<6>(qgtuple);
+
+   
+
 
 
     return returnval;

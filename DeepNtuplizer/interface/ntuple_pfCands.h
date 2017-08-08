@@ -105,6 +105,8 @@ private:
 
     // track quality
     float Cpfcan_lostInnerHits_[max_pfcand_];
+    float Cpfcan_numberOfPixelHits_[max_pfcand_];
+
     float Cpfcan_chi2_[max_pfcand_];
     float Cpfcan_quality_[max_pfcand_];
 
