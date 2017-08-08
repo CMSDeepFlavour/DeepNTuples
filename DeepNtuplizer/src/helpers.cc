@@ -21,8 +21,12 @@ std::vector<std::size_t> jet_electronsIds(const pat::Jet& jet, const std::vector
     return electronsIds;
 }
 
-JetFlavor jet_flavour(const pat::Jet& jet, std::vector<reco::GenParticle> gToBB, std::vector<reco::GenParticle> gToCC,
-        std::vector<reco::GenParticle> neutrinosLepB, std::vector<reco::GenParticle> neutrinosLepB_C, 
+JetFlavor jet_flavour(const pat::Jet& jet,
+        const std::vector<reco::GenParticle>& gToBB,
+        const std::vector<reco::GenParticle>& gToCC,
+        const std::vector<reco::GenParticle>& neutrinosLepB,
+        const std::vector<reco::GenParticle>& neutrinosLepB_C,
+        const std::vector<reco::GenParticle>& alltaus,
         bool usePhysForLightAndUndefined) { 
     int hflav = abs(jet.hadronFlavour());
     int pflav = abs(jet.partonFlavour());
@@ -53,12 +57,12 @@ JetFlavor jet_flavour(const pat::Jet& jet, std::vector<reco::GenParticle> gToBB,
             else return JetFlavor::BB;
         }
         else if(nbs == 1) {
-            for (std::vector<reco::GenParticle>::iterator it = neutrinosLepB.begin(); it != neutrinosLepB.end(); ++it){
+            for (std::vector<reco::GenParticle>::const_iterator it = neutrinosLepB.begin(); it != neutrinosLepB.end(); ++it){
                 if(reco::deltaR(it->eta(),it->phi(),jet.eta(),jet.phi()) < 0.4) {
                     return JetFlavor::LeptonicB;
                 }
             }
-            for (std::vector<reco::GenParticle>::iterator it = neutrinosLepB_C.begin(); it != neutrinosLepB_C.end(); ++it){
+            for (std::vector<reco::GenParticle>::const_iterator it = neutrinosLepB_C.begin(); it != neutrinosLepB_C.end(); ++it){
                 if(reco::deltaR(it->eta(),it->phi(),jet.eta(),jet.phi()) < 0.4) {
                     return JetFlavor::LeptonicB_C;
                 }
@@ -83,6 +87,26 @@ JetFlavor jet_flavour(const pat::Jet& jet, std::vector<reco::GenParticle> gToBB,
         else return JetFlavor::C;
     }
     else { //not a heavy jet
+        if(alltaus.size()>0){ //check for tau in a simplistic way
+            bool ishadrtaucontained=true;
+            for(const auto& p:alltaus){
+                size_t ndau=p.numberOfDaughters();
+                for(size_t i=0;i<ndau;i++){
+                    const reco::Candidate* dau=p.daughter(i);
+                    int daupid=std::abs(dau->pdgId());
+                    if(daupid == 13 || daupid == 11){
+                        ishadrtaucontained=false;
+                        break;
+                    }
+                    if(daupid != 12 && daupid!=14 && daupid!=16 &&
+                            reco::deltaR(*dau,jet) > 0.4){
+                        ishadrtaucontained=false;
+                        break;
+                    }
+                }
+            }
+            if(ishadrtaucontained) return JetFlavor::TAU;
+        }
         if(std::abs(pflav) == 4 || std::abs(pflav) == 5 || nbs || ncs) {
             if(usePhysForLightAndUndefined){
                 if(physflav == 21) return JetFlavor::G;
@@ -105,6 +129,7 @@ JetFlavor jet_flavour(const pat::Jet& jet, std::vector<reco::GenParticle> gToBB,
             else return JetFlavor::UNDEFINED;
         }
     }
+    return JetFlavor::UNDEFINED;
 }
 }
 

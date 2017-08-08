@@ -51,6 +51,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"isC",&isC_, "isC_/i");
     addBranch(tree,"isGCC",&isGCC_, "isGCC_/i");
     addBranch(tree,"isCC",&isCC_, "isCC_/i");
+    addBranch(tree,"isTau",&isTau_, "isTau_/i");
     addBranch(tree,"isUD",&isUD_, "isUD_/i");
     addBranch(tree,"isS",&isS_, "isS_/i");
     addBranch(tree,"isG",&isG_, "isG_/i");
@@ -65,6 +66,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"isPhysC",&isPhysC_, "isPhysC_/i");
     addBranch(tree,"isPhysGCC",&isPhysGCC_, "isPhysGCC_/i");
     addBranch(tree,"isPhysCC",&isPhysCC_, "isPhysCC_/i");
+    addBranch(tree,"isPhysTau",&isPhysTau_, "isPhysTau_/i");
     addBranch(tree,"isPhysUD",&isPhysUD_, "isPhysUD_/i");
     addBranch(tree,"isPhysS",&isPhysS_, "isPhysS_/i");
     addBranch(tree,"isPhysG",&isPhysG_, "isPhysG_/i");
@@ -157,6 +159,7 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
     neutrinosLepB_C.clear();
     gToBB.clear();
     gToCC.clear();
+    alltaus_.clear();
 
     for (const reco::Candidate &genC : *genParticlesHandle) {
         const reco::GenParticle &gen = static_cast< const reco::GenParticle &>(genC);
@@ -187,6 +190,10 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
                 if ( std::abs(d0->pdgId()) == 4 && std::abs(d1->pdgId()) == 4
                         && d0->pdgId()*d1->pdgId() < 0 && reco::deltaR(*d0, *d1) < 0.4) gToCC.push_back(gen) ;
             }
+        }
+
+        if(id == 15){
+            alltaus_.push_back(gen);
         }
 
     }
@@ -242,7 +249,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     //std::vector<Ptr<pat::Jet> > p= coll->ptrs();
 
-    isB_=0; isGBB_=0; isBB_=0; isC_=0; isGCC_=0; isCC_=0; isUD_=0;
+    isB_=0; isGBB_=0; isBB_=0; isC_=0; isGCC_=0; isCC_=0; isUD_=0;isTau_=0;
     isS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0, isUndefined_=0;
     auto muIds = deep_ntuples::jet_muonsIds(jet,*muonsHandle);
     auto elecIds = deep_ntuples::jet_electronsIds(jet,*electronsHandle);
@@ -276,7 +283,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     //// Note that jets with gluon->bb (cc) and x->bb (cc) are in the same categories
     if(jet.genJet()!=NULL){
-        switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C)) {
+        switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C, alltaus_)) {
         case deep_ntuples::JetFlavor::B:  isB_=1; break;
         case deep_ntuples::JetFlavor::LeptonicB: isLeptonicB_=1; break;
         case deep_ntuples::JetFlavor::LeptonicB_C: isLeptonicB_C_=1; break;
@@ -285,6 +292,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         case deep_ntuples::JetFlavor::C:  isC_=1; break;
         case deep_ntuples::JetFlavor::GCC: isGCC_=1; break;
         case deep_ntuples::JetFlavor::CC: isCC_=1; break;
+        case deep_ntuples::JetFlavor::TAU: isTau_=1;break;
         case deep_ntuples::JetFlavor::G:  isG_=1; break;
         case deep_ntuples::JetFlavor::UD: isUD_=1; break;
         case deep_ntuples::JetFlavor::S:  isS_=1; break;
@@ -296,8 +304,9 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     //// Note that jets with gluon->bb (cc) and x->bb (cc) are in the same categories
     isPhysB_=0; isPhysBB_=0; isPhysGBB_=0; isPhysC_=0; isPhysCC_=0;
     isPhysGCC_=0; isPhysUD_=0; isPhysS_=0; isPhysG_=0, isPhysLeptonicB_=0, isPhysLeptonicB_C_=0, isPhysUndefined_=0;
+    isPhysTau_=0;
     if(jet.genJet()!=NULL){
-        switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C, true)) {
+        switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C, alltaus_,true)) {
         case deep_ntuples::JetFlavor::UD: isPhysUD_=1; break;
         case deep_ntuples::JetFlavor::S:  isPhysS_=1; break;
         case deep_ntuples::JetFlavor::B:  isPhysB_=1; break;
@@ -306,6 +315,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         case deep_ntuples::JetFlavor::C:  isPhysC_=1; break;
         case deep_ntuples::JetFlavor::CC: isPhysCC_=1; break;
         case deep_ntuples::JetFlavor::GCC: isPhysGCC_=1; break;
+        case deep_ntuples::JetFlavor::TAU: isPhysTau_=1;break;
         case deep_ntuples::JetFlavor::G:  isPhysG_=1; break;
         case deep_ntuples::JetFlavor::LeptonicB: isPhysLeptonicB_=1; break;
         case deep_ntuples::JetFlavor::LeptonicB_C: isPhysLeptonicB_C_=1; break;

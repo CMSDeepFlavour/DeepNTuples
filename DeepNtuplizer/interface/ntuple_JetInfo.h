@@ -121,6 +121,7 @@ public:
 
     std::vector<reco::GenParticle> gToBB;
     std::vector<reco::GenParticle> gToCC;
+    std::vector<reco::GenParticle> alltaus_;
 
     bool useherwcompat_matching_;
     bool isherwig_;
@@ -144,6 +145,7 @@ public:
     int isUndefined_;
     int isLeptonicB_;
     int isLeptonicB_C_;
+    int isTau_;
 
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
     int isPhysB_;
@@ -158,6 +160,7 @@ public:
     int isPhysUndefined_;
     int isPhysLeptonicB_;
     int isPhysLeptonicB_C_;
+    int isPhysTau_;
 
     // global variables
     float npv_;
