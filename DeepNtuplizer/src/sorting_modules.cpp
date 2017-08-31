@@ -9,6 +9,9 @@ std::vector<size_t> invertSortingVector(const std::vector<sortingClass<size_t> >
     size_t max=0;
     for(const auto& s:in){
         if(s.get()>max)max=s.get();
+
+        //std::cout << s.sortValA <<" " << s.sortValB << " " << s.sortValC << " " << s.get() << std::endl;
+
     }
 
     if(max>1e3){
@@ -22,7 +25,10 @@ std::vector<size_t> invertSortingVector(const std::vector<sortingClass<size_t> >
     for(size_t i=0;i<in.size();i++){
         out.at(in.at(i).get())=i;
     }
-
+   // for(const auto& s:out){
+   //     std::cout << s << std::endl;
+   // }
+   // std::cout << std::endl;
     return out;
 }
 

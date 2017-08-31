@@ -51,61 +51,63 @@ public:
 
     const T& get()const{return t_;}
 
-    //hierarchical sort
-    static bool compareByABC(sortingClass a, sortingClass b){
-        if(std::isnormal(a.sortValA) && std::isnormal(b.sortValA) && a.sortValA!=b.sortValA){
-            return CompareA(a,b);
-        }
-        else if(!std::isnormal(a.sortValA) && std::isnormal(b.sortValA)){
-            return true;
-        }
-        else if(std::isnormal(a.sortValA) && !std::isnormal(b.sortValA)){
-            return false;
-        }
-        else{
-            if(std::isnormal(a.sortValB) && std::isnormal(b.sortValB) && a.sortValB!=b.sortValB){
-                return CompareB(a,b);
-            }
-            else if(!std::isnormal(a.sortValB) && std::isnormal(b.sortValB)){
-                return true;
-            }
-            else if(std::isnormal(a.sortValB) && !std::isnormal(b.sortValB)){
-                return false;
-            }
-            else{
-                if(std::isnormal(a.sortValC) && std::isnormal(b.sortValC) && a.sortValC!=b.sortValC){
-                    return CompareC(a,b);
-                }
-                else if(!std::isnormal(a.sortValC) && std::isnormal(b.sortValC)){
-                    return true;
-                }
-                else if(std::isnormal(a.sortValC) && !std::isnormal(b.sortValC)){
-                    return false;
-                }
-                else{
-                    return true;
-                }
-            }
-        }
-        return true; //never reached
+    enum compareResult{cmp_smaller,cmp_greater,cmp_invalid};
+
+    static inline bool isPhysValue(const float& val){
+        if (val!=val)return false;
+        if (std::isinf(val)) return false;
+        return true;
     }
 
-    static bool compareByABCInv(sortingClass a, sortingClass b){
+    static inline compareResult compare(const sortingClass& a, const sortingClass& b,int validx=0){
+        float vala=a.sortValA;
+        float valb=b.sortValA;
+        if(validx==1){
+            vala=a.sortValB;
+            valb=b.sortValB;
+        }else if(validx==2){
+            vala=a.sortValC;
+            valb=b.sortValC;
+        }
+        if(isPhysValue(vala) && isPhysValue(valb) && valb!=vala){
+            if(vala>valb) return cmp_greater;
+            else return cmp_smaller;
+        }
+        if(isPhysValue(vala) && !isPhysValue(valb))
+            return cmp_greater;
+        if(!isPhysValue(vala) && isPhysValue(valb))
+            return cmp_smaller;
+        return cmp_invalid;
+    }
+
+    //hierarchical sort
+    static bool compareByABC(const sortingClass& a, const sortingClass& b){
+
+        compareResult tmpres=compare(a,b,0);
+        if(tmpres==cmp_smaller) return true;
+        if(tmpres==cmp_greater) return false;
+
+        tmpres=compare(a,b,1);
+        if(tmpres==cmp_smaller) return true;
+        if(tmpres==cmp_greater) return false;
+
+        tmpres=compare(a,b,2);
+        if(tmpres==cmp_smaller) return true;
+        if(tmpres==cmp_greater) return false;
+
+        return false;
+
+    }
+
+    static bool compareByABCInv(const sortingClass& a, const sortingClass& b){
         return !compareByABC(a,b);
     }
 
- private:
+ //private:
     float sortValA,sortValB,sortValC;
     
-    static bool CompareA(sortingClass a, sortingClass b){
-        return a.sortValA<b.sortValA;
-    }
-    static bool CompareB(sortingClass a, sortingClass b){
-        return a.sortValB<b.sortValB;
-    }
-    static bool CompareC(sortingClass a, sortingClass b){
-        return a.sortValC<b.sortValC;
-    }
+
+
     T t_;
 };
 

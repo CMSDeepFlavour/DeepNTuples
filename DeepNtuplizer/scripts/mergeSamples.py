@@ -61,7 +61,7 @@ if len(listsucc) == int(nJobs):
     print('merge successful, creating file list')
     file=open(args.outdir+'/samples.txt','w')
     for filenumber in listsucc:
-        file.write('ntuple_merged_'+str(filenumber)+'.root')
+        file.write('ntuple_merged_'+str(filenumber)+'.root\n')
     file.close()
 
 
