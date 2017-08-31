@@ -51,7 +51,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"isC",&isC_, "isC_/i");
     addBranch(tree,"isGCC",&isGCC_, "isGCC_/i");
     addBranch(tree,"isCC",&isCC_, "isCC_/i");
-    addBranch(tree,"isTau",&isTau_, "isTau_/i");
+//    addBranch(tree,"isTau",&isTau_, "isTau_/i");
     addBranch(tree,"isUD",&isUD_, "isUD_/i");
     addBranch(tree,"isS",&isS_, "isS_/i");
     addBranch(tree,"isG",&isG_, "isG_/i");
@@ -67,7 +67,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"isPhysC",&isPhysC_, "isPhysC_/i");
     addBranch(tree,"isPhysGCC",&isPhysGCC_, "isPhysGCC_/i");
     addBranch(tree,"isPhysCC",&isPhysCC_, "isPhysCC_/i");
-    addBranch(tree,"isPhysTau",&isPhysTau_, "isPhysTau_/i");
+//    addBranch(tree,"isPhysTau",&isPhysTau_, "isPhysTau_/i");
     addBranch(tree,"isPhysUD",&isPhysUD_, "isPhysUD_/i");
     addBranch(tree,"isPhysS",&isPhysS_, "isPhysS_/i");
     addBranch(tree,"isPhysG",&isPhysG_, "isPhysG_/i");
@@ -241,7 +241,7 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
             }
         }
 
-        if(id == 15){
+        if(id == 15 && false){
             alltaus_.push_back(gen);
         }
 
