@@ -64,7 +64,7 @@ void ntuple_bTagVars::initBranches(TTree* tree){
 }
 
 //use either of these functions
-bool ntuple_bTagVars::fillBranches(const pat::Jet & jet, const size_t& jetidx, const edm::View<pat::Jet> *){
+bool ntuple_bTagVars::fillBranches(const pat::Jet & jet, const size_t& jetidx, const edm::Event& iEvent, const edm::View<pat::Jet> *){
     if(!jet.hasTagInfo(tagInfoName_)) {
         stringstream stream;
         for(auto &lab : jet.tagInfoLabels())

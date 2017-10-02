@@ -7,3 +7,4 @@
 <use name="FWCore/ServiceRegistry"/>
 <use name="CommonTools/UtilAlgos"/>
 <flags EDM_PLUGIN="1"/>
+<Flags CXXFLAGS="-g"/>

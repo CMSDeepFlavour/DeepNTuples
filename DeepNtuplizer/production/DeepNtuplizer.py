@@ -15,11 +15,11 @@ options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarPars
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
 options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "gluon reduction")
 options.register('selectJets', True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "select jets with good gen match")
+options.register('runonData', False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "switch off generator jets")
 
 import os
 release=os.environ['CMSSW_VERSION'][6:11]
 print("Using release "+release)
-
 
 options.register(
 	'inputFiles','',
@@ -43,8 +43,8 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
-#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -54,18 +54,19 @@ if options.inputScript == '': #this is probably for testing
 	process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.options = cms.untracked.PSet(
-   allowUnscheduled = cms.untracked.bool(True),  
+   allowUnscheduled = cms.untracked.bool(True),
    wantSummary=cms.untracked.bool(False)
 )
 
 
-process.load('DeepNTuples.DeepNtuplizer.samples.TTJetsPhase1_cfg') #default input
-
+#process.load('DeepNTuples.DeepNtuplizer.samples.singleMuon_2016_cfg') #default input
+process.load('DeepNTuples.DeepNtuplizer.samples.TTJets13TeV_cfg')
 
 if options.inputFiles:
 	process.source.fileNames = options.inputFiles
 
-if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtuplizer.samples.TTJetsPhase1_cfg':
+#if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtuplizer.samples.singleMuon_2016_cfg':
+if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtuplizer.samples.TTJets13TeV_cfg':
     process.load(options.inputScript)
 
 numberOfFiles = len(process.source.fileNames)
@@ -158,8 +159,11 @@ process.QGTagger.jetsLabel = cms.string('QGL_AK4PFchs')
 
 
 from RecoJets.JetProducers.ak4GenJets_cfi import ak4GenJets
+#from RecoJets.JetProducers.ak4GenJets_cfi import ak4TrackJets
+
 process.ak4GenJetsWithNu = ak4GenJets.clone(src = 'packedGenParticles')
- 
+#Process.ak4GenJetsWithNu = ak4TrackJets.clone(src = 'packedGenParticles')
+
  ## Filter out neutrinos from packed GenParticles
 process.packedGenParticlesForJetsNoNu = cms.EDFilter("CandPtrSelector", src = cms.InputTag("packedGenParticles"), cut = cms.string("abs(pdgId) != 12 && abs(pdgId) != 14 && abs(pdgId) != 16"))
  ## Define GenJets
@@ -237,4 +241,7 @@ process.ProfilerService = cms.Service (
        paths = cms.untracked.vstring('p') 
 )
 
-process.p = cms.Path(process.QGTagger + process.genJetSequence*  process.deepntuplizer)
+if options.runonData:
+    process.p = cms.Path(process.QGTagger + process.deepntuplizer)
+else:
+    process.p = cms.Path(process.QGTagger + process.genJetSequence * process.deepntuplizer)

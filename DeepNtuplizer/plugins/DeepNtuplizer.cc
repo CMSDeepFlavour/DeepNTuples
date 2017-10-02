@@ -102,6 +102,7 @@ private:
     std::vector<ntuple_content* > modules_;
 
     bool applySelection_;
+    bool runonData_;
 };
 
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
@@ -126,6 +127,8 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     //not implemented yet
     const bool useHerwigCompatibleMatching=iConfig.getParameter<bool>("useHerwigCompatible");
     const bool isHerwig=iConfig.getParameter<bool>("isHerwig");
+
+    runonData_ = iConfig.getParameter<bool>("runonData");
 
     ntuple_content::useoffsets = iConfig.getParameter<bool>("useOffsets");
 
@@ -156,12 +159,15 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     jetinfo->setUseHerwigCompatibleMatching(useHerwigCompatibleMatching);
     jetinfo->setIsHerwig(isHerwig);
 
-    jetinfo->setGenJetMatchReclusterToken(
-            consumes<edm::Association<reco::GenJetCollection> >(
-                    iConfig.getParameter<edm::InputTag>( "genJetMatchRecluster" )));
-    jetinfo->setGenJetMatchWithNuToken(
-            consumes<edm::Association<reco::GenJetCollection> >(
-                    iConfig.getParameter<edm::InputTag>( "genJetMatchWithNu" )));
+
+    if(!runonData_){
+        jetinfo->setGenJetMatchReclusterToken(
+                consumes<edm::Association<reco::GenJetCollection> >(
+                        iConfig.getParameter<edm::InputTag>( "genJetMatchRecluster" )));
+        jetinfo->setGenJetMatchWithNuToken(
+                consumes<edm::Association<reco::GenJetCollection> >(
+                        iConfig.getParameter<edm::InputTag>( "genJetMatchWithNu" )));
+    }
 
     jetinfo->setGenParticlesToken(
             consumes<reco::GenParticleCollection>(
@@ -225,7 +231,8 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(svToken_, secvertices);
 
     edm::Handle<std::vector<PileupSummaryInfo> > pupInfo;
-    iEvent.getByToken(puToken_, pupInfo);
+    if(!runonData_)
+        iEvent.getByToken(puToken_, pupInfo);
 
     edm::Handle<double> rhoInfo;
     iEvent.getByToken(rhoToken_,rhoInfo);
@@ -236,7 +243,8 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     for(auto& m:modules_){
         m->setPrimaryVertices(vertices.product());
         m->setSecVertices(secvertices.product());
-        m->setPuInfo(pupInfo.product());
+        if(!runonData_)
+            m->setPuInfo(pupInfo.product());
         m->setRhoInfo(rhoInfo.product());
         m->readSetup(iSetup);
         m->readEvent(iEvent);
@@ -263,7 +271,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
         bool writejet=true;
         for(auto& m:modules_){
-            if(! m->fillBranches(jet, jetidx, jets.product())){
+            if(! m->fillBranches(jet, jetidx, iEvent, jets.product())){
                 writejet=false;
                 if(applySelection_) break;
             }
