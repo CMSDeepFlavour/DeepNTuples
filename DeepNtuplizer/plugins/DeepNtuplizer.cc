@@ -202,8 +202,10 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
      *
      * parse the input parameters (if any)
      */
-    for(auto& m: modules_)
+    for(auto& m: modules_){
         m->getInput(iConfig);
+        std::cout<<"loaded model: "<< m << std::endl;
+        }
 
 }
 
@@ -225,7 +227,10 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     edm::Handle<reco::VertexCollection> vertices;
     iEvent.getByToken(vtxToken_, vertices);
-    if (vertices->empty()) return; // skip the event if no PV found
+    if (vertices->empty()) {
+        std::cout<<"vertices are empty!"<< std::endl; //DEBUG
+        return; // skip the event if no PV found
+    }
 
     edm::Handle<std::vector<reco::VertexCompositePtrCandidate> > secvertices;
     iEvent.getByToken(svToken_, secvertices);
@@ -272,8 +277,12 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         bool writejet=true;
         for(auto& m:modules_){
             if(! m->fillBranches(jet, jetidx, iEvent, jets.product())){
+                //std::cout<<"did not fill branches " << std::endl; //DEBUG
                 writejet=false;
                 if(applySelection_) break;
+            }
+            else{
+                //std::cout<<"Yeah, filled the branches " << std::endl; //DEBUG
             }
         }
         if( (writejet&&applySelection_) || !applySelection_ ){

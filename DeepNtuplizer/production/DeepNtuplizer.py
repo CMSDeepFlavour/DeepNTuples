@@ -58,15 +58,16 @@ process.options = cms.untracked.PSet(
    wantSummary=cms.untracked.bool(False)
 )
 
+sampleListFile = 'DeepNTuples.DeepNtuplizer.samples.singleMuon_2016_cfg'
 
-#process.load('DeepNTuples.DeepNtuplizer.samples.singleMuon_2016_cfg') #default input
-process.load('DeepNTuples.DeepNtuplizer.samples.TTJets13TeV_cfg')
+
+process.load(sampleListFile) #default input
+
 
 if options.inputFiles:
 	process.source.fileNames = options.inputFiles
 
-#if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtuplizer.samples.singleMuon_2016_cfg':
-if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtuplizer.samples.TTJets13TeV_cfg':
+if options.inputScript != '' and options.inputScript != sampleListFile:
     process.load(options.inputScript)
 
 numberOfFiles = len(process.source.fileNames)

@@ -143,6 +143,7 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
     iEvent.getByToken(multToken_, multHandle);
 
     if(!iEvent.isRealData()){
+
         iEvent.getByToken(genJetMatchReclusterToken_, genJetMatchRecluster);
         iEvent.getByToken(genJetMatchWithNuToken_, genJetMatchWithNu);
         iEvent.getByToken(genParticlesToken_, genParticlesHandle);
@@ -168,6 +169,7 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
 
     //std::cout << " start search for a b in this event "<<std::endl;
     if(!iEvent.isRealData()){
+
         for (const reco::Candidate &genC : *genParticlesHandle){
             const reco::GenParticle &gen = static_cast< const reco::GenParticle &>(genC);
 
@@ -256,6 +258,8 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet,
                                     const edm::Event& iEvent,
                                     const edm::View<pat::Jet> * coll
                                     ){
+    //std::cout<<"start fillBranches of module JetInfo "<<std::endl;
+
     if(!coll)
         throw std::runtime_error("ntuple_JetInfo::fillBranches: no jet collection");
 
@@ -267,21 +271,22 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet,
     if ( fabs(jet.eta()) < jetAbsEtaMin_ || fabs(jet.eta()) > jetAbsEtaMax_ ) returnval=false; // apply jet eta cut
 
 
-    // often we have way to many gluons that we do not need. This randomply reduces the gluons
-    if (gluonReduction_>0 && jet.partonFlavour()==21)
-        if(TRandom_.Uniform()>gluonReduction_) returnval=false;
-
-    if(jet.genJet()==NULL)returnval=false;
+    if(!iEvent.isRealData()){   //In simulated Data, ...
+                                //.. often we have way to many gluons that we do not need. This randomly reduces the gluons
+        if (gluonReduction_>0 && jet.partonFlavour()==21)
+            if(TRandom_.Uniform()>gluonReduction_) returnval=false;
+                                //... we only need Jets with information
+        if(jet.genJet()==NULL)returnval=false;
+    }
 
 
     //branch fills
     for(auto& entry : discriminators_) {
         entry.second = catchInfs(jet.bDiscriminator(entry.first),-0.1);
     }
-
     npv_ = vertices()->size();
 
-    if(jet.genJet()!=NULL){  //dont do that for real data
+    if(!iEvent.isRealData()){  //dont do that for real data
         for (auto const& v : *pupInfo()) {
             int bx = v.getBunchCrossing();
             if (bx == 0) {
@@ -383,7 +388,9 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet,
         isUndefined_=1;isPhysUndefined_=1;
     }
 
-    if(isUndefined_ && isPhysUndefined_) returnval=false; //skip event, if neither standard flavor definition nor physics definition fallback define a "proper flavor"
+    if(!iEvent.isRealData()){                                   //skip event, if it is generated and ...
+        if(isUndefined_ && isPhysUndefined_) returnval=false;   //... if neither standard flavor definition nor physics definition fallback define a "proper flavor"
+    }
 
     pat::JetCollection h;
 
