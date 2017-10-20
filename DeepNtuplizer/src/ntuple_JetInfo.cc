@@ -57,6 +57,8 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"isG",&isG_, "isG_/i");
     addBranch(tree,"isUndefined",&isUndefined_, "isUndefined_/i");
     addBranch(tree,"genDecay",&genDecay_, "genDecay_/f");
+    addBranch(tree,"isRealData",&isRealData_, "isRealData_/i");
+
 
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
     addBranch(tree,"isPhysB",&isPhysB_, "isPhysB_/i");
@@ -286,7 +288,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet,
     }
     npv_ = vertices()->size();
 
-    if(!iEvent.isRealData()){  //dont do that for real data
+    if(!iEvent.isRealData()){  //extended pileup info only for gen jets
         for (auto const& v : *pupInfo()) {
             int bx = v.getBunchCrossing();
             if (bx == 0) {
@@ -310,8 +312,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet,
 
     //std::vector<Ptr<pat::Jet> > p= coll->ptrs();
 
-    isB_=0; isGBB_=0; isBB_=0; isC_=0; isGCC_=0; isCC_=0; isUD_=0;isTau_=0;
-    isS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0, isUndefined_=0;
+
     auto muIds = deep_ntuples::jet_muonsIds(jet,*muonsHandle);
     auto elecIds = deep_ntuples::jet_electronsIds(jet,*electronsHandle);
 
@@ -343,6 +344,8 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet,
     }
 
     //// Note that jets with gluon->bb (cc) and x->bb (cc) are in the same categories
+    isB_=0; isGBB_=0; isBB_=0; isC_=0; isGCC_=0; isCC_=0; isUD_=0; isTau_=0;
+    isS_=0; isG_=0; isLeptonicB_=0; isLeptonicB_C_=0; isUndefined_=0; isRealData_=0;
     if(jet.genJet()!=NULL){
         switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C, alltaus_)) {
         case deep_ntuples::JetFlavor::B:  isB_=1; break;
@@ -388,8 +391,13 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet,
         isUndefined_=1;isPhysUndefined_=1;
     }
 
-    if(!iEvent.isRealData()){                                   //skip event, if it is generated and ...
-        if(isUndefined_ && isPhysUndefined_) returnval=false;   //... if neither standard flavor definition nor physics definition fallback define a "proper flavor"
+    if(iEvent.isRealData()){
+        isRealData_=1;
+    }
+
+    if(!iEvent.isRealData()){
+        isRealData_=0;
+        if(isUndefined_ && isPhysUndefined_) returnval=false;   //skip event, if it is generated and if neither standard flavor definition nor physics definition fallback define a "proper flavor"
     }
 
     pat::JetCollection h;

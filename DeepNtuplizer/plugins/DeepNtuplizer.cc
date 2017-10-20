@@ -109,10 +109,10 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
                             vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
                             svToken_(consumes<reco::VertexCompositePtrCandidateCollection>(
                                     iConfig.getParameter<edm::InputTag>("secVertices"))),
-                                    jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets"))),
-                                    puToken_(consumes<std::vector<PileupSummaryInfo >>(iConfig.getParameter<edm::InputTag>("pupInfo"))),
-                                    rhoToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoInfo"))),
-                                    t_qgtagger(iConfig.getParameter<std::string>("qgtagger"))
+                            jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets"))),
+                            puToken_(consumes<std::vector<PileupSummaryInfo >>(iConfig.getParameter<edm::InputTag>("pupInfo"))),
+                            rhoToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoInfo"))),
+                            t_qgtagger(iConfig.getParameter<std::string>("qgtagger"))
 {
     /*
      *  Initialise the modules here
@@ -236,7 +236,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(svToken_, secvertices);
 
     edm::Handle<std::vector<PileupSummaryInfo> > pupInfo;
-    if(!runonData_)
+    if(!iEvent.isRealData())
         iEvent.getByToken(puToken_, pupInfo);
 
     edm::Handle<double> rhoInfo;
@@ -248,7 +248,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     for(auto& m:modules_){
         m->setPrimaryVertices(vertices.product());
         m->setSecVertices(secvertices.product());
-        if(!runonData_)
+        if(!iEvent.isRealData())
             m->setPuInfo(pupInfo.product());
         m->setRhoInfo(rhoInfo.product());
         m->readSetup(iSetup);
