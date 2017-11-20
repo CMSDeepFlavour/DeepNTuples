@@ -10,6 +10,14 @@
           <option name="port" value="22" />
         </fileTransfer>
       </webServer>
+      <webServer id="4555fd68-fb3a-426c-89ab-b03aab90d82d" name="naf" url="http://naf-cms.desy.de">
+        <fileTransfer host="naf-cms.desy.de" port="22" rootFolder="/afs/desy.de/user/d/dwalter/" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>

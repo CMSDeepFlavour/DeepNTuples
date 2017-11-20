@@ -16,6 +16,7 @@ options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarPa
 options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "gluon reduction")
 options.register('selectJets', True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "select jets with good gen match")
 options.register('runonData', False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "switch off generator jets")
+options.register('crossSection', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "cross section information for computing weights")
 
 import os
 release=os.environ['CMSSW_VERSION'][6:11]
@@ -92,8 +93,8 @@ if int(release.replace("_",""))>=840 :
 	'pfDeepCSVTagInfos' ]
 else : 
  bTagInfos = [
-        'pfImpactParameterTagInfos',
-        'pfInclusiveSecondaryVertexFinderTagInfos',
+    'pfImpactParameterTagInfos',
+    'pfInclusiveSecondaryVertexFinderTagInfos',
 	'deepNNTagInfos',
  ]
 
@@ -166,7 +167,9 @@ process.ak4GenJetsWithNu = ak4GenJets.clone(src = 'packedGenParticles')
 #Process.ak4GenJetsWithNu = ak4TrackJets.clone(src = 'packedGenParticles')
 
  ## Filter out neutrinos from packed GenParticles
-process.packedGenParticlesForJetsNoNu = cms.EDFilter("CandPtrSelector", src = cms.InputTag("packedGenParticles"), cut = cms.string("abs(pdgId) != 12 && abs(pdgId) != 14 && abs(pdgId) != 16"))
+process.packedGenParticlesForJetsNoNu = cms.EDFilter("CandPtrSelector",
+                                                     src = cms.InputTag("packedGenParticles"),
+                                                     cut = cms.string("abs(pdgId) != 12 && abs(pdgId) != 14 && abs(pdgId) != 16"))
  ## Define GenJets
 process.ak4GenJetsRecluster = ak4GenJets.clone(src = 'packedGenParticlesForJetsNoNu')
  
@@ -195,7 +198,11 @@ process.patGenJetMatchRecluster = cms.EDProducer("GenJetMatcher",  # cut on delt
     resolveByMatchQuality = cms.bool(False),         # False = just match input in order; True = pick lowest deltaR pair first          
 )
 
-process.genJetSequence = cms.Sequence(process.packedGenParticlesForJetsNoNu*process.ak4GenJetsWithNu*process.ak4GenJetsRecluster*process.patGenJetMatchWithNu*process.patGenJetMatchRecluster)
+process.genJetSequence = cms.Sequence(process.packedGenParticlesForJetsNoNu
+                                      *process.ak4GenJetsWithNu
+                                      *process.ak4GenJetsRecluster
+                                      *process.patGenJetMatchWithNu
+                                      *process.patGenJetMatchRecluster)
 
 
 # Very Loose IVF SV collection
