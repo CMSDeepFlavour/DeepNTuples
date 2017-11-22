@@ -61,6 +61,10 @@ jetlabel = ("GoodJets")
 LHEweighthandle = Handle('LHEEventProduct')
 LHEweightlabel = ("externalLHEProducer")
 
+## Pileup reweighting
+puphandle = Handle('vector<PileupSummaryInfo>')
+puplabel = ("slimmedAddPileupInfo")
+
 ROOT.gROOT.SetBatch()  # don't pop up canvases
 ROOT.gROOT.SetStyle('Plain')  # white background
 
@@ -151,9 +155,41 @@ hs_j_n = ROOT.THStack("hs", "jet number")
 
 hs = hs_ll_pt, hs_ll_eta, hs_tl_pt, hs_tl_eta, hs_j_n
 
+def pileupWeight(nInteractions):
+    #Function to compute the pileup reweighting
+    #Input: nInteractions is the number of interactions per bunch crossing of the event to compute the weight for
+    #load pileup histograms
+    file_pileup_MC = ROOT.TFile("/afs/desy.de/user/d/dwalter/CMSSW_8_0_29/src/DeepNTuples/DeepNtuplizer/data/MyMCPileupHist.root")
+    file_pileup_Data = ROOT.TFile("/afs/desy.de/user/d/dwalter/CMSSW_8_0_29/src/DeepNTuples/DeepNtuplizer/data/MyDataPileupHist.root")
+    hist_pileup_MC = file_pileup_MC.Get("pileup")
+    hist_pileup_Data = file_pileup_Data.Get("pileup")
+
+    hist_pileup_MC.Scale(1./hist_pileup_MC.Integral())
+    hist_pileup_Data.Scale(1./hist_pileup_Data.Integral())
+
+    weight = hist_pileup_Data.GetBinContent(nInteractions)/hist_pileup_MC.GetBinContent(nInteractions)
+
+    hist_pileup_MC.SetLineColor(ROOT.kRed)
+    hist_pileup_Data.SetLineColor(ROOT.kBlue)
+
+    leg = ROOT.TLegend(0.59, 0.69, 0.89, 0.79)
+    leg.SetBorderSize(0)
+    leg.SetTextFont(42)
+    leg.AddEntry(hist_pileup_MC, "MC", "l")
+    leg.AddEntry(hist_pileup_Data, "Data", "l")
+
+    canvas_pileup = ROOT.TCanvas("pileup", "pileup", 800, 600)
+    hist_pileup_MC.SetStats(ROOT.kFALSE)
+    hist_pileup_Data.SetStats(ROOT.kFALSE)
+    hist_pileup_MC.Draw()
+    leg.Draw("SAME")
+    hist_pileup_Data.Draw("HIST SAME")
+    canvas_pileup.Print("pileup_distribution.png")
+
+    return weight
 
 
-def fillHists(hists, infile, islist = True, useWeights = False):
+def fillHists(hists, infile, islist = True, useWeights = False, isData = False):
     print("start to fill hist: " + str(datetime.datetime.now()))
 
     nevents = 0;
@@ -170,18 +206,18 @@ def fillHists(hists, infile, islist = True, useWeights = False):
     else:
         ifile = infile
 
-    # loop over events
     while ifile != '':
         print("process file ",ifile)
         events = Events(directory + ifile)
 
+### EVENT LOOP
         for event in events:
             nevents += 1
             leadingPt = 10
             leadingEta = 0
             trailingPt = 10
             trailingEta = 0
-            weight = 1
+            weight = 1.
 
             if useWeights == True:
                 event.getByLabel( LHEweightlabel, LHEweighthandle )
@@ -191,6 +227,12 @@ def fillHists(hists, infile, islist = True, useWeights = False):
                 #print("lhe weights ...")
                 #for w in weights.weights():
                 #    print(w.id, w.wgt)
+            if isData == False:
+                event.getByLabel(puplabel, puphandle)
+                pupInfos = puphandle.product()
+                for pupInfo in pupInfos:
+                    if(pupInfo.getBunchCrossing() == 0):
+                        weight *= pileupWeight(int(pupInfo.getTrueNumInteractions()))
 
 
             # Fill muon hists
@@ -417,12 +459,12 @@ def computeDiffList(h_data, hlist_mc):
     print("diff: ", diff)
 
 
-
 #MAIN part
 
 
 lumi_analysis = 35.9
-lumi_data =      6.615
+#lumi_data =      6.615
+lumi_data =      8.746
 
 sigma_tt =            831760
 sigma_dy50 =         6025200
@@ -434,9 +476,11 @@ sigma_wantit =         35600
 sigma_wt =             35600
 sigma_wjets =       61526700
 
+#Efficiency = 1/(number of events before cuts), in case of lheweights its the
+# effective number of events (in this case: number of events with positive weights - number of events with negative weights)
 eff_tt = 1./(77081156 + 77867738)
-eff_dy50 = 1./122055388
-eff_dy10to50 = 1./65888233
+eff_dy50 = 1./81781052
+eff_dy10to50 = 1./47946519
 eff_ww = 1./994012
 eff_wz = 1./1000000
 eff_zz = 1./998034
@@ -445,7 +489,9 @@ eff_wt = 1./6952830
 eff_wjets = 1./24120319
 
 
-fillHists(hists_data, infile=datafile)
+print("test pileup: ",pileupWeight(5))
+
+fillHists(hists_data, infile=datafile, isData=True)
 fillHists(hists_tt, infile=ttfilelist)
 fillHists(hists_dy50, infile=dy50filelist, useWeights =  True)
 fillHists(hists_dy10to50, infile=dy10to50file, useWeights = True)
@@ -480,7 +526,7 @@ colorHists(hists_zz,        ROOT.kYellow)
 colorHists(hists_tt,        ROOT.kRed)
 colorHists(hists_wjets,     ROOT.kGreen)
 
-directory = os.path.dirname('./plots/')
+directory = os.path.dirname('./pileup/')
 # make a canvas, draw, and save it
 if not os.path.exists(directory):
     os.makedirs(directory)

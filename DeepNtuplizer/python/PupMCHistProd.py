@@ -1,4 +1,7 @@
-
+###
+#   Program to produce a histogram of the number of interactions per bunch crossing of a monte carlo sample, uses puAnalyzer.cc
+#   This histogram is needed to calculate the pileup reweighting
+###
 import FWCore.ParameterSet.Config as cms
 
 import FWCore.ParameterSet.VarParsing as VarParsing
@@ -31,19 +34,8 @@ if hasattr(sys, "argv"):
     options.parseArguments()
 
 
-process = cms.Process("ttbarSelector")
+process = cms.Process("pupMCHistProd")
 
-process.load("FWCore.MessageService.MessageLogger_cfi")
-process.load("Configuration.EventContent.EventContent_cff")
-process.load('Configuration.StandardSequences.Services_cff')
-process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-process.load('Configuration.StandardSequences.MagneticField_cff')
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-
-if options.isData == True:
-    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v8'     # For Data Jet Energy correction
-if options.isData == False:
-    process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'               # For MC Jet Energy correction
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -57,8 +49,6 @@ process.options = cms.untracked.PSet(
    wantSummary=cms.untracked.bool(True)
 )
 
-#process.source.fileNames=['file:/afs/cern.ch/work/d/dwalter/data/ttbar/TT/output_0_1.root']   #store/data/Run2016H/SingleMuon/MINIAOD/18Apr2017-v1/00000/00E02A09-853C-E711-93FF-3417EBE644A7.root
-#process.source.fileNames=['file:./000C6E52-8BEC-E611-B3FF-0025905C42FE.root']  #
 
 sampleListFile = 'DeepNTuples.DeepNtuplizer.samples.singleMuon_2016_cfg'
 process.load(sampleListFile) #default input
@@ -69,7 +59,7 @@ if options.inputFiles:
 if options.inputScript != '' and options.inputScript != sampleListFile:
     process.load(options.inputScript)
 
-process.source.fileNames=['file:/afs/cern.ch/work/d/dwalter/data/ttbar/TT/output_0_1.root']   #store/data/Run2016H/SingleMuon/MINIAOD/18Apr2017-v1/00000/00E02A09-853C-E711-93FF-3417EBE644A7.root
+#process.source.fileNames=['file:/afs/cern.ch/work/d/dwalter/data/ttbar/TT/output_0_1.root']   #store/data/Run2016H/SingleMuon/MINIAOD/18Apr2017-v1/00000/00E02A09-853C-E711-93FF-3417EBE644A7.root
 
 
 numberOfFiles = len(process.source.fileNames)
@@ -86,48 +76,14 @@ process.maxEvents  = cms.untracked.PSet(
     input = cms.untracked.int32 (options.maxEvents) 
 )
 
-outFileName = options.outputFile + '_' + str(options.job) +  '.root'
-print ('Using output file ' + outFileName)
 
-process.MINIAODSIMEventContent.outputCommands.extend([
-    'drop *',
-    'keep *_NumInteractions_*_*'
-])
-
-process.outmod = cms.OutputModule("PoolOutputModule",
-                                process.MINIAODSIMEventContent,
-                                SelectEvents = cms.untracked.PSet(
-                                    SelectEvents = cms.vstring('PUPpath')
-                                ),
-                                dropMetaData = cms.untracked.string("DROPPED"),
-                                fileName = cms.untracked.string(outFileName)
-                                )
+process.TFileService = cms.Service("TFileService",
+                                   fileName=cms.string("MyMCPileupHistogram_"+str(options.job) +".root"),
+                                   closeFileFast=cms.untracked.bool(True)
+                                   )
+process.puAnalyzer = cms.EDAnalyzer("puAnalyzer",
+                                    pileupInfo=cms.InputTag("slimmedAddPileupInfo")
+                                  )
 
 
-
-
-
-process.NumInteractions = cms.EDProducer(
-    "CandViewNtpProducer",
-    src=cms.InputTag("slimmedElectrons"),
-    lazyParser=cms.untracked.bool(True),
-    prefix=cms.untracked.string("z"),
-    eventInfo=cms.untracked.bool(False),
-    variables=cms.VPSet(
-        cms.PSet(
-            tag=cms.untracked.string("Pt"),
-            quantity=cms.untracked.string("pt")
-        )
-
-    )
-)
-
-
-
-
-if options.isData:
-    process.PUPpath = cms.Path(process.NumInteractions)
-else:
-    process.PUPpath = cms.Path(process.NumInteractions)
-
-process.endp = cms.EndPath(process.outmod)
+process.endp = cms.EndPath(process.puAnalyzer)
