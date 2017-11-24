@@ -59,8 +59,7 @@ if options.inputFiles:
 if options.inputScript != '' and options.inputScript != sampleListFile:
     process.load(options.inputScript)
 
-#process.source.fileNames=['file:/afs/cern.ch/work/d/dwalter/data/ttbar/TT/output_0_1.root']   #store/data/Run2016H/SingleMuon/MINIAOD/18Apr2017-v1/00000/00E02A09-853C-E711-93FF-3417EBE644A7.root
-
+process.source.fileNames=['file:/afs/cern.ch/work/d/dwalter/data/ttbar/TT/output_0_1.root']   #store/data/Run2016H/SingleMuon/MINIAOD/18Apr2017-v1/00000/00E02A09-853C-E711-93FF-3417EBE644A7.root
 
 numberOfFiles = len(process.source.fileNames)
 numberOfJobs = options.nJobs
@@ -71,8 +70,8 @@ if options.nJobs > 1:
     print ("running over these files:")
     print (process.source.fileNames)
 
-process.source.skipEvents = cms.untracked.uint32(options.skipEvents)
-process.maxEvents  = cms.untracked.PSet( 
+
+process.maxEvents  = cms.untracked.PSet(
     input = cms.untracked.int32 (options.maxEvents) 
 )
 
@@ -86,4 +85,4 @@ process.puAnalyzer = cms.EDAnalyzer("puAnalyzer",
                                   )
 
 
-process.endp = cms.EndPath(process.puAnalyzer)
+process.endp = cms.EndPath( process.puAnalyzer)

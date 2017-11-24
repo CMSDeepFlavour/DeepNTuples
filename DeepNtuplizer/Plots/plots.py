@@ -5,6 +5,7 @@ import pdb
 import ROOT
 import os
 import datetime
+import numpy as np
 
 import FWCore.ParameterSet.Config as cms
 
@@ -29,7 +30,7 @@ ROOT.AutoLibraryLoader.enable()
 ROOT.gSystem.Load("libDataFormatsFWLite.so")
 ROOT.gSystem.Load("libDataFormatsPatCandidates.so")
 
-#
+#files to load
 datafile = "data.txt"
 ttfilelist = "tt.txt"
 dy10to50file ="dy10to50.txt"
@@ -40,6 +41,12 @@ zzfile = "zz.txt"
 wantitfilelist = "wantit.txt"
 wtfilelist = "wt.txt"
 wjetsfilelist = "wjets.txt"
+#pileup distributions
+file_pileup_MC = ROOT.TFile(
+    "/afs/desy.de/user/d/dwalter/CMSSW_8_0_29/src/DeepNTuples/DeepNtuplizer/data/MyMCPileupHist.root")
+file_pileup_Data = ROOT.TFile(
+    "/afs/desy.de/user/d/dwalter/CMSSW_8_0_29/src/DeepNTuples/DeepNtuplizer/data/MyDataPileupHist.root")
+
 
 print("create handles")
 ### Muons
@@ -67,6 +74,7 @@ puplabel = ("slimmedAddPileupInfo")
 
 ROOT.gROOT.SetBatch()  # don't pop up canvases
 ROOT.gROOT.SetStyle('Plain')  # white background
+ROOT.gStyle.SetFillStyle(0)
 
 # Create histograms, etc.
 print("create hists")
@@ -132,6 +140,8 @@ hist_tl_pt_wjets = ROOT.TH1F("tl_pt_wjets", "pt ot the trailing lepton", 11, arr
 hist_tl_eta_wjets = ROOT.TH1F("tl_eta_wjets", "eta of the trailing leption", 20, -2.4, 2.4)
 hist_j_n_wjets = ROOT.TH1F("number_wjets", "number of  jets", 10, -0.5, 9.5)
 
+hist_weights = ROOT.TH1F("weights", "event weight", 50, -9,9)
+
 #hist_jet_pt = ROOT.TH1F("jet_pt", "pt of all jets", 9, array('d', [0, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 
 
@@ -155,47 +165,49 @@ hs_j_n = ROOT.THStack("hs", "jet number")
 
 hs = hs_ll_pt, hs_ll_eta, hs_tl_pt, hs_tl_eta, hs_j_n
 
-def pileupWeight(nInteractions):
+# load pileup histograms for pileup reweighting
+hist_pileup_MC = file_pileup_MC.Get("pileup")
+hist_pileup_Data = file_pileup_Data.Get("pileup")
+
+
+
+def makePileupWeights(hist_data, hist_mc):
+    pupWeights = [0]
+    hist_mc.Scale(1. / hist_mc.Integral())
+    hist_data.Scale(1. / hist_data.Integral())
+    for bin in range(1,hist_data.GetNbinsX()+2):
+        if hist_mc.GetBinContent(bin) != 0:
+            w = hist_data.GetBinContent(bin)/hist_mc.GetBinContent(bin)
+            pupWeights.append(w)
+        else:
+            pupWeights.append(1)
+    return pupWeights
+
+def printPilupInfo(hist_data, hist_mc):
+    dataCont = []
+    mcCont = []
+    for bin in range(0,hist_data.GetNbinsX()+2):
+        dataCont.append(hist_data.GetBinContent(bin))
+        mcCont.append(hist_mc.GetBinContent(bin))
+
+    pweights = makePileupWeights(hist_data, hist_mc)
+
+    for i in range(0,hist_pileup_Data.GetNbinsX()+2):
+        print("bin ", i, " data content ",  dataCont[i], " mc contennt ",mcCont[i]," weight ",pweights[i])
+
+
+def getPileupWeight(nInteractions):
     #Function to compute the pileup reweighting
     #Input: nInteractions is the number of interactions per bunch crossing of the event to compute the weight for
-    #load pileup histograms
-    file_pileup_MC = ROOT.TFile("/afs/desy.de/user/d/dwalter/CMSSW_8_0_29/src/DeepNTuples/DeepNtuplizer/data/MyMCPileupHist.root")
-    file_pileup_Data = ROOT.TFile("/afs/desy.de/user/d/dwalter/CMSSW_8_0_29/src/DeepNTuples/DeepNtuplizer/data/MyDataPileupHist.root")
-    hist_pileup_MC = file_pileup_MC.Get("pileup")
-    hist_pileup_Data = file_pileup_Data.Get("pileup")
-
-    hist_pileup_MC.Scale(1./hist_pileup_MC.Integral())
-    hist_pileup_Data.Scale(1./hist_pileup_Data.Integral())
-
-    weight = hist_pileup_Data.GetBinContent(nInteractions)/hist_pileup_MC.GetBinContent(nInteractions)
-
-    hist_pileup_MC.SetLineColor(ROOT.kRed)
-    hist_pileup_Data.SetLineColor(ROOT.kBlue)
-
-    leg = ROOT.TLegend(0.59, 0.69, 0.89, 0.79)
-    leg.SetBorderSize(0)
-    leg.SetTextFont(42)
-    leg.AddEntry(hist_pileup_MC, "MC", "l")
-    leg.AddEntry(hist_pileup_Data, "Data", "l")
-
-    canvas_pileup = ROOT.TCanvas("pileup", "pileup", 800, 600)
-    hist_pileup_MC.SetStats(ROOT.kFALSE)
-    hist_pileup_Data.SetStats(ROOT.kFALSE)
-    hist_pileup_MC.Draw()
-    leg.Draw("SAME")
-    hist_pileup_Data.Draw("HIST SAME")
-    canvas_pileup.Print("pileup_distribution.png")
-
-    return weight
+    if nInteractions >= len(pupWeights):
+        return 0
+    return pupWeights[nInteractions]
 
 
-def fillHists(hists, infile, islist = True, useWeights = False, isData = False):
+def fillHists(hists, infile, islist = True, useLHEWeights = False, isData = False):
     print("start to fill hist: " + str(datetime.datetime.now()))
-
-    nevents = 0;
-
+    nevents = 0
     directory = ''
-
 
     if islist is True:
         print("loop over filelist "+ str(infile))
@@ -219,7 +231,7 @@ def fillHists(hists, infile, islist = True, useWeights = False, isData = False):
             trailingEta = 0
             weight = 1.
 
-            if useWeights == True:
+            if useLHEWeights == True:
                 event.getByLabel( LHEweightlabel, LHEweighthandle )
                 weights = LHEweighthandle.product()
                 weight = weights.weights()[0].wgt/abs(weights.weights()[0].wgt)
@@ -232,7 +244,8 @@ def fillHists(hists, infile, islist = True, useWeights = False, isData = False):
                 pupInfos = puphandle.product()
                 for pupInfo in pupInfos:
                     if(pupInfo.getBunchCrossing() == 0):
-                        weight *= pileupWeight(int(pupInfo.getTrueNumInteractions()))
+                        weight *= getPileupWeight(int(pupInfo.getTrueNumInteractions()))
+
 
 
             # Fill muon hists
@@ -274,6 +287,9 @@ def fillHists(hists, infile, islist = True, useWeights = False, isData = False):
 
             numJets = len(jets)
             hists[4].Fill(numJets, weight)
+
+            if isData == False:             #Weight of data event is always 1
+                hist_weights.Fill(weight)
 
         if islist is True:
             ifile = filelist.readline()
@@ -324,8 +340,9 @@ def makeStacks(hs, hists_list):
             hs[i].Add(hists_list[j][i])
 
 
-def makeDataPlots(canvas, hists, name="data"):
+def makeDataPlots(hists, name="data"):
     for i in range(0,len(hists)):
+        canvas = ROOT.TCanvas("name"+str(i), "title"+str(i),800,600)
         canvas.Clear()
         hists[i].SetTitleFont(42,"t")
         hists[i].SetTitleFont(42,"xyz")
@@ -333,10 +350,8 @@ def makeDataPlots(canvas, hists, name="data"):
         hists[i].Draw("PE")
         canvas.Print(name + "_" + str(i) + ".png")
 
-def makeMCPlots(canvas, hists, name="mc"):
+def makeMCPlots(hists, name="mc"):
     for i in range(0, len(hists)):
-        #canvas.Clear()
-
         canvas = ROOT.TCanvas("name"+str(i), "title"+str(i),800,600)
         hists[i].SetTitleFont(42,"t")
         hists[i].SetTitleFont(42,"xyz")
@@ -344,7 +359,7 @@ def makeMCPlots(canvas, hists, name="mc"):
         hists[i].Draw("HIST")
         canvas.Print(name + "_" + str(i) + ".png")
 
-def makeFullPlots(canvas, h_data,hs_mc, name="all"):
+def makeFullPlots(h_data,hs_mc, name="all"):
     h_data[0].SetMinimum(0)
     h_data[0].SetMaximum(8000)
     h_data[1].SetMinimum(0)
@@ -415,7 +430,7 @@ def makeFullPlots(canvas, h_data,hs_mc, name="all"):
         h_data[i].Draw("PE")
         hs_mc[i].Draw("HIST same")
         h_data[i].Draw("PE same")
-        #ROOT.gPad.RedrawAxis()      #draw axis in foreground
+        ROOT.gPad.RedrawAxis()      #draw axis in foreground
         leg.Draw("same")
         canvas.Print(name + "_" + str(i) + ".png")
 
@@ -424,6 +439,7 @@ def makeFullPlots(canvas, h_data,hs_mc, name="all"):
         h_data[i].Draw("PE")
         hs_mc[i].Draw("HIST same")
         h_data[i].Draw("PE same")
+        ROOT.gPad.RedrawAxis()      #draw axis in foreground
         leg21.Draw("same")
         leg22.Draw("same")
         canvas.Print(name + "_" + str(i) + ".png")
@@ -436,6 +452,7 @@ def makeFullPlots(canvas, h_data,hs_mc, name="all"):
         h_data[i].Draw("PE")
         hs_mc[i].Draw("HIST same")
         h_data[i].Draw("PE same")
+        ROOT.gPad.RedrawAxis()      #draw axis in foreground
         leg.Draw("same")
 
     for i in (1,3):
@@ -443,27 +460,83 @@ def makeFullPlots(canvas, h_data,hs_mc, name="all"):
         h_data[i].Draw("PE")
         hs_mc[i].Draw("HIST same")
         h_data[i].Draw("PE same")
+        ROOT.gPad.RedrawAxis()      #draw axis in foreground
         leg21.Draw("same")
         leg22.Draw("same")
     canvasSum.Print("alltogether.png")
 
-def computeDiffList(h_data, hlist_mc):
-    diff = []
-    for ihist in range(0,len(h_data)):              #loop over different hists
-        for ibin in range(0,len(h_data[ihist])):    #loop over bins in hist
-            n_mc = 0
-            n_data = h_data[ihist].GetBinContent(ibin)
-            for ihlist in range(0,len(hlist_mc)):     #loop over different mc hists
-                n_mc += hlist_mc[ihlist][ihist].GetBinContent(ibin)
-            diff.append(n_data/(n_mc+1))
-    print("diff: ", diff)
+def plotPileupDistributions():
+    hist_pileup_Data.SetLineColor(ROOT.kRed)
+    hist_pileup_MC.SetLineColor(ROOT.kBlue)
+
+
+    leg = ROOT.TLegend(0.59, 0.69, 0.89, 0.79)
+    leg.SetBorderSize(0)
+    leg.SetTextFont(42)
+    leg.AddEntry(hist_pileup_Data, "Data", "l")
+    leg.AddEntry(hist_pileup_MC, "MC", "l")
+
+    canvas_pileup = ROOT.TCanvas("pileup", "pileup", 800, 600)
+    hist_pileup_MC.SetStats(ROOT.kFALSE)
+    hist_pileup_Data.SetStats(ROOT.kFALSE)
+    hist_pileup_MC.Draw()
+
+    leg.Draw("SAME")
+    hist_pileup_Data.Draw("HIST SAME")
+    canvas_pileup.Print("pileup_distribution.png")
+
+def drawWeightHist(hist):
+    canvas = ROOT.TCanvas("weights", "weights", 800, 600)
+    hist.Draw()
+    canvas.Print("weights.png")
+
+def makeDiffPlot(hist1, histstack):
+    hist_sum = ROOT.TH1F(histstack.GetStack().Last())
+
+    diff = np.array([])
+    for ibin in range(1,hist1.GetNbinsX()+1):
+        binContent_histstack = hist_sum.GetBinContent(ibin)
+        if binContent_histstack != 0:
+            diff = np.append(diff,hist1.GetBinContent(ibin)/binContent_histstack)
+        else:
+            diff = np.append(diff,1)
+
+    x = np.linspace(1, hist1.GetNbinsX(), hist1.GetNbinsX())
+    points = ROOT.TGraph(len(x), x, diff)
+    points.SetMarkerStyle(20)
+    points.SetMarkerSize(0.5)
+
+    middleLine = ROOT.TGraph(2,np.array([0.,hist1.GetNbinsX()]),np.array([1.,1.]))
+
+    points.Draw("P AXIS")
+    middleLine.Draw("SAME")
+
+
+def printDiffList(hist1, hist2, name):
+    diff = np.array([])
+    for ibin in range(1,hist1.GetNbinsX()+1):
+        if hist2.GetBinContent(ibin) != 0:
+            diff = np.append(diff,hist1.GetBinContent(ibin)/hist2.GetBinContent(ibin))
+        else:
+            diff = np.append(diff,1)
+
+    x = np.linspace(1, hist1.GetNbinsX(), hist1.GetNbinsX())
+    points = ROOT.TGraph(len(x), x, diff)
+    points.SetMarkerStyle(20)
+    points.SetMarkerSize(0.5)
+
+    middleLine = ROOT.TGraph(2,np.array([0.,hist1.GetNbinsX()]),np.array([1.,1.]))
+
+    canvas = ROOT.TCanvas("pup_diff", "pup_diff", 800, 600)
+    points.Draw("P AXIS")
+    middleLine.Draw("SAME")
+    canvas.Print(name+".png")
 
 
 #MAIN part
 
 
 lumi_analysis = 35.9
-#lumi_data =      6.615
 lumi_data =      8.746
 
 sigma_tt =            831760
@@ -476,31 +549,38 @@ sigma_wantit =         35600
 sigma_wt =             35600
 sigma_wjets =       61526700
 
-#Efficiency = 1/(number of events before cuts), in case of lheweights its the
+# Efficiency = 1/(number of events before cuts), in case of lheweights its the
 # effective number of events (in this case: number of events with positive weights - number of events with negative weights)
-eff_tt = 1./(77081156 + 77867738)
-eff_dy50 = 1./81781052
-eff_dy10to50 = 1./47946519
-eff_ww = 1./994012
-eff_wz = 1./1000000
-eff_zz = 1./998034
-eff_wantit = 1./6933094
-eff_wt = 1./6952830
-eff_wjets = 1./24120319
+eff_tt =        1./(77081156 + 77867738)
+eff_dy50 =       1./81781052        # effective number of events
+#eff_dy50 =     1./122055388        # true number of events
+eff_dy10to50 =   1./47946519        # effective number of events
+#eff_dy10to50 =  1./65888233        # true number of events
+eff_ww =           1./994012
+eff_wz =          1./1000000
+eff_zz =           1./998034
+eff_wantit =      1./6933094
+eff_wt =          1./6952830
+eff_wjets =      1./16497031        # effective number of events
+#eff_wjets =     1./24120319        # true number of events
 
+#printPilupInfo(hist_pileup_Data, hist_pileup_MC)
 
-print("test pileup: ",pileupWeight(5))
+pupWeights = makePileupWeights(hist_pileup_Data, hist_pileup_MC)
+
+plotPileupDistributions()
+printDiffList(hist_pileup_Data, hist_pileup_MC, "pileup_difference")
 
 fillHists(hists_data, infile=datafile, isData=True)
 fillHists(hists_tt, infile=ttfilelist)
-fillHists(hists_dy50, infile=dy50filelist, useWeights =  True)
-fillHists(hists_dy10to50, infile=dy10to50file, useWeights = True)
+fillHists(hists_dy50, infile=dy50filelist, useLHEWeights =  True)      #only events from amcatnloFXFX generator have weights != 1
+fillHists(hists_dy10to50, infile=dy10to50file, useLHEWeights = True)
 fillHists(hists_ww, infile=wwfile)
 fillHists(hists_wz, infile=wzfile)
 fillHists(hists_zz, infile=zzfile)
 fillHists(hists_wantit, infile=wantitfilelist)
 fillHists(hists_wt, infile=wtfilelist)
-fillHists(hists_wjets, infile=wjetsfilelist, useWeights = True)
+fillHists(hists_wjets, infile=wjetsfilelist, useLHEWeights = True)
 
 
 print("postprocessing")
@@ -526,7 +606,7 @@ colorHists(hists_zz,        ROOT.kYellow)
 colorHists(hists_tt,        ROOT.kRed)
 colorHists(hists_wjets,     ROOT.kGreen)
 
-directory = os.path.dirname('./pileup/')
+directory = os.path.dirname('./plots/')
 # make a canvas, draw, and save it
 if not os.path.exists(directory):
     os.makedirs(directory)
@@ -535,16 +615,18 @@ os.chdir(directory)
 print("draw and save")
 c1 = ROOT.TCanvas()
 
-makeDataPlots(c1, hists_data, name="data")
-makeMCPlots(c1, hists_tt, name="tt")
-makeMCPlots(c1, hists_dy50, name="dy50")
-makeMCPlots(c1, hists_dy10to50, name="dy10to50")
-makeMCPlots(c1, hists_ww, name = "ww")
-makeMCPlots(c1, hists_wz, name = "wz")
-makeMCPlots(c1, hists_zz, name = "zz")
-makeMCPlots(c1, hists_wantit, name = "wantit")
-makeMCPlots(c1, hists_wt, name = "wt")
-makeMCPlots(c1, hists_wjets, name = "wjets")
+drawWeightHist(hist_weights)
+
+makeDataPlots(hists_data, name="data")
+makeMCPlots(hists_tt, name="tt")
+makeMCPlots(hists_dy50, name="dy50")
+makeMCPlots(hists_dy10to50, name="dy10to50")
+makeMCPlots(hists_ww, name = "ww")
+makeMCPlots(hists_wz, name = "wz")
+makeMCPlots(hists_zz, name = "zz")
+makeMCPlots(hists_wantit, name = "wantit")
+makeMCPlots(hists_wt, name = "wt")
+makeMCPlots(hists_wjets, name = "wjets")
 
 histslist_mc = hists_dy10to50, hists_dy50, hists_wantit, hists_wt, hists_ww, hists_wz, hists_zz, hists_wjets, hists_tt
 #histslist_mc = hists_dy50, hists_dy10to50, hists_ww, hists_wz, hists_tt
@@ -555,7 +637,8 @@ for hists in histslist_mc:
 
 makeStacks(hs=hs, hists_list=histslist_mc)
 
-makeFullPlots(c1, h_data=hists_data, hs_mc=hs, name="all")
+makeFullPlots(h_data=hists_data, hs_mc=hs, name="all")
+
 
 #computeDiffList(hists_data, histslist_mc)
 

@@ -40,10 +40,10 @@ process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
-if options.isData == True:
-    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v8'     # For Data Jet Energy correction
 if options.isData == False:
-    process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'               # For MC Jet Energy correction
+    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v8'     # For MC Jet Energy correction
+if options.isData == True:
+    process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'               # For Data Jet Energy correction
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -56,7 +56,6 @@ process.options = cms.untracked.PSet(
    allowUnscheduled = cms.untracked.bool(True),
    wantSummary=cms.untracked.bool(True)
 )
-
 
 
 sampleListFile = 'DeepNTuples.DeepNtuplizer.samples.singleMuon_2016_cfg'
@@ -114,11 +113,13 @@ for idmod in my_id_modules:
     setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
 
 #HighLevelTrigger
-HLTlistSM = cms.vstring("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*",
-                        "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v*",
-                        "HLT_Ele27_WPTight_Gsf_v*",
-                        "HLT_IsoTkMu24_v*",
-                        "HLT_IsoMu24_v*"
+HLTlistSM = cms.vstring(#"HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*",       #Run B-G
+                        #"HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*",        #Run B-G
+                        "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*",    #Run H
+                        "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v*",     #Run H
+                        "HLT_Ele27_WPTight_Gsf_v*",                                 #Run B-H
+                        "HLT_IsoTkMu24_v*",                                         #Run B-H
+                        "HLT_IsoMu24_v*"                                            #Run B-H
                         )
 process.hltHighLevelSM = cms.EDFilter("HLTHighLevel",
                                        TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),

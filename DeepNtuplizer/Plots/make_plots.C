@@ -7,7 +7,15 @@
 //#include <TFile.h>
 //#endif
 
-void make_plots(){
+//void make_plots()
+{
+   gSystem->Load("libFWCoreFWLite.so");
+   AutoLibraryLoader::enable();
+   gSystem->Load("libDataFormatsFWLite.so");
+   gSystem->Load("libDataFormatsPatCandidates.so");
+}
+
+{
    #include "DataFormats/FWLite/interface/Handle.h"
    std::cout<<" start make_plots "<<std::endl;
 

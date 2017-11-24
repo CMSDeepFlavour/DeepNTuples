@@ -78,7 +78,7 @@ puAnalyzer::puAnalyzer(const edm::ParameterSet& iConfig):
    EDMPUInfoToken(consumes<std::vector<PileupSummaryInfo> > (iConfig.getParameter<edm::InputTag>("pileupInfo"))){
 
    edm::Service<TFileService> fs;
-   h_pileup = fs->make<TH1F>( "pileup"  , "Number of interactions per bunch crossing", 60,  0., 60 );
+   h_pileup = fs->make<TH1F>( "pileup"  , "Number of interactions per bunch crossing", 70,  0., 70 );
 
 }
 
@@ -103,7 +103,6 @@ puAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    //using namespace edm;
 
    edm::Handle< std::vector<PileupSummaryInfo> >  PupInfo;
-
    iEvent.getByToken(EDMPUInfoToken, PupInfo);
 
 
@@ -111,13 +110,13 @@ puAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    float Tnpv = -1;
    for(PVI = PupInfo->begin(); PVI != PupInfo->end(); ++PVI) {
 
-       int BX = PVI->getBunchCrossing();
+      int BX = PVI->getBunchCrossing();
 
-       if(BX == 0) {
+      if(BX == 0) {
          Tnpv = PVI->getTrueNumInteractions();
          continue;
-       }
-   }
+         }
+      }
    h_pileup->Fill(Tnpv);
 
 }
