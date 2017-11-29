@@ -32,5 +32,10 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                 isHerwig=cms.bool(False),
                                 useOffsets=cms.bool(True),
                                 applySelection=cms.bool(True),
-                                runonData=cms.bool(True)
+                                runonData=cms.bool(True),
+
+                                #for computation of event weights
+                                crossSection=cms.double(1.0),
+                                luminosity = cms.double(1.0),
+                                efficiency = cms.double(1.0)    #1/((effective) number of events
                                 )

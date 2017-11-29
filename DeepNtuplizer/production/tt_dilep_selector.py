@@ -14,7 +14,7 @@ options.register('maxEvents',-1,VarParsing.VarParsing.multiplicity.singleton,Var
 options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "skip N events")
 options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "job number")
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
-options.register('isData', True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "switch off generator jets")
+options.register('isData', False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "switch off generator jets")
 
 import os
 release=os.environ['CMSSW_VERSION'][6:11]
@@ -68,7 +68,7 @@ if options.inputScript != '' and options.inputScript != sampleListFile:
     process.load(options.inputScript)
 
 #process.source.fileNames=['file:./00E02A09-853C-E711-93FF-3417EBE644A7.root']   #store/data/Run2016H/SingleMuon/MINIAOD/18Apr2017-v1/00000/00E02A09-853C-E711-93FF-3417EBE644A7.root
-#process.source.fileNames=['file:./000C6E52-8BEC-E611-B3FF-0025905C42FE.root']  #
+#process.source.fileNames=['file:./000C6E52-8BEC-E611-B3FF-0025905C42FE.root']   #
 
 numberOfFiles = len(process.source.fileNames)
 numberOfJobs = options.nJobs
@@ -91,8 +91,7 @@ process.MINIAODSIMEventContent.outputCommands.extend([
     'keep *_GoodElectron_*_*',
     'keep *_GoodMuon_*_*',
     'keep *_GoodJets_*_*',
-    'keep *_GoodOFLeptonPair_*_*',
-    'keep *_GoodFinalSel_*_*'
+    'keep *_GoodOFLeptonPair_*_*'
 ])
 
 process.outmod = cms.OutputModule("PoolOutputModule",
@@ -217,7 +216,6 @@ process.FinalSel = cms.EDFilter("CandViewCountFilter",
      src = cms.InputTag("GoodOFLeptonPair"),
      minNumber = cms.uint32(1),
   )
-
 
 
 if options.isData:

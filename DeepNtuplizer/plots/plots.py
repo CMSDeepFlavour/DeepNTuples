@@ -1,5 +1,5 @@
 #########
-#   Make Plots from MiniAOD root file computed with tt_dilep_selector
+#   Make control Plots for Data/MC comparison from MiniAOD root file computed with tt_dilep_selector
 #########
 import pdb
 import ROOT
@@ -245,6 +245,7 @@ def fillHists(hists, infile, islist = True, useLHEWeights = False, isData = Fals
                 for pupInfo in pupInfos:
                     if(pupInfo.getBunchCrossing() == 0):
                         weight *= getPileupWeight(int(pupInfo.getTrueNumInteractions()))
+
 
 
 
@@ -536,7 +537,7 @@ def printDiffList(hist1, hist2, name):
 #MAIN part
 
 
-lumi_analysis = 35.9
+lumi_total = 35.9
 lumi_data =      8.746
 
 sigma_tt =            831760
@@ -584,16 +585,16 @@ fillHists(hists_wjets, infile=wjetsfilelist, useLHEWeights = True)
 
 
 print("postprocessing")
-ScaleHists(hists_data,                              lumi=lumi_analysis/lumi_data)
-ScaleHists(hists_tt,        sigma = sigma_tt,       lumi = lumi_analysis,   eff = eff_tt)
-ScaleHists(hists_dy50,      sigma = sigma_dy50,     lumi = lumi_analysis,   eff = eff_dy50)
-ScaleHists(hists_dy10to50,  sigma = sigma_dy10to50, lumi = lumi_analysis,   eff = eff_dy10to50)
-ScaleHists(hists_ww,        sigma = sigma_ww,       lumi = lumi_analysis,   eff = eff_ww)
-ScaleHists(hists_wz,        sigma = sigma_wz,       lumi = lumi_analysis,   eff = eff_wz)
-ScaleHists(hists_zz,        sigma = sigma_zz,       lumi = lumi_analysis,   eff = eff_zz)
-ScaleHists(hists_wantit,    sigma = sigma_wantit,   lumi = lumi_analysis,   eff = eff_wantit)
-ScaleHists(hists_wt,        sigma = sigma_wt,       lumi = lumi_analysis,   eff = eff_wt)
-ScaleHists(hists_wjets,     sigma = sigma_wjets,    lumi = lumi_analysis,   eff = eff_wjets)
+ScaleHists(hists_data,                              lumi=lumi_total/lumi_data)
+ScaleHists(hists_tt,        sigma = sigma_tt,       lumi = lumi_total,   eff = eff_tt)
+ScaleHists(hists_dy50,      sigma = sigma_dy50,     lumi = lumi_total,   eff = eff_dy50)
+ScaleHists(hists_dy10to50,  sigma = sigma_dy10to50, lumi = lumi_total,   eff = eff_dy10to50)
+ScaleHists(hists_ww,        sigma = sigma_ww,       lumi = lumi_total,   eff = eff_ww)
+ScaleHists(hists_wz,        sigma = sigma_wz,       lumi = lumi_total,   eff = eff_wz)
+ScaleHists(hists_zz,        sigma = sigma_zz,       lumi = lumi_total,   eff = eff_zz)
+ScaleHists(hists_wantit,    sigma = sigma_wantit,   lumi = lumi_total,   eff = eff_wantit)
+ScaleHists(hists_wt,        sigma = sigma_wt,       lumi = lumi_total,   eff = eff_wt)
+ScaleHists(hists_wjets,     sigma = sigma_wjets,    lumi = lumi_total,   eff = eff_wjets)
 
 
 colorHists(hists_dy10to50,  ROOT.kBlue)
@@ -631,16 +632,26 @@ makeMCPlots(hists_wjets, name = "wjets")
 histslist_mc = hists_dy10to50, hists_dy50, hists_wantit, hists_wt, hists_ww, hists_wz, hists_zz, hists_wjets, hists_tt
 #histslist_mc = hists_dy50, hists_dy10to50, hists_ww, hists_wz, hists_tt
 
+makeStacks(hs=hs, hists_list=histslist_mc)
+
+#hist_sum_ll_pt = ROOT.TH1F(hs[0].GetStack().Last())
+
+#scaleFactor = hists_data[0].Integral()/hist_sum_ll_pt.Integral()
+#print("overall scale factor ", scaleFactor)
+
+scaleFactor = 0.8180639286773081
+
+for hists in histslist_mc:
+    for hist in hists:
+        hist.Scale(scaleFactor)
+
+
 removeStatusBoxes(hists_data)
 for hists in histslist_mc:
     removeStatusBoxes(hists)
 
-makeStacks(hs=hs, hists_list=histslist_mc)
 
 makeFullPlots(h_data=hists_data, hs_mc=hs, name="all")
-
-
-#computeDiffList(hists_data, histslist_mc)
 
 print("finish at: " + str(datetime.datetime.now()))
 
