@@ -1,3 +1,7 @@
+##########
+#   tested with CMSSW 8.0.29
+#   selection modul to filter events with single electron and single muon
+##########
 
 import FWCore.ParameterSet.Config as cms
 

@@ -15,8 +15,7 @@ options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarPars
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
 options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "gluon reduction")
 options.register('selectJets', True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "select jets with good gen match")
-options.register('runonData', False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "switch off generator jets")
-options.register('crossSection', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "cross section information for computing weights")
+options.register('isData', False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "switch off generator jets")
 
 import os
 release=os.environ['CMSSW_VERSION'][6:11]
@@ -43,9 +42,11 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-from Configuration.AlCa.GlobalTag import GlobalTag
-#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
+
+if options.isData:
+    process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'  # For Data Jet Energy correction
+else:
+    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v8'  # For MC Jet Energy correction
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -70,6 +71,8 @@ if options.inputFiles:
 
 if options.inputScript != '' and options.inputScript != sampleListFile:
     process.load(options.inputScript)
+
+process.source.fileNames = ['file:./TT/output_0_1.root']
 
 numberOfFiles = len(process.source.fileNames)
 numberOfJobs = options.nJobs
@@ -126,14 +129,17 @@ else :
          'deepFlavourJetTags:probcc',
  ]
 
-jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
+if options.isData:
+    jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
+else:
+    jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual'], 'None')
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 updateJetCollection(
         process,
         labelName = "DeepFlavour",
 #         jetSource=cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked', 'SubJets'),  # 'subjets from AK8'
-        jetSource = cms.InputTag('slimmedJets'),  # 'ak4Jets'
+        jetSource = cms.InputTag('GoodJets'),  # 'ak4Jets'
         jetCorrections = jetCorrectionsAK4,
         pfCandidates = cms.InputTag('packedPFCandidates'),
         pvSource = cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -241,15 +247,9 @@ if int(release.replace("_",""))>=840 :
 
 process.deepntuplizer.gluonReduction  = cms.double(options.gluonReduction)
 
-#1631
-process.ProfilerService = cms.Service (
-      "ProfilerService",
-       firstEvent = cms.untracked.int32(1631),
-       lastEvent = cms.untracked.int32(1641),
-       paths = cms.untracked.vstring('p') 
-)
 
-if options.runonData:
+
+if options.isData:
     process.p = cms.Path(process.QGTagger + process.deepntuplizer)
 else:
     process.p = cms.Path(process.QGTagger + process.genJetSequence * process.deepntuplizer)

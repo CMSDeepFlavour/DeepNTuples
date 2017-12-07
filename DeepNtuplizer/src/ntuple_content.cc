@@ -36,6 +36,7 @@ const std::vector<PileupSummaryInfo> * ntuple_content::pupInfo()const{
 	return pupInfo_;
 }
 
+
 const double * ntuple_content::rhoInfo()const{
 	return rhoInfo_;
 }

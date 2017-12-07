@@ -13,6 +13,9 @@
 #include <map>
 #include <string>
 
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+
+
 /*
  * For global jet info such as eta, pt, gen info
  */
@@ -69,6 +72,9 @@ public:
     void setElectronsToken(edm::EDGetTokenT<pat::ElectronCollection> electronsToken) {
         electronsToken_ = electronsToken;
     }
+    void setLHEToken(edm::EDGetTokenT<LHEEventProduct> lheToken){
+        lheToken_ = lheToken;
+        }
 
     void setUseHerwigCompatibleMatching(const bool use){
         useherwcompat_matching_=use;
@@ -76,6 +82,7 @@ public:
     void setIsHerwig(const bool use){
         isherwig_=use;
     }
+
 
     //private:
 
@@ -101,7 +108,9 @@ public:
 
     edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken_;
 
-    edm::EDGetTokenT<pat::MuonCollection> muonsToken_;       
+    edm::EDGetTokenT<pat::MuonCollection> muonsToken_;
+    edm::EDGetTokenT<LHEEventProduct>  lheToken_;
+
     edm::EDGetTokenT<pat::ElectronCollection> electronsToken_;
 
     edm::Handle<edm::Association<reco::GenJetCollection> > genJetMatchRecluster;
@@ -111,6 +120,9 @@ public:
 
     edm::Handle<pat::MuonCollection> muonsHandle;
     edm::Handle<pat::ElectronCollection> electronsHandle;
+
+    edm::Handle<LHEEventProduct> lheInfo;
+
 
 
     TRandom3 TRandom_;
@@ -183,6 +195,16 @@ public:
     float  jet_phi_;
     float  jet_mass_;
     float  jet_energy_;
+
+    //Weight variables
+    bool useLHEWeights_;
+    std::string pupDataDir_;
+    std::string pupMCDir_;
+    std::vector<double> pupWeights;
+    float crossSection_;
+    float luminosity_;
+    float efficiency_;
+    float jet_weight_;
 
     float jet_looseId_;
 

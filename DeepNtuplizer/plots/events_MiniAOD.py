@@ -62,7 +62,8 @@ electronlabel = ("GoodElectron")
 
 ### Jets
 jethandle = Handle('vector<pat::Jet>')
-jetlabel = ("GoodJets")
+#jetlabel = ("GoodJets")
+jetlabel = ("slimmedJets")
 
 ### LHE weights
 LHEweighthandle = Handle('LHEEventProduct')
@@ -84,61 +85,61 @@ hist_ll_pt_data = ROOT.TH1F("ll_pt_data", "pt ot the leading lepton", 10, array(
 hist_ll_eta_data = ROOT.TH1F("ll_eta_data", "eta of the leading leption", 20, -2.4, 2.4)
 hist_tl_pt_data = ROOT.TH1F("tl_pt_data", "pt ot the trailing lepton", 11, array('d', [0, 20, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_tl_eta_data = ROOT.TH1F("tl_eta_data", "eta of the trailing leption", 20, -2.4, 2.4)
-hist_j_n_data = ROOT.TH1F("number_data", "number of  jets", 10, -0.5, 9.5)
+hist_j_n_data = ROOT.TH1F("number_data", "number of  jets", 30, -0.5, 29.5)
 
 hist_ll_pt_tt = ROOT.TH1F("ll_pt_tt", "pt ot the leading lepton", 10, array('d', [0, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_ll_eta_tt = ROOT.TH1F("ll_eta_tt", "eta of the leading leption", 20, -2.4, 2.4)
 hist_tl_pt_tt = ROOT.TH1F("tl_pt_tt", "pt ot the trailing lepton", 11, array('d', [0, 20, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_tl_eta_tt = ROOT.TH1F("tl_eta_tt", "eta of the trailing leption", 20, -2.4, 2.4)
-hist_j_n_tt = ROOT.TH1F("number_tt", "number of  jets", 10, -0.5, 9.5)
+hist_j_n_tt = ROOT.TH1F("number_tt", "number of  jets", 30, -0.5, 29.5)
 
 hist_ll_pt_dy50 = ROOT.TH1F("ll_pt_dy50", "pt ot the leading lepton", 10, array('d', [0, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_ll_eta_dy50 = ROOT.TH1F("ll_eta_dy50", "eta of the leading leption", 20, -2.4, 2.4)
 hist_tl_pt_dy50 = ROOT.TH1F("tl_pt_dy50", "pt ot the trailing lepton", 11, array('d', [0, 20, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_tl_eta_dy50 = ROOT.TH1F("tl_eta_dy50", "eta of the trailing leption", 20, -2.4, 2.4)
-hist_j_n_dy50 = ROOT.TH1F("number_dy50", "number of  jets", 10, -0.5, 9.5)
+hist_j_n_dy50 = ROOT.TH1F("number_dy50", "number of  jets", 30, -0.5, 29.5)
 
 hist_ll_pt_dy10to50 = ROOT.TH1F("ll_pt_dy10to50", "pt ot the leading lepton", 10, array('d', [0, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_ll_eta_dy10to50 = ROOT.TH1F("ll_eta_dy10to50", "eta of the leading leption", 20, -2.4, 2.4)
 hist_tl_pt_dy10to50 = ROOT.TH1F("tl_pt_dy10to50", "pt ot the trailing lepton", 11, array('d', [0, 20, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_tl_eta_dy10to50 = ROOT.TH1F("tl_eta_dy10to50", "eta of the trailing leption", 20, -2.4, 2.4)
-hist_j_n_dy10to50 = ROOT.TH1F("number_dy10to50", "number of  jets", 10, -0.5, 9.5)
+hist_j_n_dy10to50 = ROOT.TH1F("number_dy10to50", "number of  jets", 30, -0.5, 29.5)
 
 hist_ll_pt_ww = ROOT.TH1F("ll_pt_ww", "pt ot the leading lepton", 10, array('d', [0, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_ll_eta_ww = ROOT.TH1F("ll_eta_ww", "eta of the leading leption", 20, -2.4, 2.4)
 hist_tl_pt_ww = ROOT.TH1F("tl_pt_ww", "pt ot the trailing lepton", 11, array('d', [0, 20, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_tl_eta_ww = ROOT.TH1F("tl_eta_ww", "eta of the trailing leption", 20, -2.4, 2.4)
-hist_j_n_ww = ROOT.TH1F("number_ww", "number of  jets", 10, -0.5, 9.5)
+hist_j_n_ww = ROOT.TH1F("number_ww", "number of  jets", 30, -0.5, 29.5)
 
 hist_ll_pt_wz = ROOT.TH1F("ll_pt_wz", "pt ot the leading lepton", 10, array('d', [0, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_ll_eta_wz = ROOT.TH1F("ll_eta_wz", "eta of the leading leption", 20, -2.4, 2.4)
 hist_tl_pt_wz = ROOT.TH1F("tl_pt_wz", "pt ot the trailing lepton", 11, array('d', [0, 20, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_tl_eta_wz = ROOT.TH1F("tl_eta_wz", "eta of the trailing leption", 20, -2.4, 2.4)
-hist_j_n_wz = ROOT.TH1F("number_wz", "number of  jets", 10, -0.5, 9.5)
+hist_j_n_wz = ROOT.TH1F("number_wz", "number of  jets", 30, -0.5, 29.5)
 
 hist_ll_pt_zz = ROOT.TH1F("ll_pt_zz", "pt ot the leading lepton", 10, array('d', [0, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_ll_eta_zz = ROOT.TH1F("ll_eta_zz", "eta of the leading leption", 20, -2.4, 2.4)
 hist_tl_pt_zz = ROOT.TH1F("tl_pt_zz", "pt ot the trailing lepton", 11, array('d', [0, 20, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_tl_eta_zz = ROOT.TH1F("tl_eta_zz", "eta of the trailing leption", 20, -2.4, 2.4)
-hist_j_n_zz = ROOT.TH1F("number_zz", "number of  jets", 10, -0.5, 9.5)
+hist_j_n_zz = ROOT.TH1F("number_zz", "number of  jets", 30, -0.5, 29.5)
 
 hist_ll_pt_wantit = ROOT.TH1F("ll_pt_wantit", "pt ot the leading lepton", 10, array('d', [0, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_ll_eta_wantit = ROOT.TH1F("ll_eta_wantit", "eta of the leading leption", 20, -2.4, 2.4)
 hist_tl_pt_wantit = ROOT.TH1F("tl_pt_wantit", "pt ot the trailing lepton", 11, array('d', [0, 20, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_tl_eta_wantit = ROOT.TH1F("tl_eta_wantit", "eta of the trailing leption", 20, -2.4, 2.4)
-hist_j_n_wantit = ROOT.TH1F("number_wantit", "number of  jets", 10, -0.5, 9.5)
+hist_j_n_wantit = ROOT.TH1F("number_wantit", "number of  jets", 30, -0.5, 29.5)
 
 hist_ll_pt_wt = ROOT.TH1F("ll_pt_wt", "pt ot the leading lepton", 10, array('d', [0, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_ll_eta_wt = ROOT.TH1F("ll_eta_wt", "eta of the leading leption", 20, -2.4, 2.4)
 hist_tl_pt_wt = ROOT.TH1F("tl_pt_wt", "pt ot the trailing lepton", 11, array('d', [0, 20, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_tl_eta_wt = ROOT.TH1F("tl_eta_wt", "eta of the trailing leption", 20, -2.4, 2.4)
-hist_j_n_wt = ROOT.TH1F("number_wt", "number of  jets", 10, -0.5, 9.5)
+hist_j_n_wt = ROOT.TH1F("number_wt", "number of  jets", 30, -0.5, 29.5)
 
 hist_ll_pt_wjets = ROOT.TH1F("ll_pt_wjets", "pt ot the leading lepton", 10, array('d', [0, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_ll_eta_wjets = ROOT.TH1F("ll_eta_wjets", "eta of the leading leption", 20, -2.4, 2.4)
 hist_tl_pt_wjets = ROOT.TH1F("tl_pt_wjets", "pt ot the trailing lepton", 11, array('d', [0, 20, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_tl_eta_wjets = ROOT.TH1F("tl_eta_wjets", "eta of the trailing leption", 20, -2.4, 2.4)
-hist_j_n_wjets = ROOT.TH1F("number_wjets", "number of  jets", 10, -0.5, 9.5)
+hist_j_n_wjets = ROOT.TH1F("number_wjets", "number of  jets", 30, -0.5, 29.5)
 
 hist_weights = ROOT.TH1F("weights", "event weight", 50, -9,9)
 
@@ -654,5 +655,6 @@ for hists in histslist_mc:
 makeFullPlots(h_data=hists_data, hs_mc=hs, name="all")
 
 print("finish at: " + str(datetime.datetime.now()))
+
 
 

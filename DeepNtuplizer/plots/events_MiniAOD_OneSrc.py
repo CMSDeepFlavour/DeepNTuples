@@ -32,7 +32,8 @@ ROOT.gSystem.Load("libDataFormatsPatCandidates.so")
 #
 
 #datafile = "data.txt"
-datafile = "output_0.root"
+datafile = "TT/output_0_1.root"
+#tupleFile = "output_0.root"
 
 
 print("create handles")
@@ -50,7 +51,7 @@ electronlabel = ("GoodElectron")
 ### Jets
 jethandle = Handle('vector<pat::Jet>')
 jetlabel = ("GoodJets")
-jetcorrlabel= ("updatedPatJetsUpdatedJEC")
+#jetcorrlabel= ("updatedPatJetsUpdatedJEC")
 
 ROOT.gROOT.SetBatch()  # don't pop up canvases
 
@@ -68,7 +69,7 @@ hist_ll_pt = ROOT.TH1F("ll_pt_data", "pt ot the leading lepton", 10, array('d', 
 hist_ll_eta = ROOT.TH1F("ll_eta_data", "eta of the leading leption", 20, -2.4, 2.4)
 hist_tl_pt = ROOT.TH1F("tl_pt_data", "pt ot the trailing lepton", 11, array('d', [0, 20, 25, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_tl_eta = ROOT.TH1F("tl_eta_data", "eta of the trailing leption", 20, -2.4, 2.4)
-hist_j_pt = ROOT.TH1F ("jet_pt", "pt of  jets", 9, array('d', [0, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
+hist_j_pt = ROOT.TH1F ("jet_pt", "pt of  jets", 50,0,700) #, array('d',[0, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
 hist_j_eta = ROOT.TH1F ("jet_eta", "eta of  jets", 14, array('d', [-2.8,-2.4,-2, -1.6,-1.2,-0.8,-0.4,0,0.4,0.8,1.2,1.6,2.0,2.4,2.8]))
 hist_j_n = ROOT.TH1F("jet_n", "number of  jets", 10, -0.5, 9.5)
 hist_jcor_pt = ROOT.TH1F ("jetcor_pt", "pt of  jets", 9, array('d', [0, 30, 35, 40, 45, 50, 60, 70, 100, 200]))
@@ -178,13 +179,13 @@ def fillHists(hists, infile, islist = False):
             numJets = len(jets)
             hists[10].Fill(numJets)
 
-            event.getByLabel(jetcorrlabel, jethandle)
-            corrjets = jethandle.product()
-            for jet in corrjets:
-                hists[19].Fill(jet.pt())
-                hists[20].Fill(jet.eta())
-            numCorrJets = len(corrjets)
-            hists[21].Fill(numCorrJets)
+            #event.getByLabel(jetcorrlabel, jethandle)
+            #corrjets = jethandle.product()
+            #for jet in corrjets:
+            #    hists[19].Fill(jet.pt())
+            #    hists[20].Fill(jet.eta())
+            #numCorrJets = len(corrjets)
+            #hists[21].Fill(numCorrJets)
 
         if islist is True:
             ifile = filelist.readline()
@@ -215,7 +216,7 @@ def ScaleHists(hists, sigma=1, lumi = 1, eff=1):
     divideByBinWidth(hists[2])
     divideByBinWidth(hists[4])
     divideByBinWidth(hists[6])
-    divideByBinWidth(hists[8])
+    #divideByBinWidth(hists[8])
     divideByBinWidth(hists[11])
     divideByBinWidth(hists[13])
     divideByBinWidth(hists[15])
@@ -268,7 +269,7 @@ fillHists(hists, infile=datafile, islist=False)
 
 
 print("postprocessing")
-ScaleHists(hists, lumi=lumi_analysis/lumi_data)
+#ScaleHists(hists, lumi=lumi_analysis/lumi_data)
 
 
 directory = os.path.dirname('./plots_data_upd/')

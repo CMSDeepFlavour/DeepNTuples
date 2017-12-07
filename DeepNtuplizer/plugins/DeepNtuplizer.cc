@@ -52,6 +52,7 @@
 #include "TrackingTools/IPTools/interface/IPTools.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
 
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 
 
 #if defined( __GXX_EXPERIMENTAL_CXX0X__)
@@ -84,6 +85,7 @@ private:
     edm::EDGetTokenT<reco::VertexCompositePtrCandidateCollection> svToken_;
     edm::EDGetTokenT<edm::View<pat::Jet> >      jetToken_;
     edm::EDGetTokenT<std::vector<PileupSummaryInfo>> puToken_;
+    //edm::EDGetTokenT<LHEEventProduct> lheToken_;
     edm::EDGetTokenT<double> rhoToken_;
 
     std::string t_qgtagger;
@@ -102,7 +104,7 @@ private:
     std::vector<ntuple_content* > modules_;
 
     bool applySelection_;
-    bool runonData_;
+    bool isData_;
 };
 
 DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
@@ -128,7 +130,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     const bool useHerwigCompatibleMatching=iConfig.getParameter<bool>("useHerwigCompatible");
     const bool isHerwig=iConfig.getParameter<bool>("isHerwig");
 
-    runonData_ = iConfig.getParameter<bool>("runonData");
+    isData_ = iConfig.getParameter<bool>("isData");
 
     ntuple_content::useoffsets = iConfig.getParameter<bool>("useOffsets");
 
@@ -160,7 +162,8 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     jetinfo->setIsHerwig(isHerwig);
 
 
-    if(!runonData_){
+
+    if(!isData_){
         jetinfo->setGenJetMatchReclusterToken(
                 consumes<edm::Association<reco::GenJetCollection> >(
                         iConfig.getParameter<edm::InputTag>( "genJetMatchRecluster" )));
@@ -180,6 +183,11 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     jetinfo->setElectronsToken(
             consumes<pat::ElectronCollection>(
                     iConfig.getParameter<edm::InputTag>("electrons")));
+
+    jetinfo->setLHEToken(
+            consumes<LHEEventProduct>(
+                    iConfig.getParameter<edm::InputTag>("lheInfo")));
+
 
     addModule(jetinfo);
 

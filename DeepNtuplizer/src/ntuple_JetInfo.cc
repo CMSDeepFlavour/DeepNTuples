@@ -15,6 +15,9 @@
 #include <algorithm>
 #include "DataFormats/Math/interface/deltaR.h"
 
+#include <TFile.h>
+#include <TH1.h>
+
 using namespace std;
 
 void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
@@ -25,10 +28,36 @@ void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
     jetAbsEtaMin_=(iConfig.getParameter<double>("jetAbsEtaMin"));
     jetAbsEtaMax_=(iConfig.getParameter<double>("jetAbsEtaMax"));
 
+    pupDataDir_ = (iConfig.getParameter<string>("pupDataDir"));
+    pupMCDir_ = (iConfig.getParameter<string>("pupMCDir"));
+
+    useLHEWeights_ = (iConfig.getParameter<bool>("useLHEWeights"));
+    crossSection_ = (iConfig.getParameter<double>("crossSection"));
+    luminosity_ = (iConfig.getParameter<double>("luminosity"));
+    efficiency_ = (iConfig.getParameter<double>("efficiency"));
+
+
     vector<string> disc_names = iConfig.getParameter<vector<string> >("bDiscriminators");
     for(auto& name : disc_names) {
         discriminators_[name] = 0.;
     }
+
+    TFile *pupMCFile = new TFile(pupMCDir_.c_str());
+    TFile *pupDataFile = new TFile(pupDataDir_.c_str());
+
+    TH1F * pupMCHist = (TH1F*)pupMCFile->Get("pileup");
+    TH1F * pupDataHist = (TH1F*)pupDataFile->Get("pileup");
+
+    pupMCHist->Scale(1./pupMCHist->Integral());
+    pupDataHist->Scale(1./pupDataHist->Integral());
+
+    pupWeights.push_back(1.0);
+    for(int bin = 1; bin < pupMCHist->GetNbinsX() + 1; bin++){
+        pupWeights.push_back(pupDataHist->GetBinContent(bin)/pupMCHist->GetBinContent(bin));
+    }
+
+
+
 }
 void ntuple_JetInfo::initBranches(TTree* tree){
 
@@ -84,7 +113,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"jet_mass", &jet_mass_);
     addBranch(tree,"jet_energy", &jet_energy_);
 
-
+    addBranch(tree,"jet_weight", &jet_weight_);
     //jet id
     addBranch(tree,"jet_looseId", &jet_looseId_);
 
@@ -102,7 +131,6 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"y_axis1"    ,&y_axis1_,"y_axis1_/f"    );
     addBranch(tree,"y_axis2"    ,&y_axis2_,"y_axis2_/f"    );
     addBranch(tree,"y_pt_dr_log"    ,&y_pt_dr_log_,"y_pt_dr_log_/f"    );
-
 
     // in the jet
 
@@ -295,9 +323,27 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet,
                 ntrueInt_ = v.getTrueNumInteractions();
             }
         }
-    }
 
+        double lheWeight = 1.;
+
+        if(useLHEWeights_){
+            iEvent.getByToken(lheToken_, lheInfo);
+            lheWeight = lheInfo->weights()[0].wgt/std::abs(lheInfo->weights()[0].wgt);
+        }
+
+        double pupWeight = 0;
+        if(ntrueInt_ < pupWeights.size()){
+            pupWeight = pupWeights.at(ntrueInt_);
+        }
+
+
+        jet_weight_ = luminosity_ *  crossSection_ * efficiency_ * lheWeight * pupWeight;
+    }
+    else{
+        jet_weight_ = luminosity_ * crossSection_ * efficiency_;
+    }
     rho_ = rhoInfo()[0];
+
 
 
     jet_no_=jetidx;
