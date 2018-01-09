@@ -13,6 +13,7 @@ options.register('maxEvents',-1,VarParsing.VarParsing.multiplicity.singleton,Var
 options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "skip N events")
 options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "job number")
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
+options.register('reportEvery', 100, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "report every")
 options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "gluon reduction")
 options.register('selectJets', True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "select jets with good gen match")
 
@@ -49,9 +50,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 10
-if options.inputScript == '': #this is probably for testing
-	process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
 
 process.options = cms.untracked.PSet(
    allowUnscheduled = cms.untracked.bool(True),  
@@ -107,7 +106,6 @@ if int(release.replace("_",""))>=840 :
          'pfDeepCSVJetTags:probb',
          'pfDeepCSVJetTags:probc',
          'pfDeepCSVJetTags:probbb',
-         'pfDeepCSVJetTags:probcc',
  ]
 else :
   bTagDiscriminators = [
@@ -237,4 +235,15 @@ process.ProfilerService = cms.Service (
        paths = cms.untracked.vstring('p') 
 )
 
-process.p = cms.Path(process.QGTagger + process.genJetSequence*  process.deepntuplizer)
+#Trick to make it work in 9_1_X
+process.tsk = cms.Task()
+for mod in process.producers_().itervalues():
+    process.tsk.add(mod)
+for mod in process.filters_().itervalues():
+    process.tsk.add(mod)
+
+process.p = cms.Path(
+	process.QGTagger + process.genJetSequence*  
+	process.deepntuplizer,
+	process.tsk
+	)
