@@ -10,6 +10,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <vector>
+#include <iostream>
+
 namespace sorting{
 
 /*
@@ -100,7 +103,7 @@ public:
     }
 
     static bool compareByABCInv(const sortingClass& a, const sortingClass& b){
-        return !compareByABC(a,b);
+			return compareByABC(b,a);
     }
 
  //private:
