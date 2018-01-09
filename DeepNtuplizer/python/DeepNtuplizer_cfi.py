@@ -26,7 +26,7 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                 bDiscriminators = cms.vstring(),
                                 qgtagger        = cms.string("QGTagger"),
                                 candidates      = cms.InputTag("packedPFCandidates"),
-                                
+                                minCandidatePt  = cms.double(0.95),
                                 
                                 useHerwigCompatible=cms.bool(False),
                                 isHerwig=cms.bool(False),

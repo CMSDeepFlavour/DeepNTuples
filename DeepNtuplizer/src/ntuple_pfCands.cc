@@ -43,6 +43,30 @@ public:
 }
 
     void buildTrackInfo(const pat::PackedCandidate* PackedCandidate_ ,const math::XYZVector&  jetDir, GlobalVector refjetdirection, const reco::Vertex & pv){
+			TVector3 jetDir3(jetDir.x(),jetDir.y(),jetDir.z());
+			if(!PackedCandidate_->hasTrackDetails()) {
+				TVector3 trackMom3(
+					PackedCandidate_->momentum().x(),
+					PackedCandidate_->momentum().y(),
+					PackedCandidate_->momentum().z()
+					);
+				trackMomentum_=PackedCandidate_->p();
+				trackEta_= PackedCandidate_->eta();
+				trackEtaRel_=reco::btau::etaRel(jetDir, PackedCandidate_->momentum());
+				trackPtRel_=trackMom3.Perp(jetDir3);
+				trackPPar_=jetDir.Dot(PackedCandidate_->momentum());
+				trackDeltaR_=reco::deltaR(PackedCandidate_->momentum(), jetDir);
+				trackPtRatio_=trackMom3.Perp(jetDir3) / PackedCandidate_->p();
+				trackPParRatio_=jetDir.Dot(PackedCandidate_->momentum()) / PackedCandidate_->p();
+				trackSip2dVal_=0.;
+				trackSip2dSig_=0.;
+				trackSip3dVal_=0.;
+				trackSip3dSig_=0.;
+				trackJetDistVal_=0.;
+				trackJetDistSig_=0.;
+				return;
+			}
+
         const reco::Track & PseudoTrack =  PackedCandidate_->pseudoTrack();
 
         reco::TransientTrack transientTrack;
@@ -53,7 +77,6 @@ public:
         math::XYZVector trackMom = PseudoTrack.momentum();
         double trackMag = std::sqrt(trackMom.Mag2());
         TVector3 trackMom3(trackMom.x(),trackMom.y(),trackMom.z());
-        TVector3 jetDir3(jetDir.x(),jetDir.y(),jetDir.z());
 
 
         trackMomentum_=std::sqrt(trackMom.Mag2());
@@ -123,7 +146,7 @@ void ntuple_pfCands::readSetup(const edm::EventSetup& iSetup){
 }
 
 void ntuple_pfCands::getInput(const edm::ParameterSet& iConfig){
-
+	min_candidate_pt_ = (iConfig.getParameter<double>("minCandidatePt"));
 }
 
 void ntuple_pfCands::initBranches(TTree* tree){
@@ -246,8 +269,6 @@ void ntuple_pfCands::readEvent(const edm::Event& iEvent){
 //use either of these functions
 
 bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  edm::View<pat::Jet> * coll){
-
-
     float etasign = 1.;
     if (jet.eta()<0) etasign =-1.;
     math::XYZVector jetDir = jet.momentum().Unit();
@@ -265,7 +286,7 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++){
         const pat::PackedCandidate* PackedCandidate = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
         if(PackedCandidate){
-
+            if(PackedCandidate->pt() < min_candidate_pt_) continue; 
             if(PackedCandidate->charge()!=0){
                 trackinfo.buildTrackInfo(PackedCandidate,jetDir,jetRefTrackDir,pv);
                 sortedcharged.push_back(sorting::sortingClass<size_t>
@@ -278,29 +299,20 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             }
         }
     }
-
-    std::sort(sortedcharged.begin(),sortedcharged.end(),sorting::sortingClass<size_t>::compareByABCInv);
-    std::sort(sortedneutrals.begin(),sortedneutrals.end(),sorting::sortingClass<size_t>::compareByABCInv);
-
-    // counts neutral and charged candicates
+		std::sort(sortedcharged.begin(),sortedcharged.end(),sorting::sortingClass<size_t>::compareByABCInv);
     n_Cpfcand_ = std::min(sortedcharged.size(),max_pfcand_);
-    n_Npfcand_ = std::min(sortedneutrals.size(),max_pfcand_);
 
+    std::sort(sortedneutrals.begin(),sortedneutrals.end(),sorting::sortingClass<size_t>::compareByABCInv);
     std::vector<size_t> sortedchargedindices,sortedneutralsindices;
-
-        sortedchargedindices=sorting::invertSortingVector(sortedcharged);
-        sortedneutralsindices=sorting::invertSortingVector(sortedneutrals);
-
-
-
-
-
-
+    n_Npfcand_ = std::min(sortedneutrals.size(),max_pfcand_);
+		sortedchargedindices=sorting::invertSortingVector(sortedcharged);
+		sortedneutralsindices=sorting::invertSortingVector(sortedneutrals);
 
     for (unsigned int i = 0; i <  jet.numberOfDaughters(); i++){
         const pat::PackedCandidate* PackedCandidate_ = dynamic_cast<const pat::PackedCandidate*>(jet.daughter(i));
         //const auto& PackedCandidate_=s.get();
-        if(!PackedCandidate_)continue;
+        if(!PackedCandidate_) continue;
+        if(PackedCandidate_->pt() < min_candidate_pt_) continue; 
 
         // get the dr with the closest sv
         float drminpfcandsv_ = mindrsvpfcand(PackedCandidate_);
@@ -316,7 +328,6 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             if(fillntupleentry>=max_pfcand_) continue;
 
 
-
             Cpfcan_pt_[fillntupleentry] = PackedCandidate_->pt();
             Cpfcan_eta_[fillntupleentry] = PackedCandidate_->eta();
             Cpfcan_phi_[fillntupleentry] = PackedCandidate_->phi();
@@ -327,10 +338,9 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Cpfcan_deltaR_[fillntupleentry] =catchInfsAndBound(reco::deltaR(*PackedCandidate_,jet),0,-0.6,0,-0.6);
             Cpfcan_dxy_[fillntupleentry] = catchInfsAndBound(fabs(PackedCandidate_->dxy()),0,-50,50);
 
+            Cpfcan_dxyerrinv_[fillntupleentry]= PackedCandidate_->hasTrackDetails() ? catchInfsAndBound(1/PackedCandidate_->dxyError(),0,-1, 10000.) : -1;
 
-            Cpfcan_dxyerrinv_[fillntupleentry]=catchInfsAndBound(1/PackedCandidate_->dxyError(),0,-1, 10000.);
-
-            Cpfcan_dxysig_[fillntupleentry]=catchInfsAndBound(fabs(PackedCandidate_->dxy()/PackedCandidate_->dxyError()),0.,-2000,2000);
+            Cpfcan_dxysig_[fillntupleentry]= PackedCandidate_->hasTrackDetails() ? catchInfsAndBound(fabs(PackedCandidate_->dxy()/PackedCandidate_->dxyError()),0.,-2000,2000) : 0.;
 
 
             Cpfcan_dz_[fillntupleentry] = PackedCandidate_->dz();
@@ -354,7 +364,6 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
             Cpfcan_puppiw_[fillntupleentry] = PackedCandidate_->puppiWeight();
 
 
-            const reco::Track & PseudoTrack =  PackedCandidate_->pseudoTrack();
             /*
             reco::Track::CovarianceMatrix myCov = PseudoTrack.covariance ();
             //https://github.com/cms-sw/cmssw/blob/CMSSW_9_0_X/DataFormats/PatCandidates/interface/PackedCandidate.h#L394
@@ -408,11 +417,11 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 	    //std::cout << PackedCandidate_->numberOfPixelHits()<< " Pixel hits + masked " <<std::endl;
 	    //std::cout <<PackedCandidate_->pixelLayersWithMeasurement()<< " Pixel hits " <<std::endl;
 
-
-
-            Cpfcan_chi2_[fillntupleentry] = catchInfsAndBound(PseudoTrack.normalizedChi2(),300,-1,300);
-            //for some reason this returns the quality enum not a mask.
-            Cpfcan_quality_[fillntupleentry] = PseudoTrack.qualityMask();
+			Cpfcan_chi2_[fillntupleentry] = PackedCandidate_->hasTrackDetails() ? \
+				catchInfsAndBound(PackedCandidate_->pseudoTrack().normalizedChi2(),300,-1,300) : -1;
+			//for some reason this returns the quality enum not a mask.
+			Cpfcan_quality_[fillntupleentry] = PackedCandidate_->hasTrackDetails() ? 
+				PackedCandidate_->pseudoTrack().qualityMask() : (1 << reco::TrackBase::loose);
 
             Cpfcan_drminsv_[fillntupleentry] = catchInfsAndBound(drminpfcandsv_,0,-0.4,0,-0.4);
 

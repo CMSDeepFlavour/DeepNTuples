@@ -32,6 +32,7 @@ public:
 private:
 
     float jetradius_;
+		float min_candidate_pt_ = -1;
 
     edm::ESHandle<TransientTrackBuilder> builder;
 

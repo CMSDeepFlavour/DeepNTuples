@@ -95,11 +95,13 @@ private:
     size_t njetswithgenjet_;
     size_t njetsselected_;
 
-    ntuple_content * addModule(ntuple_content *m){
+	ntuple_content * addModule(ntuple_content *m, std::string name = ""){
         modules_.push_back(m);
+				module_names_.push_back(name);
         return m;
     }
     std::vector<ntuple_content* > modules_;
+	std::vector<std::string> module_names_;
 
     bool applySelection_;
 };
@@ -132,7 +134,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     applySelection_=iConfig.getParameter<bool>("applySelection");
 
     ntuple_SV* svmodule=new ntuple_SV("", jetR);
-    addModule(svmodule);
+    addModule(svmodule, "SVNtuple");
 
     //Loose IVF vertices
     //ntuple_SV* svmodule_LooseIVF=new ntuple_SV("LooseIVF_", jetR);
@@ -175,20 +177,20 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
             consumes<pat::ElectronCollection>(
                     iConfig.getParameter<edm::InputTag>("electrons")));
 
-    addModule(jetinfo);
+    addModule(jetinfo, "jetinfo");
 
     ntuple_pfCands * pfcands = new ntuple_pfCands();
     pfcands->setJetRadius(jetR);
 
-    addModule(pfcands);
+    addModule(pfcands, "pfcands");
 
-    addModule(new ntuple_bTagVars());
+    addModule(new ntuple_bTagVars(), "bTagVars");
 
     if(runFatJets_){
         auto *fatjetinfo = new ntuple_FatJetInfo(jetR);
         fatjetinfo->setGenParticleToken(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("pruned")));
         fatjetinfo->setFatJetToken(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("fatjets")));
-        addModule(fatjetinfo);
+        addModule(fatjetinfo, "fatJets");
     }
     /*
      *
@@ -262,12 +264,16 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             njetswithgenjet_++;
 
         bool writejet=true;
+				size_t idx = 0;
         for(auto& m:modules_){
+					//std::cout << module_names_[idx] << std::endl;
             if(! m->fillBranches(jet, jetidx, jets.product())){
                 writejet=false;
                 if(applySelection_) break;
             }
+						idx++;
         }
+				//std::cout << "Jet done" << std::endl;
         if( (writejet&&applySelection_) || !applySelection_ ){
             tree_->Fill();
             njetsselected_++;
