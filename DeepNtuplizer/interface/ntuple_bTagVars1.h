@@ -38,7 +38,7 @@ public:
     template <class T>
     void addBranch(TTree* t, const char* name,  T*, const char* leaflist=0);
     //use either of these functions
-    bool fillBranches(const reco::ShallowTagInfo tagInfo, const edm::Event& iEvent,  std::vector<float> Disc);
+    bool fillBranches(const reco::ShallowTagInfo tagInfo, const reco::ShallowTagInfo tagInfo1, const edm::Event& iEvent, std::vector<float> Disc, std::vector<float> Disc1);
 
     bool read_;
     std::vector<TString> allbranches_;
@@ -82,6 +82,12 @@ private:
     std::string tagInfoName_;
 
     //jet general
+  
+    static constexpr size_t max_jetNSelectedTracks_=100;
+
+    static constexpr size_t max_nStoredVertices_=10;
+
+
     float OnDeepCSVProbb_;
     float OnCSVProbb_;
     float OnCSVCaloProbb_;
@@ -112,40 +118,94 @@ private:
     float OnjetNTracksEtaRel_;
     float OnjetNSelectedTracks_;
 
-
-    static constexpr size_t max_OnjetNSelectedTracks_=100;
-
-    float OntrackMomentum_[max_OnjetNSelectedTracks_];    // track momentum
-    float OntrackEta_[max_OnjetNSelectedTracks_];         // track pseudorapidity
-    float OntrackPhi_[max_OnjetNSelectedTracks_];         // track polar angle
-    float OntrackPtRel_[max_OnjetNSelectedTracks_];       // track transverse momentum, relative to the jet axis
-    float OntrackPPar_[max_OnjetNSelectedTracks_];        // track parallel momentum, along the jet axis
-    float OntrackDeltaR_[max_OnjetNSelectedTracks_];      // track pseudoangular distance from the jet axis
-    float OntrackPtRatio_[max_OnjetNSelectedTracks_];     // track transverse momentum, relative to the jet axis, normalized to its energy
-    float OntrackPParRatio_[max_OnjetNSelectedTracks_];   // track parallel momentum, along the jet axis, normalized to its energy
-    float OntrackSip2dVal_[max_OnjetNSelectedTracks_];    // track 2D signed impact parameter
-    float OntrackSip2dSig_[max_OnjetNSelectedTracks_];    // track 2D signed impact parameter significance
-    float OntrackSip3dVal_[max_OnjetNSelectedTracks_];    // track 3D signed impact parameter
-    float OntrackSip3dSig_[max_OnjetNSelectedTracks_];    // track 3D signed impact parameter significance
-    float OntrackDecayLenVal_[max_OnjetNSelectedTracks_]; // track decay length
-    float OntrackDecayLenSig_[max_OnjetNSelectedTracks_]; // track decay length significance
-    float OntrackJetDistVal_[max_OnjetNSelectedTracks_];  // minimum track approach distance to jet axis
-    float OntrackJetDistSig_[max_OnjetNSelectedTracks_];  // minimum track approach distance to jet axis significance
-    float OntrackEtaRel_[max_OnjetNSelectedTracks_];      // track pseudorapidity, relative to the jet axis
+    float OntrackMomentum_[max_jetNSelectedTracks_];    // track momentum
+    float OntrackEta_[max_jetNSelectedTracks_];         // track pseudorapidity
+    float OntrackPhi_[max_jetNSelectedTracks_];         // track polar angle
+    float OntrackPtRel_[max_jetNSelectedTracks_];       // track transverse momentum, relative to the jet axis
+    float OntrackPPar_[max_jetNSelectedTracks_];        // track parallel momentum, along the jet axis
+    float OntrackDeltaR_[max_jetNSelectedTracks_];      // track pseudoangular distance from the jet axis
+    float OntrackPtRatio_[max_jetNSelectedTracks_];     // track transverse momentum, relative to the jet axis, normalized to its energy
+    float OntrackPParRatio_[max_jetNSelectedTracks_];   // track parallel momentum, along the jet axis, normalized to its energy
+    float OntrackSip2dVal_[max_jetNSelectedTracks_];    // track 2D signed impact parameter
+    float OntrackSip2dSig_[max_jetNSelectedTracks_];    // track 2D signed impact parameter significance
+    float OntrackSip3dVal_[max_jetNSelectedTracks_];    // track 3D signed impact parameter
+    float OntrackSip3dSig_[max_jetNSelectedTracks_];    // track 3D signed impact parameter significance
+    float OntrackDecayLenVal_[max_jetNSelectedTracks_]; // track decay length
+    float OntrackDecayLenSig_[max_jetNSelectedTracks_]; // track decay length significance
+    float OntrackJetDistVal_[max_jetNSelectedTracks_];  // minimum track approach distance to jet axis
+    float OntrackJetDistSig_[max_jetNSelectedTracks_];  // minimum track approach distance to jet axis significance
+    float OntrackEtaRel_[max_jetNSelectedTracks_];      // track pseudorapidity, relative to the jet axis
     //SV info
     int   Onn_StoredVertices_;
     float OnNStoredVertices_;
 
-    static constexpr size_t max_OnnStoredVertices_=10;
 
-    float OnvertexMass_[max_OnnStoredVertices_];          // mass of track sum at secondary vertex
-    float OnvertexNTracks_[max_OnnStoredVertices_];       // number of tracks at secondary vertex
-    float OnvertexEnergyRatio_[max_OnnStoredVertices_];   // ratio of energy at secondary vertex over total energy
-    float OnvertexJetDeltaR_[max_OnnStoredVertices_];     // pseudoangular distance between jet axis and secondary vertex direction
-    float OnflightDistance2dVal_[max_OnnStoredVertices_]; // transverse distance between primary and secondary vertex
-    float OnflightDistance2dSig_[max_OnnStoredVertices_]; // transverse distance significance between primary and secondary vertex
-    float OnflightDistance3dVal_[max_OnnStoredVertices_]; // distance between primary and secondary vertex
-    float OnflightDistance3dSig_[max_OnnStoredVertices_]; // distance significance between primary and secondary vertex
+    float OnvertexMass_[max_nStoredVertices_];          // mass of track sum at secondary vertex
+    float OnvertexNTracks_[max_nStoredVertices_];       // number of tracks at secondary vertex
+    float OnvertexEnergyRatio_[max_nStoredVertices_];   // ratio of energy at secondary vertex over total energy
+    float OnvertexJetDeltaR_[max_nStoredVertices_];     // pseudoangular distance between jet axis and secondary vertex direction
+    float OnflightDistance2dVal_[max_nStoredVertices_]; // transverse distance between primary and secondary vertex
+    float OnflightDistance2dSig_[max_nStoredVertices_]; // transverse distance significance between primary and secondary vertex
+    float OnflightDistance3dVal_[max_nStoredVertices_]; // distance between primary and secondary vertex
+    float OnflightDistance3dSig_[max_nStoredVertices_]; // distance significance between primary and secondary vertex
+
+
+
+    float DeepCSVProbb_;
+    float CSVProbb_;
+    float DeepCSVProbc_;
+    float DeepCSVProbudsg_;
+    float JetPt_;
+    float trackJetPt_;              // track-based jet transverse momentum
+    float jetNTracks_;              // tracks associated to jet
+    float jetNSecondaryVertices_;   // number of secondary vertices associated to the jet
+    float trackSumJetEtRatio_;      // ratio of track sum transverse energy over jet energy
+    float trackSumJetDeltaR_;       // pseudoangular distance between jet axis and track fourvector sum
+    float trackSip2dValAboveCharm_; // track 2D signed impact parameter of first track lifting mass above charm
+    float trackSip2dSigAboveCharm_; // track 2D signed impact parameter significance of first track lifting mass above charm
+    float trackSip3dValAboveCharm_; // track 3D signed impact parameter of first track lifting mass above charm
+    float trackSip3dSigAboveCharm_; // track 3D signed impact parameter significance of first track lifting mass above charm
+    float vertexCategory_;          // category of secondary vertex (Reco, Pseudo, No)
+    //track info
+    int   n_jetNTracksEtaRel_;        // tracks associated to jet for which trackEtaRel is calculated
+    int   n_jetNSelectedTracks_;
+
+    float jetNTracksEtaRel_;
+    float jetNSelectedTracks_;
+ 
+
+
+    float trackMomentum_[max_jetNSelectedTracks_];    // track momentum
+    float trackEta_[max_jetNSelectedTracks_];         // track pseudorapidity
+    float trackPhi_[max_jetNSelectedTracks_];         // track polar angle
+    float trackPtRel_[max_jetNSelectedTracks_];       // track transverse momentum, relative to the jet axis
+    float trackPPar_[max_jetNSelectedTracks_];        // track parallel momentum, along the jet axis
+    float trackDeltaR_[max_jetNSelectedTracks_];      // track pseudoangular distance from the jet axis
+    float trackPtRatio_[max_jetNSelectedTracks_];     // track transverse momentum, relative to the jet axis, normalized to its energy
+    float trackPParRatio_[max_jetNSelectedTracks_];   // track parallel momentum, along the jet axis, normalized to its energy
+    float trackSip2dVal_[max_jetNSelectedTracks_];    // track 2D signed impact parameter
+    float trackSip2dSig_[max_jetNSelectedTracks_];    // track 2D signed impact parameter significance
+    float trackSip3dVal_[max_jetNSelectedTracks_];    // track 3D signed impact parameter
+    float trackSip3dSig_[max_jetNSelectedTracks_];    // track 3D signed impact parameter significance
+    float trackDecayLenVal_[max_jetNSelectedTracks_]; // track decay length
+    float trackDecayLenSig_[max_jetNSelectedTracks_]; // track decay length significance
+    float trackJetDistVal_[max_jetNSelectedTracks_];  // minimum track approach distance to jet axis
+    float trackJetDistSig_[max_jetNSelectedTracks_];  // minimum track approach distance to jet axis significance
+    float trackEtaRel_[max_jetNSelectedTracks_];      // track pseudorapidity, relative to the jet axis
+    //SV info
+    int   n_StoredVertices_;
+    float NStoredVertices_;
+
+
+    float vertexMass_[max_nStoredVertices_];          // mass of track sum at secondary vertex
+    float vertexNTracks_[max_nStoredVertices_];       // number of tracks at secondary vertex
+    float vertexEnergyRatio_[max_nStoredVertices_];   // ratio of energy at secondary vertex over total energy
+    float vertexJetDeltaR_[max_nStoredVertices_];     // pseudoangular distance between jet axis and secondary vertex direction
+    float flightDistance2dVal_[max_nStoredVertices_]; // transverse distance between primary and secondary vertex
+    float flightDistance2dSig_[max_nStoredVertices_]; // transverse distance significance between primary and secondary vertex
+    float flightDistance3dVal_[max_nStoredVertices_]; // distance between primary and secondary vertex
+    float flightDistance3dSig_[max_nStoredVertices_];
+
 };
 
 

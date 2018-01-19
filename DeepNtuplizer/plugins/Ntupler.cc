@@ -64,7 +64,6 @@
 #include "TLorentzVector.h"
 
 #include "../interface/ntuple_bTagVars1.h"
-#include "../interface/ntuple_bTagVars2.h"
 
 
 #include <algorithm>
@@ -116,7 +115,6 @@ class Ntupler : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       edm::Service<TFileService> fs;
       TTree *tree_;
       ntuple_bTagVars1 go;
-      ntuple_bTagVars2 go1;
       // ----------member data ---------------------------
 };
 
@@ -264,8 +262,7 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	 OnlineDisc.push_back(-1.0);       
        }
        bool writeit = true;
-       if(!go.fillBranches(OntagInfo,iEvent,OnlineDisc)){writeit = false;}
-       if(!go1.fillBranches(OfftagInfo,iEvent,OfflineDisc)){writeit = false;}
+       if(!go.fillBranches(OntagInfo, OfftagInfo,iEvent,OnlineDisc, OfflineDisc)){writeit = false;}
        if(writeit){tree_->Fill();}
        histContainer_["btag"] ->Fill((*offbtagdisc)[matches.at(p)].second,(*onbtagdisc)[p].second);
        histContainer_["pt"] ->Fill((*offbtagdisc)[matches.at(p)].first->pt(),(*onbtagdisc)[p].first->pt());
@@ -294,7 +291,6 @@ Ntupler::beginJob()
   histoContainer_["ShallowTagpt"]=fs->make<TH1F>("ShallowTagpt", "ShallowTagpt",    100, 0, 500.0);
   tree_=(fs->make<TTree>("tree" ,"tree" ));
   go.initBranches(tree_);
-  go1.initBranches(tree_);
   //tree_->Branch("trackJetPt", &trackJetPt_ , "trackJetPt_/F");
 
   //addBranch(tree_,"trackJetPt"             , &trackJetPt_             , "trackJetPt_/F"             );
