@@ -265,16 +265,6 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        histContainer_["pt"] ->Fill((*offbtagdisc)[matches.at(p)].first->pt(),(*onbtagdisc)[p].first->pt());
      }
    }
-
-#ifdef THIS_IS_AN_EVENT_EXAMPLE
-   Handle<ExampleData> pIn;
-   iEvent.getByLabel("example",pIn);
-#endif
-   
-#ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
-   ESHandle<SetupData> pSetup;
-   iSetup.get<SetupRecord>().get(pSetup);
-#endif
 }
 
 
