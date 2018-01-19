@@ -213,7 +213,7 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    
    if(OntagInfos.isValid() & OfftagInfos.isValid() & offbtagdisc.isValid() & onbtagdisc.isValid() ){
      for(size_t n = 0; n < onbtagdisc->size() ; n++){
-       double dRMin = 99.0;
+       double dRMin = 0.3;
        int index = -1;
        for( size_t z = 0; z < offbtagdisc->size() ; z++){
 	 double deta = (*offbtagdisc)[z].first->eta() - (*onbtagdisc)[n].first->eta();
@@ -225,9 +225,6 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	 if(dR < dRMin){
 	   dRMin = dR;
 	   index = z;
-	 }
-	 if(dRMin > 0.3){
-	     index = -1;
 	 }
        }
        matches.push_back(index);	 
