@@ -62,6 +62,8 @@
 #include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "TLorentzVector.h"
+#include "TMath.h"
+
 
 #include "../interface/ntuple_bTagVars1.h"
 
@@ -216,20 +218,23 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    iEvent.getByToken(OnBCalotagSrc_, onbcalotagdisc);
    iEvent.getByToken(OnCCalotagSrc_, onccalotagdisc);
    iEvent.getByToken(OnUDSGCalotagSrc_, onudsgcalotagdisc);
-   std::vector<int> matches;
-   std::vector<int> matches1;
-   
+   std::vector<size_t> matches;
+   std::vector<size_t> matches1;
+   float pi = TMath::Pi();
    if(OntagInfos.isValid() & OfftagInfos.isValid() & offbtagdisc.isValid() & onbtagdisc.isValid() ){
      for(size_t n = 0; n < onbtagdisc->size() ; n++){
        double dRMin = 0.3;
-       int index = -1;
-       for( size_t z = 0; z < offbtagdisc->size() ; z++){
+       size_t index = 9999;
+       TLorentzVector test1,test2;
+       for(size_t z = 0; z < offbtagdisc->size(); z++){
+	 test1.SetPtEtaPhiE((*offbtagdisc)[z].first->pt(),(*offbtagdisc)[z].first->eta(),(*offbtagdisc)[z].first->phi(),1.2*(*offbtagdisc)[n].first->pt());
+	 test2.SetPtEtaPhiE((*onbtagdisc)[n].first->pt(),(*onbtagdisc)[n].first->eta(),(*onbtagdisc)[n].first->phi(),1.2*(*onbtagdisc)[n].first->pt());
 	 double deta = (*offbtagdisc)[z].first->eta() - (*onbtagdisc)[n].first->eta();
-	 double dphi = abs( (*offbtagdisc)[z].first->phi() - (*onbtagdisc)[n].first->phi());
-	 if(dphi > 3.1415){
-	   dphi = 2*3.1415-dphi;
+	 double dphi = TMath::Abs( (*offbtagdisc)[z].first->phi() - (*onbtagdisc)[n].first->phi());
+	 if(dphi > pi){
+	   dphi = 2*pi-dphi;
 	 }
-	 double dR = sqrt(deta*deta + dphi*dphi);
+	 double dR = TMath::Sqrt(deta*deta + dphi*dphi);
 	 if(dR < dRMin){
 	   dRMin = dR;
 	   index = z;
@@ -241,7 +246,8 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
  
    if(OntagInfos.isValid() & OfftagInfos.isValid() & offbtagdisc.isValid() & oncsvtagdisc.isValid() & offcsvtagdisc.isValid() & oncsvcalotagdisc.isValid() & onbtagdisc.isValid() & offctagdisc.isValid() & onctagdisc.isValid() & offudsgtagdisc.isValid() & onudsgtagdisc.isValid() & onudsgcalotagdisc.isValid() & onbcalotagdisc.isValid() & onccalotagdisc.isValid()){
      for(size_t p = 0; p < OntagInfos->size(); p++){
-       if(matches.at(p) == -1){continue;}
+       //matches.at(p) = p; //for testing purposes
+       if(matches.at(p) == 9999){continue;}
        const reco::ShallowTagInfo OntagInfo = OntagInfos->at(p);
        const reco::ShallowTagInfo OfftagInfo = OfftagInfos->at(matches.at(p));
        std::vector<float> OnlineDisc;
