@@ -105,6 +105,8 @@ void ntuple_bTagVars1::initBranches(TTree* tree){
     addBranch(tree,"DeepCSVProbc"             , &DeepCSVProbc_             , "DeepCSVProbc_/F"             );
     addBranch(tree,"DeepCSVProbudsg"             , &DeepCSVProbudsg_             , "DeepCSVProbudsg_/F"             );
     addBranch(tree,"CSVProbb"             , &CSVProbb_             , "CSVProbb_/F"             );
+    addBranch(tree,"DeepCSVProbbb"             , &DeepCSVProbbb_             , "DeepCSVProbbb_/F"             );
+    //   addBranch(tree,"DeepCSVProbcc"             , &DeepCSVProbcc_             , "DeepCSVProbcc_/F"             );
     addBranch(tree,"JetPt"             , &JetPt_             , "JetPt_/F"             );
     addBranch(tree,"trackJetPt"             , &trackJetPt_             , "trackJetPt_/F"             );
     addBranch(tree,"jetNTracks"             , &jetNTracks_             , "jetNTracks_/F"             );
@@ -219,6 +221,8 @@ bool ntuple_bTagVars1::fillBranches(const reco::ShallowTagInfo tagInfo, const re
     DeepCSVProbc_ = Disc1.at(1);
     DeepCSVProbudsg_ = Disc1.at(2);
     CSVProbb_ = Disc1.at(3);
+    DeepCSVProbbb_ = Disc1.at(4);
+    //DeepCSVProbcc_ = Disc1.at(5);
     JetPt_                 = vars1.get(reco::btau::jetPt, -999);
     trackJetPt_                 = vars1.get(reco::btau::trackJetPt, -999);
     jetNSecondaryVertices_      = vars1.get(reco::btau::jetNSecondaryVertices, -1);

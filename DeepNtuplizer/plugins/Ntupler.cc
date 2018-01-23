@@ -102,8 +102,10 @@ class Ntupler : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       edm::EDGetTokenT<reco::JetTagCollection> OnCSVtagSrc_;
       edm::EDGetTokenT<reco::JetTagCollection> OnCSVCalotagSrc_;
       edm::EDGetTokenT<reco::JetTagCollection> OffBtagSrc_;
+      edm::EDGetTokenT<reco::JetTagCollection> OffBBtagSrc_;
       edm::EDGetTokenT<reco::JetTagCollection> OnBtagSrc_;
       edm::EDGetTokenT<reco::JetTagCollection> OffCtagSrc_;
+  //edm::EDGetTokenT<reco::JetTagCollection> OffCCtagSrc_;
       edm::EDGetTokenT<reco::JetTagCollection> OnCtagSrc_;
       edm::EDGetTokenT<reco::JetTagCollection> OffUDSGtagSrc_;
       edm::EDGetTokenT<reco::JetTagCollection> OnUDSGtagSrc_;
@@ -140,8 +142,10 @@ Ntupler::Ntupler(const edm::ParameterSet& iConfig)
    OnShallowSrc_=(consumes< std::vector<reco::ShallowTagInfo> >(iConfig.getParameter<edm::InputTag>("onShallowsrc")));
    OffShallowSrc_=(consumes< std::vector<reco::ShallowTagInfo> >(iConfig.getParameter<edm::InputTag>("offShallowsrc")));
    OffBtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("offBtagsrc")));
+   OffBBtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("offBBtagsrc")));
    OnBtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("onBtagsrc")));
    OffCtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("offCtagsrc")));
+   // OffCCtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("offCCtagsrc")));
    OnCtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("onCtagsrc")));
    OffUDSGtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("offUDSGtagsrc")));
    OnUDSGtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("onUDSGtagsrc")));
@@ -181,12 +185,14 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    edm::Handle<reco::JetTagCollection> onbtagdisc;
    edm::Handle<reco::JetTagCollection> onbcalotagdisc;
    edm::Handle<reco::JetTagCollection> offbtagdisc;
+   edm::Handle<reco::JetTagCollection> offbbtagdisc;
    edm::Handle<reco::JetTagCollection> oncsvtagdisc;
    edm::Handle<reco::JetTagCollection> oncsvcalotagdisc;
    edm::Handle<reco::JetTagCollection> offcsvtagdisc;
    edm::Handle<reco::JetTagCollection> onctagdisc;
    edm::Handle<reco::JetTagCollection> onccalotagdisc;
    edm::Handle<reco::JetTagCollection> offctagdisc;
+   //edm::Handle<reco::JetTagCollection> offcctagdisc;
    edm::Handle<reco::JetTagCollection> onudsgtagdisc;
    edm::Handle<reco::JetTagCollection> onudsgcalotagdisc;
    edm::Handle<reco::JetTagCollection> offudsgtagdisc;
@@ -196,11 +202,13 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    iEvent.getByToken(jetToken3_, calojetOnline);
    iEvent.getByToken(OnBtagSrc_, onbtagdisc);
    iEvent.getByToken(OffBtagSrc_, offbtagdisc);
+   iEvent.getByToken(OffBBtagSrc_, offbbtagdisc);
    iEvent.getByToken(OnCSVtagSrc_, oncsvtagdisc);
    iEvent.getByToken(OnCSVCalotagSrc_, oncsvcalotagdisc);
    iEvent.getByToken(OffCSVtagSrc_, offcsvtagdisc);
    iEvent.getByToken(OnCtagSrc_, onctagdisc);
    iEvent.getByToken(OffCtagSrc_, offctagdisc);
+   //iEvent.getByToken(OffCCtagSrc_, offcctagdisc);
    iEvent.getByToken(OnUDSGtagSrc_, onudsgtagdisc);
    iEvent.getByToken(OffUDSGtagSrc_, offudsgtagdisc);
    iEvent.getByToken(OnShallowSrc_, OntagInfos);
@@ -246,6 +254,8 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        OfflineDisc.push_back((*offudsgtagdisc)[matches.at(p)].second);
        OnlineDisc.push_back((*oncsvtagdisc)[p].second);
        OfflineDisc.push_back((*offcsvtagdisc)[matches.at(p)].second);
+       OfflineDisc.push_back((*offbbtagdisc)[matches.at(p)].second);
+       //OfflineDisc.push_back((*offcctagdisc)[matches.at(p)].second);
        if( onbcalotagdisc->size() == onudsgcalotagdisc->size() == onccalotagdisc->size() == onbtagdisc->size() ){
 	 OnlineDisc.push_back((*onbcalotagdisc)[p].second);
 	 OnlineDisc.push_back((*onccalotagdisc)[p].second);

@@ -155,6 +155,8 @@ private:
     float CSVProbb_;
     float DeepCSVProbc_;
     float DeepCSVProbudsg_;
+    float DeepCSVProbbb_;
+    float DeepCSVProbcc_;
     float JetPt_;
     float trackJetPt_;              // track-based jet transverse momentum
     float jetNTracks_;              // tracks associated to jet
