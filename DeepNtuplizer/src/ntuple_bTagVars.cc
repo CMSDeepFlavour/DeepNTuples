@@ -19,7 +19,7 @@ void ntuple_bTagVars::initBranches(TTree* tree){
   initBranches(tree,"");
 }
 
-void ntuple_bTagVars::initBranches(TTree* tree, string On = ""){
+void ntuple_bTagVars::initBranches(TTree* tree, string On){
     //jet general
     addBranch(tree, (On + "trackJetPt").c_str()            , &trackJetPt_             , (On + "trackJetPt_/F").c_str()            );
     addBranch(tree, (On + "jetNTracks").c_str()            , &jetNTracks_             , (On + "jetNTracks_/F").c_str()            );
