@@ -269,30 +269,6 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        if(matches.at(p) == 9999){continue;}
        const reco::ShallowTagInfo OntagInfo = OntagInfos->at(p);
        const reco::ShallowTagInfo OfftagInfo = OfftagInfos->at(matches.at(p));
-       /*
-       OnlineDisc.push_back((*onbtagdisc)[p].second);
-       OfflineDisc.push_back((*offbtagdisc)[matches.at(p)].second);
-       OnlineDisc.push_back((*onctagdisc)[p].second);
-       OfflineDisc.push_back((*offctagdisc)[matches.at(p)].second);
-       OnlineDisc.push_back((*onudsgtagdisc)[p].second);
-       OfflineDisc.push_back((*offudsgtagdisc)[matches.at(p)].second);
-       OnlineDisc.push_back((*oncsvtagdisc)[p].second);
-       OfflineDisc.push_back((*offcsvtagdisc)[matches.at(p)].second);
-       OfflineDisc.push_back((*offbbtagdisc)[matches.at(p)].second);
-       //OfflineDisc.push_back((*offcctagdisc)[matches.at(p)].second);
-       if( onbcalotagdisc->size() == onudsgcalotagdisc->size() == onccalotagdisc->size() == onbtagdisc->size() ){
-	 OnlineDisc.push_back((*onbcalotagdisc)[p].second);
-	 OnlineDisc.push_back((*onccalotagdisc)[p].second);
-	 OnlineDisc.push_back((*onudsgcalotagdisc)[p].second);
-	 OnlineDisc.push_back((*oncsvcalotagdisc)[p].second);
-       }
-       else{
-	 OnlineDisc.push_back(-1.0);
-	 OnlineDisc.push_back(-1.0);
-	 OnlineDisc.push_back(-1.0);
-	 OnlineDisc.push_back(-1.0);       
-       }
-       */
        bool writeit = true;
        lumiBlock_ = iEvent.eventAuxiliary().luminosityBlock();
        runNumber_ = iEvent.eventAuxiliary().run();
