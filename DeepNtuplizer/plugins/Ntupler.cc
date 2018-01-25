@@ -65,7 +65,7 @@
 #include "TMath.h"
 
 
-#include "../interface/ntuple_bTagVars1.h"
+#include "../interface/ntuple_bTagVars.h"
 
 
 #include <algorithm>
@@ -118,7 +118,26 @@ class Ntupler : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       edm::InputTag offJetsrc_;
       edm::Service<TFileService> fs;
       TTree *tree_;
-      ntuple_bTagVars1 go;
+      ntuple_bTagVars Off;
+      ntuple_bTagVars Onl;
+
+  float DeepCSVProbb_;
+  float CSVProbb_;
+  float DeepCSVProbc_;
+  float DeepCSVProbudsg_;
+  float DeepCSVProbbb_;
+  float DeepCSVProbcc_;
+  float OnDeepCSVProbb_;
+  float OnCSVProbb_;
+  float OnCSVCaloProbb_;
+  float OnDeepCSVProbc_;
+  float OnDeepCSVProbudsg_;
+  float OnDeepCSVCaloProbb_;
+  float OnDeepCSVCaloProbc_;
+  float OnDeepCSVCaloProbudsg_;
+  int   lumiBlock_;
+  int   runNumber_;
+  int   eventNumber_;      
       // ----------member data ---------------------------
 };
 
@@ -250,8 +269,7 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        if(matches.at(p) == 9999){continue;}
        const reco::ShallowTagInfo OntagInfo = OntagInfos->at(p);
        const reco::ShallowTagInfo OfftagInfo = OfftagInfos->at(matches.at(p));
-       std::vector<float> OnlineDisc;
-       std::vector<float> OfflineDisc;
+       /*
        OnlineDisc.push_back((*onbtagdisc)[p].second);
        OfflineDisc.push_back((*offbtagdisc)[matches.at(p)].second);
        OnlineDisc.push_back((*onctagdisc)[p].second);
@@ -274,8 +292,36 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	 OnlineDisc.push_back(-1.0);
 	 OnlineDisc.push_back(-1.0);       
        }
+       */
        bool writeit = true;
-       if(!go.fillBranches(OntagInfo, OfftagInfo,iEvent,OnlineDisc, OfflineDisc)){writeit = false;}
+       lumiBlock_ = iEvent.eventAuxiliary().luminosityBlock();
+       runNumber_ = iEvent.eventAuxiliary().run();
+       eventNumber_ = iEvent.eventAuxiliary().event();
+       DeepCSVProbb_ = (*offbtagdisc)[matches.at(p)].second;
+       DeepCSVProbc_ = (*offctagdisc)[matches.at(p)].second;
+       DeepCSVProbudsg_ = (*offudsgtagdisc)[matches.at(p)].second;
+       CSVProbb_ = (*offcsvtagdisc)[matches.at(p)].second;
+       DeepCSVProbbb_ = (*offbbtagdisc)[matches.at(p)].second;
+
+       OnDeepCSVProbb_          = (*onbtagdisc)[p].second;
+       OnDeepCSVProbc_          = (*onctagdisc)[p].second;
+       OnDeepCSVProbudsg_          = (*onudsgtagdisc)[p].second;
+       OnCSVProbb_          = (*oncsvtagdisc)[p].second;
+       if( onbcalotagdisc->size() == onudsgcalotagdisc->size() == onccalotagdisc->size() == onbtagdisc->size() ){
+	 OnDeepCSVCaloProbb_          = (*onbcalotagdisc)[p].second;
+	 OnDeepCSVCaloProbc_          = (*onccalotagdisc)[p].second;
+	 OnDeepCSVCaloProbudsg_          = (*onudsgcalotagdisc)[p].second;
+	 OnCSVCaloProbb_          = (*oncsvcalotagdisc)[p].second;
+       }
+       else{
+	 OnDeepCSVCaloProbb_          = -1.0;
+	 OnDeepCSVCaloProbc_          = -1.0;
+	 OnDeepCSVCaloProbudsg_          = -1.0;
+	 OnCSVCaloProbb_          = -1.0;
+       }
+       if(!Off.fillBranches(OfftagInfo)){writeit = false;}
+       if(!Onl.fillBranches(OntagInfo)){writeit = false;}
+       
        if(writeit){tree_->Fill();}
        histContainer_["btag"] ->Fill((*offbtagdisc)[matches.at(p)].second,(*onbtagdisc)[p].second);
        histContainer_["pt"] ->Fill((*offbtagdisc)[matches.at(p)].first->pt(),(*onbtagdisc)[p].first->pt());
@@ -293,7 +339,25 @@ Ntupler::beginJob()
   histoContainer_["AllJetpt"]=fs->make<TH1F>("AllJetpt", "PFJetCollection pt",    100, 0, 500.0);
   histoContainer_["ShallowTagpt"]=fs->make<TH1F>("ShallowTagpt", "ShallowTagpt",    100, 0, 500.0);
   tree_=(fs->make<TTree>("tree" ,"tree" ));
-  go.initBranches(tree_);
+  Off.initBranches(tree_,"");
+  Onl.initBranches(tree_,"On");
+  tree_->Branch("lumiBlock"             , &lumiBlock_             , "lumiBlock_/i"             );
+  tree_->Branch("runNumber"             , &runNumber_             , "runNumber_/i"             );
+  tree_->Branch("eventNumber"             , &eventNumber_             , "eventNumber_/i"             );
+  tree_->Branch("DeepCSVProbb"             , &DeepCSVProbb_             , "DeepCSVProbb_/F"             );
+  tree_->Branch("DeepCSVProbc"             , &DeepCSVProbc_             , "DeepCSVProbc_/F"             );
+  tree_->Branch("DeepCSVProbudsg"             , &DeepCSVProbudsg_             , "DeepCSVProbudsg_/F"             );
+  tree_->Branch("CSVProbb"             , &CSVProbb_             , "CSVProbb_/F"             );
+  tree_->Branch("DeepCSVProbbb"             , &DeepCSVProbbb_             , "DeepCSVProbbb_/F"             );
+  tree_->Branch("OnDeepCSVProbb"             , &OnDeepCSVProbb_             , "OnDeepCSVProbb_/F"             );
+  tree_->Branch("OnCSVProbb"             , &OnCSVProbb_             , "OnCSVProbb_/F"             );
+  tree_->Branch("OnCSVCaloProbb"             , &OnCSVCaloProbb_             , "OnCSVCaloProbb_/F"             );
+  tree_->Branch("OnDeepCSVProbc"             , &OnDeepCSVProbc_             , "OnDeepCSVProbc_/F"             );
+  tree_->Branch("OnDeepCSVProbudsg"             , &OnDeepCSVProbudsg_             , "OnDeepCSVProbudsg_/F"             );
+  tree_->Branch("OnDeepCSVCaloProbb"             , &OnDeepCSVCaloProbb_             , "OnDeepCSVCaloProbb_/F"             );
+  tree_->Branch("OnDeepCSVCaloProbc"             , &OnDeepCSVCaloProbc_             , "OnDeepCSVCaloProbc_/F");
+  tree_->Branch("OnDeepCSVCaloProbudsg"             , &OnDeepCSVCaloProbudsg_             , "OnDeepCSVCaloProbudsg_/F");
+
   //tree_->Branch("trackJetPt", &trackJetPt_ , "trackJetPt_/F");
 
   //addBranch(tree_,"trackJetPt"             , &trackJetPt_             , "trackJetPt_/F"             );
