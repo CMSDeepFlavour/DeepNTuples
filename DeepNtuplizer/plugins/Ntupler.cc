@@ -93,8 +93,6 @@ class Ntupler : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
 
-      std::map<std::string,TH2F*> histContainer_;
-      std::map<std::string,TH1F*> histoContainer_;
       edm::EDGetTokenT<reco::PFJetCollection>      jetToken1_;
       edm::EDGetTokenT<reco::PFJetCollection>      jetToken2_;
       edm::EDGetTokenT<reco::CaloJetCollection>      jetToken3_;
@@ -107,7 +105,6 @@ class Ntupler : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       edm::EDGetTokenT<reco::JetTagCollection> OffBBtagSrc_;
       edm::EDGetTokenT<reco::JetTagCollection> OnBtagSrc_;
       edm::EDGetTokenT<reco::JetTagCollection> OffCtagSrc_;
-  //edm::EDGetTokenT<reco::JetTagCollection> OffCCtagSrc_;
       edm::EDGetTokenT<reco::JetTagCollection> OnCtagSrc_;
       edm::EDGetTokenT<reco::JetTagCollection> OffUDSGtagSrc_;
       edm::EDGetTokenT<reco::JetTagCollection> OnUDSGtagSrc_;
@@ -166,7 +163,6 @@ Ntupler::Ntupler(const edm::ParameterSet& iConfig)
    OffBBtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("offBBtagsrc")));
    OnBtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("onBtagsrc")));
    OffCtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("offCtagsrc")));
-   // OffCCtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("offCCtagsrc")));
    OnCtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("onCtagsrc")));
    OffUDSGtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("offUDSGtagsrc")));
    OnUDSGtagSrc_=(consumes< reco::JetTagCollection >(iConfig.getParameter<edm::InputTag>("onUDSGtagsrc")));
@@ -213,7 +209,6 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    edm::Handle<reco::JetTagCollection> onctagdisc;
    edm::Handle<reco::JetTagCollection> onccalotagdisc;
    edm::Handle<reco::JetTagCollection> offctagdisc;
-   //edm::Handle<reco::JetTagCollection> offcctagdisc;
    edm::Handle<reco::JetTagCollection> onudsgtagdisc;
    edm::Handle<reco::JetTagCollection> onudsgcalotagdisc;
    edm::Handle<reco::JetTagCollection> offudsgtagdisc;
@@ -229,7 +224,6 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    iEvent.getByToken(OffCSVtagSrc_, offcsvtagdisc);
    iEvent.getByToken(OnCtagSrc_, onctagdisc);
    iEvent.getByToken(OffCtagSrc_, offctagdisc);
-   //iEvent.getByToken(OffCCtagSrc_, offcctagdisc);
    iEvent.getByToken(OnUDSGtagSrc_, onudsgtagdisc);
    iEvent.getByToken(OffUDSGtagSrc_, offudsgtagdisc);
    iEvent.getByToken(OnShallowSrc_, OntagInfos);
@@ -283,7 +277,7 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        OnDeepCSVProbc_          = (*onctagdisc)[p].second;
        OnDeepCSVProbudsg_          = (*onudsgtagdisc)[p].second;
        OnCSVProbb_          = (*oncsvtagdisc)[p].second;
-       if( onbcalotagdisc->size() == onudsgcalotagdisc->size() == onccalotagdisc->size() == onbtagdisc->size() ){
+       if( onbcalotagdisc->size() == onbtagdisc->size() ){
 	 OnDeepCSVCaloProbb_          = (*onbcalotagdisc)[p].second;
 	 OnDeepCSVCaloProbc_          = (*onccalotagdisc)[p].second;
 	 OnDeepCSVCaloProbudsg_          = (*onudsgcalotagdisc)[p].second;
@@ -299,8 +293,6 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        if(!Onl.fillBranches(OntagInfo)){writeit = false;}
        
        if(writeit){tree_->Fill();}
-       histContainer_["btag"] ->Fill((*offbtagdisc)[matches.at(p)].second,(*onbtagdisc)[p].second);
-       histContainer_["pt"] ->Fill((*offbtagdisc)[matches.at(p)].first->pt(),(*onbtagdisc)[p].first->pt());
      }
    }
 }
@@ -310,10 +302,6 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 void 
 Ntupler::beginJob()
 {
-  histContainer_["btag"]=fs->make<TH2F>("btag", "online vs offline btag",    90, 0, 1.0, 90, 0, 1.0);
-  histContainer_["pt"]=fs->make<TH2F>("pt", "online vs offline pt",    100, 0, 1000.0, 100, 0, 1000.0);
-  histoContainer_["AllJetpt"]=fs->make<TH1F>("AllJetpt", "PFJetCollection pt",    100, 0, 500.0);
-  histoContainer_["ShallowTagpt"]=fs->make<TH1F>("ShallowTagpt", "ShallowTagpt",    100, 0, 500.0);
   tree_=(fs->make<TTree>("tree" ,"tree" ));
   Off.initBranches(tree_,"");
   Onl.initBranches(tree_,"On");
