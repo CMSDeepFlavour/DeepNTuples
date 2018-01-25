@@ -303,7 +303,7 @@ void
 Ntupler::beginJob()
 {
   tree_=(fs->make<TTree>("tree" ,"tree" ));
-  Off.initBranches(tree_,"");
+  Off.initBranches(tree_);
   Onl.initBranches(tree_,"On");
   tree_->Branch("lumiBlock"             , &lumiBlock_             , "lumiBlock_/i"             );
   tree_->Branch("runNumber"             , &runNumber_             , "runNumber_/i"             );
