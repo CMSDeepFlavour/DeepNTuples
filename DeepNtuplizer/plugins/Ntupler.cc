@@ -238,10 +238,7 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      for(size_t n = 0; n < onbtagdisc->size() ; n++){
        double dRMin = 0.3;
        size_t index = 9999;
-       TLorentzVector test1,test2;
        for(size_t z = 0; z < offbtagdisc->size(); z++){
-	 test1.SetPtEtaPhiE((*offbtagdisc)[z].first->pt(),(*offbtagdisc)[z].first->eta(),(*offbtagdisc)[z].first->phi(),1.2*(*offbtagdisc)[n].first->pt());
-	 test2.SetPtEtaPhiE((*onbtagdisc)[n].first->pt(),(*onbtagdisc)[n].first->eta(),(*onbtagdisc)[n].first->phi(),1.2*(*onbtagdisc)[n].first->pt());
 	 double deta = (*offbtagdisc)[z].first->eta() - (*onbtagdisc)[n].first->eta();
 	 double dphi = TMath::Abs( (*offbtagdisc)[z].first->phi() - (*onbtagdisc)[n].first->phi());
 	 if(dphi > pi){
