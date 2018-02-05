@@ -113,7 +113,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"jet_mass", &jet_mass_);
     addBranch(tree,"jet_energy", &jet_energy_);
 
-    addBranch(tree,"jet_weight", &jet_weight_);
+    addBranch(tree,"event_weight", &event_weight_);
     //jet id
     addBranch(tree,"jet_looseId", &jet_looseId_);
 
@@ -337,10 +337,10 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet,
         }
 
 
-        jet_weight_ = luminosity_ *  crossSection_ * efficiency_ * lheWeight * pupWeight;
+        event_weight_ = luminosity_ *  crossSection_ * efficiency_ * lheWeight * pupWeight;
     }
     else{
-        jet_weight_ = luminosity_ * crossSection_ * efficiency_;
+        event_weight_ = luminosity_ * crossSection_ * efficiency_;
     }
     rho_ = rhoInfo()[0];
 

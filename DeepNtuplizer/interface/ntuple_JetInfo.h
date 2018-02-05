@@ -204,7 +204,7 @@ public:
     float crossSection_;
     float luminosity_;
     float efficiency_;
-    float jet_weight_;
+    float event_weight_;
 
     float jet_looseId_;
 
