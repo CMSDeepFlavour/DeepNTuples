@@ -1,6 +1,8 @@
 ##########
 #   tested with CMSSW 8.0.25
 #   extract jets from tt_dilep selected root file
+#   the input MiniAOD files are specified in an extra config file,
+#   for example "DeepNtuplizer_tt_dilep.py" which can be initialized with the option config=tt
 ##########
 
 import FWCore.ParameterSet.Config as cms

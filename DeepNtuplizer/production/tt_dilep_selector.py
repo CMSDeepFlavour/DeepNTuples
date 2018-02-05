@@ -1,6 +1,8 @@
 ##########
 #   tested with CMSSW 8.0.29
-#   selection modul to filter events with single electron and single muon
+#   selection modul to filter events with single electron and single muon.
+#   The output file is in the MiniAOD format.
+#   The extraction of the jets is done in a further procedure with the DeepNtuplizer_tt_dilep.py
 ##########
 
 import FWCore.ParameterSet.Config as cms

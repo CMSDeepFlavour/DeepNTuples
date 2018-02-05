@@ -164,7 +164,7 @@ public:
     int isLeptonicB_;
     int isLeptonicB_C_;
     int isTau_;
-    bool isRealData_;
+    int isRealData_;
 
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
     int isPhysB_;

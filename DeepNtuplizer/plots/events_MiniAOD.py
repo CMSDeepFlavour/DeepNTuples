@@ -422,7 +422,7 @@ def makeFullPlots(h_data,hs_mc, name="all"):
     h_data[3].SetYTitle("Events/0.25")
     h_data[4].SetYTitle("Events")
 
-    ROOT.TGaxis.SetMaxDigits(4);   #Force scientific notation for numbers with more than 4 digits
+    ROOT.TGaxis.SetMaxDigits(4)   #Force scientific notation for numbers with more than 4 digits
 
 
     canvas = ROOT.TCanvas("final", "title", 800, 600)
