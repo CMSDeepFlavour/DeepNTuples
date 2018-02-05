@@ -103,11 +103,11 @@ check.py <sample subdirectories to be checked> --action resubmit
 
 When the file lists are created, the part used for training of the ttbar and QCD samples (or in principle any other process) can be merged using the executable:
 ```
-mergeSamples <no of jets per file> <output dir> <file lists 1> <file lists 2> <file lists 3> ...
+mergeSamples.py <no of jets per file> <output dir> <file lists 1> <file lists 2> <file lists 3> ...
 ```
 For example:
 ```
-mergeSamples 400000 merged ntuple_*/train_val_samples.txt
+mergeSamples.py 400000 merged ntuple_*/train_val_samples.txt
 ```
 This will take a significant amount of time - likely more than the ntuple production itself. It is therefore recommended to run the command within 'screen'.
 
