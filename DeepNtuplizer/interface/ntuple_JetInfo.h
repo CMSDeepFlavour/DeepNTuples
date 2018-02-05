@@ -13,6 +13,9 @@
 #include <map>
 #include <string>
 
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+
+
 /*
  * For global jet info such as eta, pt, gen info
  */
@@ -30,7 +33,7 @@ public:
 
     //use either of these functions
 
-    bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0);
+    bool fillBranches(const pat::Jet &, const size_t& jetidx, const edm::Event& iEvent, const  edm::View<pat::Jet> * coll=0);
 
     void setAxis2Token(edm::EDGetTokenT<edm::ValueMap<float> > axis2Token) {
         axis2Token_ = axis2Token;
@@ -69,6 +72,9 @@ public:
     void setElectronsToken(edm::EDGetTokenT<pat::ElectronCollection> electronsToken) {
         electronsToken_ = electronsToken;
     }
+    void setLHEToken(edm::EDGetTokenT<LHEEventProduct> lheToken){
+        lheToken_ = lheToken;
+        }
 
     void setUseHerwigCompatibleMatching(const bool use){
         useherwcompat_matching_=use;
@@ -76,6 +82,7 @@ public:
     void setIsHerwig(const bool use){
         isherwig_=use;
     }
+
 
     //private:
 
@@ -101,7 +108,9 @@ public:
 
     edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken_;
 
-    edm::EDGetTokenT<pat::MuonCollection> muonsToken_;       
+    edm::EDGetTokenT<pat::MuonCollection> muonsToken_;
+    edm::EDGetTokenT<LHEEventProduct>  lheToken_;
+
     edm::EDGetTokenT<pat::ElectronCollection> electronsToken_;
 
     edm::Handle<edm::Association<reco::GenJetCollection> > genJetMatchRecluster;
@@ -111,6 +120,9 @@ public:
 
     edm::Handle<pat::MuonCollection> muonsHandle;
     edm::Handle<pat::ElectronCollection> electronsHandle;
+
+    edm::Handle<LHEEventProduct> lheInfo;
+
 
 
     TRandom3 TRandom_;
@@ -152,6 +164,7 @@ public:
     int isLeptonicB_;
     int isLeptonicB_C_;
     int isTau_;
+    int isRealData_;
 
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
     int isPhysB_;
@@ -182,6 +195,16 @@ public:
     float  jet_phi_;
     float  jet_mass_;
     float  jet_energy_;
+
+    //Weight variables
+    bool useLHEWeights_;
+    std::string pupDataDir_;
+    std::string pupMCDir_;
+    std::vector<double> pupWeights;
+    float crossSection_;
+    float luminosity_;
+    float efficiency_;
+    float event_weight_;
 
     float jet_looseId_;
 

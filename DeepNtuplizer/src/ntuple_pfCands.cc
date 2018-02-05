@@ -245,7 +245,7 @@ void ntuple_pfCands::readEvent(const edm::Event& iEvent){
 
 //use either of these functions
 
-bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  edm::View<pat::Jet> * coll){
+bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, const edm::Event& iEvent, const  edm::View<pat::Jet> * coll){
 
 
     float etasign = 1.;
@@ -288,8 +288,8 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     std::vector<size_t> sortedchargedindices,sortedneutralsindices;
 
-        sortedchargedindices=sorting::invertSortingVector(sortedcharged);
-        sortedneutralsindices=sorting::invertSortingVector(sortedneutrals);
+    sortedchargedindices=sorting::invertSortingVector(sortedcharged);
+    sortedneutralsindices=sorting::invertSortingVector(sortedneutrals);
 
 
 
@@ -402,11 +402,11 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
             Cpfcan_charge_[fillntupleentry] = PackedCandidate_->charge();
             Cpfcan_lostInnerHits_[fillntupleentry] = catchInfs(PackedCandidate_->lostInnerHits(),2);
-	    Cpfcan_numberOfPixelHits_[fillntupleentry] = catchInfs(PackedCandidate_->numberOfPixelHits(),-1);
+	        Cpfcan_numberOfPixelHits_[fillntupleentry] = catchInfs(PackedCandidate_->numberOfPixelHits(),-1);
 
-	    //std::cout << PackedCandidate_->lostInnerHits()<< " inner hits " <<std::endl;
-	    //std::cout << PackedCandidate_->numberOfPixelHits()<< " Pixel hits + masked " <<std::endl;
-	    //std::cout <<PackedCandidate_->pixelLayersWithMeasurement()<< " Pixel hits " <<std::endl;
+	        //std::cout << PackedCandidate_->lostInnerHits()<< " inner hits " <<std::endl;
+	        //std::cout << PackedCandidate_->numberOfPixelHits()<< " Pixel hits + masked " <<std::endl;
+	        //std::cout <<PackedCandidate_->pixelLayersWithMeasurement()<< " Pixel hits " <<std::endl;
 
 
 

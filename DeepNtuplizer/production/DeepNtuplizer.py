@@ -15,11 +15,11 @@ options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarPars
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
 options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "gluon reduction")
 options.register('selectJets', True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "select jets with good gen match")
+options.register('isData', False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "switch off generator jets")
 
 import os
 release=os.environ['CMSSW_VERSION'][6:11]
 print("Using release "+release)
-
 
 options.register(
 	'inputFiles','',
@@ -42,9 +42,11 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
-#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
+
+if options.isData:
+    process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'  # For Data Jet Energy correction
+else:
+    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v8'  # For MC Jet Energy correction
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
@@ -54,19 +56,23 @@ if options.inputScript == '': #this is probably for testing
 	process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.options = cms.untracked.PSet(
-   allowUnscheduled = cms.untracked.bool(True),  
+   allowUnscheduled = cms.untracked.bool(True),
    wantSummary=cms.untracked.bool(False)
 )
 
+sampleListFile = 'DeepNTuples.DeepNtuplizer.samples.singleMuon_2016_cfg'
 
-process.load('DeepNTuples.DeepNtuplizer.samples.TTJetsPhase1_cfg') #default input
+
+process.load(sampleListFile) #default input
 
 
 if options.inputFiles:
 	process.source.fileNames = options.inputFiles
 
-if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtuplizer.samples.TTJetsPhase1_cfg':
+if options.inputScript != '' and options.inputScript != sampleListFile:
     process.load(options.inputScript)
+
+process.source.fileNames = ['file:./TT/output_0_1.root']
 
 numberOfFiles = len(process.source.fileNames)
 numberOfJobs = options.nJobs
@@ -90,8 +96,8 @@ if int(release.replace("_",""))>=840 :
 	'pfDeepCSVTagInfos' ]
 else : 
  bTagInfos = [
-        'pfImpactParameterTagInfos',
-        'pfInclusiveSecondaryVertexFinderTagInfos',
+    'pfImpactParameterTagInfos',
+    'pfInclusiveSecondaryVertexFinderTagInfos',
 	'deepNNTagInfos',
  ]
 
@@ -123,14 +129,17 @@ else :
          'deepFlavourJetTags:probcc',
  ]
 
-jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
+if options.isData:
+    jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
+else:
+    jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual'], 'None')
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 updateJetCollection(
         process,
         labelName = "DeepFlavour",
 #         jetSource=cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked', 'SubJets'),  # 'subjets from AK8'
-        jetSource = cms.InputTag('slimmedJets'),  # 'ak4Jets'
+        jetSource = cms.InputTag('GoodJets'),  # 'ak4Jets'
         jetCorrections = jetCorrectionsAK4,
         pfCandidates = cms.InputTag('packedPFCandidates'),
         pvSource = cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -158,10 +167,15 @@ process.QGTagger.jetsLabel = cms.string('QGL_AK4PFchs')
 
 
 from RecoJets.JetProducers.ak4GenJets_cfi import ak4GenJets
+#from RecoJets.JetProducers.ak4GenJets_cfi import ak4TrackJets
+
 process.ak4GenJetsWithNu = ak4GenJets.clone(src = 'packedGenParticles')
- 
+#Process.ak4GenJetsWithNu = ak4TrackJets.clone(src = 'packedGenParticles')
+
  ## Filter out neutrinos from packed GenParticles
-process.packedGenParticlesForJetsNoNu = cms.EDFilter("CandPtrSelector", src = cms.InputTag("packedGenParticles"), cut = cms.string("abs(pdgId) != 12 && abs(pdgId) != 14 && abs(pdgId) != 16"))
+process.packedGenParticlesForJetsNoNu = cms.EDFilter("CandPtrSelector",
+                                                     src = cms.InputTag("packedGenParticles"),
+                                                     cut = cms.string("abs(pdgId) != 12 && abs(pdgId) != 14 && abs(pdgId) != 16"))
  ## Define GenJets
 process.ak4GenJetsRecluster = ak4GenJets.clone(src = 'packedGenParticlesForJetsNoNu')
  
@@ -190,7 +204,11 @@ process.patGenJetMatchRecluster = cms.EDProducer("GenJetMatcher",  # cut on delt
     resolveByMatchQuality = cms.bool(False),         # False = just match input in order; True = pick lowest deltaR pair first          
 )
 
-process.genJetSequence = cms.Sequence(process.packedGenParticlesForJetsNoNu*process.ak4GenJetsWithNu*process.ak4GenJetsRecluster*process.patGenJetMatchWithNu*process.patGenJetMatchRecluster)
+process.genJetSequence = cms.Sequence(process.packedGenParticlesForJetsNoNu
+                                      *process.ak4GenJetsWithNu
+                                      *process.ak4GenJetsRecluster
+                                      *process.patGenJetMatchWithNu
+                                      *process.patGenJetMatchRecluster)
 
 
 # Very Loose IVF SV collection
@@ -229,12 +247,9 @@ if int(release.replace("_",""))>=840 :
 
 process.deepntuplizer.gluonReduction  = cms.double(options.gluonReduction)
 
-#1631
-process.ProfilerService = cms.Service (
-      "ProfilerService",
-       firstEvent = cms.untracked.int32(1631),
-       lastEvent = cms.untracked.int32(1641),
-       paths = cms.untracked.vstring('p') 
-)
 
-process.p = cms.Path(process.QGTagger + process.genJetSequence*  process.deepntuplizer)
+
+if options.isData:
+    process.p = cms.Path(process.QGTagger + process.deepntuplizer)
+else:
+    process.p = cms.Path(process.QGTagger + process.genJetSequence * process.deepntuplizer)

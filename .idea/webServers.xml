@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="bee0ed49-ecb8-420e-bced-69a155a20786" name="lxplus" url="http://lxplus.cern.ch">
+        <fileTransfer host="lxplus.cern.ch" port="22" rootFolder="/afs/cern.ch/work/d/dwalter" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="4555fd68-fb3a-426c-89ab-b03aab90d82d" name="naf" url="http://naf-cms.desy.de">
+        <fileTransfer host="naf-cms.desy.de" port="22" rootFolder="/afs/desy.de/user/d/dwalter/" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

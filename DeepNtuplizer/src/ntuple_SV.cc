@@ -76,7 +76,7 @@ bool ntuple_SV::compareDxyDxyErr(const reco::VertexCompositePtrCandidate &sva,co
     return bsig<asig;
 }
 
-bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  edm::View<pat::Jet> * coll){
+bool ntuple_SV::fillBranches(const pat::Jet & jet, const size_t& jetidx, const edm::Event& iEvent, const  edm::View<pat::Jet> * coll){
 
 
     const float jet_uncorr_e=jet.correctedJet("Uncorrected").energy();

@@ -15,6 +15,9 @@
 #include <algorithm>
 #include "DataFormats/Math/interface/deltaR.h"
 
+#include <TFile.h>
+#include <TH1.h>
+
 using namespace std;
 
 void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
@@ -25,10 +28,36 @@ void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
     jetAbsEtaMin_=(iConfig.getParameter<double>("jetAbsEtaMin"));
     jetAbsEtaMax_=(iConfig.getParameter<double>("jetAbsEtaMax"));
 
+    pupDataDir_ = (iConfig.getParameter<string>("pupDataDir"));
+    pupMCDir_ = (iConfig.getParameter<string>("pupMCDir"));
+
+    useLHEWeights_ = (iConfig.getParameter<bool>("useLHEWeights"));
+    crossSection_ = (iConfig.getParameter<double>("crossSection"));
+    luminosity_ = (iConfig.getParameter<double>("luminosity"));
+    efficiency_ = (iConfig.getParameter<double>("efficiency"));
+
+
     vector<string> disc_names = iConfig.getParameter<vector<string> >("bDiscriminators");
     for(auto& name : disc_names) {
         discriminators_[name] = 0.;
     }
+
+    TFile *pupMCFile = new TFile(pupMCDir_.c_str());
+    TFile *pupDataFile = new TFile(pupDataDir_.c_str());
+
+    TH1F * pupMCHist = (TH1F*)pupMCFile->Get("pileup");
+    TH1F * pupDataHist = (TH1F*)pupDataFile->Get("pileup");
+
+    pupMCHist->Scale(1./pupMCHist->Integral());
+    pupDataHist->Scale(1./pupDataHist->Integral());
+
+    pupWeights.push_back(1.0);
+    for(int bin = 1; bin < pupMCHist->GetNbinsX() + 1; bin++){
+        pupWeights.push_back(pupDataHist->GetBinContent(bin)/pupMCHist->GetBinContent(bin));
+    }
+
+
+
 }
 void ntuple_JetInfo::initBranches(TTree* tree){
 
@@ -57,6 +86,8 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"isG",&isG_, "isG_/i");
     addBranch(tree,"isUndefined",&isUndefined_, "isUndefined_/i");
     addBranch(tree,"genDecay",&genDecay_, "genDecay_/f");
+    addBranch(tree,"isRealData",&isRealData_, "isRealData_/i");
+
 
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
     addBranch(tree,"isPhysB",&isPhysB_, "isPhysB_/i");
@@ -82,7 +113,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"jet_mass", &jet_mass_);
     addBranch(tree,"jet_energy", &jet_energy_);
 
-
+    addBranch(tree,"event_weight", &event_weight_);
     //jet id
     addBranch(tree,"jet_looseId", &jet_looseId_);
 
@@ -100,7 +131,6 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"y_axis1"    ,&y_axis1_,"y_axis1_/f"    );
     addBranch(tree,"y_axis2"    ,&y_axis2_,"y_axis2_/f"    );
     addBranch(tree,"y_pt_dr_log"    ,&y_pt_dr_log_,"y_pt_dr_log_/f"    );
-
 
     // in the jet
 
@@ -142,10 +172,13 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
     iEvent.getByToken(axis2Token_, axis2Handle);
     iEvent.getByToken(multToken_, multHandle);
 
-    iEvent.getByToken(genJetMatchReclusterToken_, genJetMatchRecluster);
-    iEvent.getByToken(genJetMatchWithNuToken_, genJetMatchWithNu);
+    if(!iEvent.isRealData()){
 
-    iEvent.getByToken(genParticlesToken_, genParticlesHandle);
+        iEvent.getByToken(genJetMatchReclusterToken_, genJetMatchRecluster);
+        iEvent.getByToken(genJetMatchWithNuToken_, genJetMatchWithNu);
+        iEvent.getByToken(genParticlesToken_, genParticlesHandle);
+    }
+
 
 
     iEvent.getByToken(muonsToken_, muonsHandle);
@@ -165,93 +198,98 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
     Bhadron_daughter_.clear();
 
     //std::cout << " start search for a b in this event "<<std::endl;
- for (const reco::Candidate &genC : *genParticlesHandle)
-   {
-     const reco::GenParticle &gen = static_cast< const reco::GenParticle &>(genC);
-     
-     if((abs(gen.pdgId())>500&&abs(gen.pdgId())<600)||(abs(gen.pdgId())>5000&&abs(gen.pdgId())<6000)) {
+    if(!iEvent.isRealData()){
 
-       //std::cout<<gen.end_vertex()<<endl;
+        for (const reco::Candidate &genC : *genParticlesHandle){
+            const reco::GenParticle &gen = static_cast< const reco::GenParticle &>(genC);
 
-       Bhadron_.push_back(gen);
-       if(gen.numberOfDaughters()>0){
-     
-	 if( (abs(gen.daughter(0)->pdgId())>500&&abs(gen.daughter(0)->pdgId())<600)||(abs(gen.daughter(0)->pdgId())>5000&&abs(gen.daughter(0)->pdgId())<6000))
-	   {
-	     if(gen.daughter(0)->numberOfDaughters()>0)
-	       {
-		
-		 const reco::GenParticle &daughter_ = static_cast< const reco::GenParticle &>(*(gen.daughter(0)->daughter(0)));
-		 
-		 if(daughter_.vx()!=gen.vx())
-		   { 
-		     Bhadron_daughter_.push_back(daughter_);
-		   }
-		 //	 else {
-		 //  std::cout << "only b daughters " << endl;
-		 // }
-	       }
-	     else  Bhadron_daughter_.push_back(gen);
-	     
-	   }
-	 else{
-	   //  std::cout<<gen.daughter(0)->vx()<< " oh  " <<gen.vx()<<" "<<gen.pt() <<" "<<  gen.daughter(0)->pdgId() <<std::endl; 
-	  
-	   const reco::GenParticle &daughter_ = static_cast< const reco::GenParticle &>(*gen.daughter(0));
-	   Bhadron_daughter_.push_back(daughter_);
-	 }
+            if((abs(gen.pdgId())>500&&abs(gen.pdgId())<600)||(abs(gen.pdgId())>5000&&abs(gen.pdgId())<6000)) {
 
-       }// if daughter is there
-       else {
-	 
-	 //std::cout << " lonly B hadron, has NO daughter??? "<<std::endl;
-	 Bhadron_daughter_.push_back(gen);
-       }
-     }
-   }
+                //std::cout<<gen.end_vertex()<<endl;
 
- for (const reco::Candidate &genC : *genParticlesHandle) {
-        const reco::GenParticle &gen = static_cast< const reco::GenParticle &>(genC);
-        if(abs(gen.pdgId())==12||abs(gen.pdgId())==14||abs(gen.pdgId())==16) {
-            const reco::GenParticle* mother =  static_cast< const reco::GenParticle*> (gen.mother());
-            if(mother!=NULL) {
-                if((abs(mother->pdgId())>500&&abs(mother->pdgId())<600)||(abs(mother->pdgId())>5000&&abs(mother->pdgId())<6000)) {
-                    neutrinosLepB.emplace_back(gen);
-                }
-                if((abs(mother->pdgId())>400&&abs(mother->pdgId())<500)||(abs(mother->pdgId())>4000&&abs(mother->pdgId())<5000)) {
-                    neutrinosLepB_C.emplace_back(gen);
+                Bhadron_.push_back(gen);
+                if(gen.numberOfDaughters()>0){
+
+                    if( (abs(gen.daughter(0)->pdgId())>500&&abs(gen.daughter(0)->pdgId())<600)||(abs(gen.daughter(0)->pdgId())>5000&&abs(gen.daughter(0)->pdgId())<6000))
+                    {
+                        if(gen.daughter(0)->numberOfDaughters()>0){
+
+                            const reco::GenParticle &daughter_ = static_cast< const reco::GenParticle &>(*(gen.daughter(0)->daughter(0)));
+
+                            if(daughter_.vx()!=gen.vx()){
+                                Bhadron_daughter_.push_back(daughter_);
+                            }
+                            //	 else {
+                            //  std::cout << "only b daughters " << endl;
+                            // }
+                            }
+                        else  Bhadron_daughter_.push_back(gen);
+
+                        }
+                    else{
+                        //  std::cout<<gen.daughter(0)->vx()<< " oh  " <<gen.vx()<<" "<<gen.pt() <<" "<<  gen.daughter(0)->pdgId() <<std::endl;
+
+                        const reco::GenParticle &daughter_ = static_cast< const reco::GenParticle &>(*gen.daughter(0));
+                        Bhadron_daughter_.push_back(daughter_);
+                    }
+
+                }// if daughter is there
+                else {
+
+                //std::cout << " lonly B hadron, has NO daughter??? "<<std::endl;
+                Bhadron_daughter_.push_back(gen);
                 }
             }
-            else {
-                std::cout << "No mother" << std::endl;
+        }
+
+        for (const reco::Candidate &genC : *genParticlesHandle) {
+            const reco::GenParticle &gen = static_cast< const reco::GenParticle &>(genC);
+            if(abs(gen.pdgId())==12||abs(gen.pdgId())==14||abs(gen.pdgId())==16) {
+                const reco::GenParticle* mother =  static_cast< const reco::GenParticle*> (gen.mother());
+                if(mother!=NULL) {
+                    if((abs(mother->pdgId())>500&&abs(mother->pdgId())<600)||(abs(mother->pdgId())>5000&&abs(mother->pdgId())<6000)) {
+                        neutrinosLepB.emplace_back(gen);
+                    }
+                    if((abs(mother->pdgId())>400&&abs(mother->pdgId())<500)||(abs(mother->pdgId())>4000&&abs(mother->pdgId())<5000)) {
+                        neutrinosLepB_C.emplace_back(gen);
+                    }
+                }
+                else {
+                    std::cout << "No mother" << std::endl;
+                }
             }
-        }
 
-        int id(std::abs(gen.pdgId())); 
-        int status(gen.status());
+            int id(std::abs(gen.pdgId()));
+            int status(gen.status());
 
-        if (id == 21 && status >= 21 && status <= 59) { //// Pythia8 hard scatter, ISR, or FSR
-            if ( gen.numberOfDaughters() == 2 ) {
-                const reco::Candidate* d0 = gen.daughter(0);
-                const reco::Candidate* d1 = gen.daughter(1);
-                if ( std::abs(d0->pdgId()) == 5 && std::abs(d1->pdgId()) == 5
-                        && d0->pdgId()*d1->pdgId() < 0 && reco::deltaR(*d0, *d1) < 0.4) gToBB.push_back(gen) ;
-                if ( std::abs(d0->pdgId()) == 4 && std::abs(d1->pdgId()) == 4
-                        && d0->pdgId()*d1->pdgId() < 0 && reco::deltaR(*d0, *d1) < 0.4) gToCC.push_back(gen) ;
+            if (id == 21 && status >= 21 && status <= 59) { //// Pythia8 hard scatter, ISR, or FSR
+                if ( gen.numberOfDaughters() == 2 ) {
+                    const reco::Candidate* d0 = gen.daughter(0);
+                    const reco::Candidate* d1 = gen.daughter(1);
+                    if ( std::abs(d0->pdgId()) == 5 && std::abs(d1->pdgId()) == 5
+                            && d0->pdgId()*d1->pdgId() < 0 && reco::deltaR(*d0, *d1) < 0.4) gToBB.push_back(gen) ;
+                    if ( std::abs(d0->pdgId()) == 4 && std::abs(d1->pdgId()) == 4
+                            && d0->pdgId()*d1->pdgId() < 0 && reco::deltaR(*d0, *d1) < 0.4) gToCC.push_back(gen) ;
+                }
             }
-        }
 
-        if(id == 15 && false){
-            alltaus_.push_back(gen);
-        }
+            if(id == 15 && false){
+                alltaus_.push_back(gen);
+            }
 
-    }
+        }
     //technically a branch fill but per event, therefore here
+    }
 }
-
 //use either of these functions
 
-bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, const edm::View<pat::Jet> * coll){
+bool ntuple_JetInfo::fillBranches(const pat::Jet & jet,
+                                    const size_t& jetidx,
+                                    const edm::Event& iEvent,
+                                    const edm::View<pat::Jet> * coll
+                                    ){
+    //std::cout<<"start fillBranches of module JetInfo "<<std::endl;
+
     if(!coll)
         throw std::runtime_error("ntuple_JetInfo::fillBranches: no jet collection");
 
@@ -263,27 +301,49 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     if ( fabs(jet.eta()) < jetAbsEtaMin_ || fabs(jet.eta()) > jetAbsEtaMax_ ) returnval=false; // apply jet eta cut
 
 
-    // often we have way to many gluons that we do not need. This randomply reduces the gluons
-    if (gluonReduction_>0 && jet.partonFlavour()==21)
-        if(TRandom_.Uniform()>gluonReduction_) returnval=false;
-
-    if(jet.genJet()==NULL)returnval=false;
+    if(!iEvent.isRealData()){   //In simulated Data, ...
+                                //.. often we have way to many gluons that we do not need. This randomly reduces the gluons
+        if (gluonReduction_>0 && jet.partonFlavour()==21)
+            if(TRandom_.Uniform()>gluonReduction_) returnval=false;
+                                //... we only need Jets with information
+        if(jet.genJet()==NULL)returnval=false;
+    }
 
 
     //branch fills
     for(auto& entry : discriminators_) {
         entry.second = catchInfs(jet.bDiscriminator(entry.first),-0.1);
     }
-
     npv_ = vertices()->size();
 
-    for (auto const& v : *pupInfo()) {
-        int bx = v.getBunchCrossing();
-        if (bx == 0) {
-            ntrueInt_ = v.getTrueNumInteractions();
+    if(!iEvent.isRealData()){  //extended pileup info only for gen jets
+        for (auto const& v : *pupInfo()) {
+            int bx = v.getBunchCrossing();
+            if (bx == 0) {
+                ntrueInt_ = v.getTrueNumInteractions();
+            }
         }
+
+        double lheWeight = 1.;
+
+        if(useLHEWeights_){
+            iEvent.getByToken(lheToken_, lheInfo);
+            lheWeight = lheInfo->weights()[0].wgt/std::abs(lheInfo->weights()[0].wgt);
+        }
+
+        double pupWeight = 0;
+        if(ntrueInt_ < pupWeights.size()){
+            pupWeight = pupWeights.at(ntrueInt_);
+        }
+
+
+        event_weight_ = luminosity_ *  crossSection_ * efficiency_ * lheWeight * pupWeight;
+    }
+    else{
+        event_weight_ = luminosity_ * crossSection_ * efficiency_;
     }
     rho_ = rhoInfo()[0];
+
 
 
     jet_no_=jetidx;
@@ -298,8 +358,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     //std::vector<Ptr<pat::Jet> > p= coll->ptrs();
 
-    isB_=0; isGBB_=0; isBB_=0; isC_=0; isGCC_=0; isCC_=0; isUD_=0;isTau_=0;
-    isS_=0; isG_=0, isLeptonicB_=0, isLeptonicB_C_=0, isUndefined_=0;
+
     auto muIds = deep_ntuples::jet_muonsIds(jet,*muonsHandle);
     auto elecIds = deep_ntuples::jet_electronsIds(jet,*electronsHandle);
 
@@ -331,6 +390,8 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     }
 
     //// Note that jets with gluon->bb (cc) and x->bb (cc) are in the same categories
+    isB_=0; isGBB_=0; isBB_=0; isC_=0; isGCC_=0; isCC_=0; isUD_=0; isTau_=0;
+    isS_=0; isG_=0; isLeptonicB_=0; isLeptonicB_C_=0; isUndefined_=0; isRealData_=0;
     if(jet.genJet()!=NULL){
         switch(deep_ntuples::jet_flavour(jet, gToBB, gToCC, neutrinosLepB, neutrinosLepB_C, alltaus_)) {
         case deep_ntuples::JetFlavor::B:  isB_=1; break;
@@ -376,7 +437,14 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         isUndefined_=1;isPhysUndefined_=1;
     }
 
-    if(isUndefined_ && isPhysUndefined_) returnval=false; //skip event, if neither standard flavor definition nor physics definition fallback define a "proper flavor"
+    if(iEvent.isRealData()){
+        isRealData_=1;
+    }
+
+    if(!iEvent.isRealData()){
+        isRealData_=0;
+        if(isUndefined_ && isPhysUndefined_) returnval=false;   //skip event, if it is generated and if neither standard flavor definition nor physics definition fallback define a "proper flavor"
+    }
 
     pat::JetCollection h;
 
@@ -391,22 +459,22 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     genDecay_ = -1.;
     // std::cout << "looking for a B"<<jet.eta()<< " "<<jet.phi() <<std::endl;
     for  (std::vector<reco::GenParticle>::const_iterator it = Bhadron_.begin(); it != Bhadron_.end(); ++it){
-      if(reco::deltaR(it->eta(),it->phi(),jet.eta(),jet.phi()) < 0.4) 
-	{
-	  //  std::cout <<it->eta()<<" "<<it->phi()<< " "<<reco::deltaR(it->eta(),it->phi(),jet.eta(),jet.phi())<<" "<< sqrt(Bhadron_daughter_[iterIndex].vx()*Bhadron_daughter_[iterIndex].vx()+Bhadron_daughter_[iterIndex].vy()*Bhadron_daughter_[iterIndex].vy())<< " dXY "<<  iterIndex << std::endl;
-	  if(Bhadron_daughter_[iterIndex].vx()!=it->vx()){
-	    float vx = Bhadron_daughter_[iterIndex].vx()-it->vx();
-	    float vy = Bhadron_daughter_[iterIndex].vy()-it->vy();
+        if(reco::deltaR(it->eta(),it->phi(),jet.eta(),jet.phi()) < 0.4) {
+	        //  std::cout <<it->eta()<<" "<<it->phi()<< " "<<reco::deltaR(it->eta(),it->phi(),jet.eta(),jet.phi())<<" "<< sqrt(Bhadron_daughter_[iterIndex].vx()*Bhadron_daughter_[iterIndex].vx()+Bhadron_daughter_[iterIndex].vy()*Bhadron_daughter_[iterIndex].vy())<< " dXY "<<  iterIndex << std::endl;
+	        if(Bhadron_daughter_[iterIndex].vx()!=it->vx()){
+	            float vx = Bhadron_daughter_[iterIndex].vx()-it->vx();
+	            float vy = Bhadron_daughter_[iterIndex].vy()-it->vy();
 	    
 	    
-	    genDecay_= sqrt(vx*vx+vy*vy);}
-	  else {
-	    // std::cout << "b hadron without daughter matched"<<std::endl;
-	    genDecay_= -0.1;
-	  }
-	  break;
+	            genDecay_= sqrt(vx*vx+vy*vy);
+	        }
+	        else {
+	            // std::cout << "b hadron without daughter matched"<<std::endl;
+	            genDecay_= -0.1;
+	        }
+	        break;
 	}
-      iterIndex++;
+        iterIndex++;
     }
 
 
