@@ -21,10 +21,12 @@ public:
 
     void getInput(const edm::ParameterSet& iConfig);
     void initBranches(TTree* tree);
+    void initBranches(TTree* tree, std::string On);
     void readEvent(const edm::Event& iEvent) {}
 
     //use either of these functions
     bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0);
+    bool fillBranches(const reco::ShallowTagInfo & tagInfo);
 
 private:
     template <typename T>

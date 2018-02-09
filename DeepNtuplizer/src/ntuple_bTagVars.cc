@@ -14,54 +14,60 @@ void ntuple_bTagVars::getInput(const edm::ParameterSet& iConfig){
     tagInfoName_=(iConfig.getParameter<string>("tagInfoName"));
 }
 
+
 void ntuple_bTagVars::initBranches(TTree* tree){
-    //jet general
-    addBranch(tree,"trackJetPt"             , &trackJetPt_             , "trackJetPt_/F"             );
-    addBranch(tree,"jetNTracks"             , &jetNTracks_             , "jetNTracks_/F"             );
-    addBranch(tree,"TagVarCSV_jetNSecondaryVertices"  , &jetNSecondaryVertices_  , "jetNSecondaryVertices_/F"  );
-    addBranch(tree,"TagVarCSV_trackSumJetEtRatio"     , &trackSumJetEtRatio_     , "trackSumJetEtRatio_/F"     );
-    addBranch(tree,"TagVarCSV_trackSumJetDeltaR"      , &trackSumJetDeltaR_      , "trackSumJetDeltaR_/F"      );
-    addBranch(tree,"TagVarCSV_vertexCategory"         , &vertexCategory_         , "vertexCategory_/F"         );
-    addBranch(tree,"TagVarCSV_trackSip2dValAboveCharm", &trackSip2dValAboveCharm_, "trackSip2dValAboveCharm_/F");
-    addBranch(tree,"TagVarCSV_trackSip2dSigAboveCharm", &trackSip2dSigAboveCharm_, "trackSip2dSigAboveCharm_/F");
-    addBranch(tree,"TagVarCSV_trackSip3dValAboveCharm", &trackSip3dValAboveCharm_, "trackSip3dValAboveCharm_/F");
-    addBranch(tree,"TagVarCSV_trackSip3dSigAboveCharm", &trackSip3dSigAboveCharm_, "trackSip3dSigAboveCharm_/F");
-    //track info
-    addBranch(tree,"n_TagVarCSV_jetNSelectedTracks", &n_jetNSelectedTracks_, "n_jetNSelectedTracks_/i");
-    addBranch(tree,"TagVarCSV_jetNSelectedTracks", &jetNSelectedTracks_, "jetNSelectedTracks_/f");
-
-    addBranch(tree,"TagVarCSVTrk_trackPtRel"      , &trackPtRel_      , "trackPtRel_[n_jetNSelectedTracks_]/f"      );
-    addBranch(tree,"TagVarCSVTrk_trackDeltaR"     , &trackDeltaR_     , "trackDeltaR_[n_jetNSelectedTracks_]/f"     );
-    addBranch(tree,"TagVarCSVTrk_trackPtRatio"    , &trackPtRatio_    , "trackPtRatio_[n_jetNSelectedTracks_]/f"    );
-    addBranch(tree,"TagVarCSVTrk_trackSip3dSig"   , &trackSip3dSig_   , "trackSip3dSig_[n_jetNSelectedTracks_]/f"   );
-    addBranch(tree,"TagVarCSVTrk_trackSip2dSig"   , &trackSip2dSig_   , "trackSip2dSig_[n_jetNSelectedTracks_]/f"   );
-    addBranch(tree,"TagVarCSVTrk_trackDecayLenVal", &trackDecayLenVal_, "trackDecayLenVal_[n_jetNSelectedTracks_]/f");
-    addBranch(tree,"TagVarCSVTrk_trackJetDistVal" , &trackJetDistVal_ , "trackJetDistVal_[n_jetNSelectedTracks_]/f" );
-
-    addBranch(tree,"n_TagVarCSV_jetNTracksEtaRel", &n_jetNTracksEtaRel_, "n_jetNTracksEtaRel_/i"                );
-    addBranch(tree,"TagVarCSV_jetNTracksEtaRel", &jetNTracksEtaRel_, "jetNTracksEtaRel_/f"                );
-
-    addBranch(tree,"TagVarCSV_trackEtaRel"     , &trackEtaRel_     , "trackEtaRel_[n_jetNTracksEtaRel_]/f"  );
-
-    addBranch(tree,"trackPParRatio"  , &trackPParRatio_  , "trackPParRatio_[n_jetNSelectedTracks_]/f"  );
-    addBranch(tree,"trackSip2dVal"   , &trackSip2dVal_   , "trackSip2dVal_[n_jetNSelectedTracks_]/f"   );
-    addBranch(tree,"trackSip3dVal"   , &trackSip3dVal_   , "trackSip3dVal_[n_jetNSelectedTracks_]/f"   );
-    addBranch(tree,"trackMomentum"   , &trackMomentum_   , "trackMomentum_[n_jetNSelectedTracks_]/f"   );
-    addBranch(tree,"trackEta"        , &trackEta_        , "trackEta_[n_jetNSelectedTracks_]/f"        );
-    addBranch(tree,"trackPPar"       , &trackPPar_       , "trackPPar_[n_jetNSelectedTracks_]/f"       );
-    //SV info
-    addBranch(tree,"n_StoredVertices"    , &n_StoredVertices_    , "n_StoredVertices_/i"  );
-    addBranch(tree,"NStoredVertices"    , &NStoredVertices_    , "NStoredVertices_/f"  );
-
-    addBranch(tree,"TagVarCSV_vertexMass"         , &vertexMass_         , "vertexMass_[n_StoredVertices_]/f"         );
-    addBranch(tree,"TagVarCSV_vertexNTracks"      , &vertexNTracks_      , "vertexNTracks_[n_StoredVertices_]/f"      );
-    addBranch(tree,"TagVarCSV_vertexEnergyRatio"  , &vertexEnergyRatio_  , "vertexEnergyRatio_[n_StoredVertices_]/f"  );
-    addBranch(tree,"TagVarCSV_vertexJetDeltaR"    , &vertexJetDeltaR_    , "vertexJetDeltaR_[n_StoredVertices_]/f"    );
-    addBranch(tree,"TagVarCSV_flightDistance2dVal", &flightDistance2dVal_, "flightDistance2dVal_[n_StoredVertices_]/f");
-    addBranch(tree,"TagVarCSV_flightDistance2dSig", &flightDistance2dSig_, "flightDistance2dSig_[n_StoredVertices_]/f");
-    addBranch(tree,"TagVarCSV_flightDistance3dVal", &flightDistance3dVal_, "flightDistance3dVal_[n_StoredVertices_]/f");
-    addBranch(tree,"TagVarCSV_flightDistance3dSig", &flightDistance3dSig_, "flightDistance3dSig_[n_StoredVertices_]/f");
+  initBranches(tree,"");
 }
+
+void ntuple_bTagVars::initBranches(TTree* tree, string On){
+    //jet general
+    addBranch(tree, (On + "trackJetPt").c_str()            , &trackJetPt_             , (On + "trackJetPt_/F").c_str()            );
+    addBranch(tree, (On + "jetNTracks").c_str()            , &jetNTracks_             , (On + "jetNTracks_/F").c_str()            );
+    addBranch(tree, (On + "TagVarCSV_jetNSecondaryVertices").c_str() , &jetNSecondaryVertices_  , (On + "jetNSecondaryVertices_/F").c_str() );
+    addBranch(tree, (On + "TagVarCSV_trackSumJetEtRatio").c_str()    , &trackSumJetEtRatio_     , (On + "trackSumJetEtRatio_/F").c_str()    );
+    addBranch(tree, (On + "TagVarCSV_trackSumJetDeltaR").c_str()     , &trackSumJetDeltaR_      , (On + "trackSumJetDeltaR_/F").c_str()     );
+    addBranch(tree, (On + "TagVarCSV_vertexCategory").c_str()        , &vertexCategory_         , (On + "vertexCategory_/F").c_str()        );
+    addBranch(tree, (On + "TagVarCSV_trackSip2dValAboveCharm").c_str(), &trackSip2dValAboveCharm_, (On + "trackSip2dValAboveCharm_/F").c_str());
+    addBranch(tree, (On + "TagVarCSV_trackSip2dSigAboveCharm").c_str(), &trackSip2dSigAboveCharm_, (On + "trackSip2dSigAboveCharm_/F").c_str());
+    addBranch(tree, (On + "TagVarCSV_trackSip3dValAboveCharm").c_str(), &trackSip3dValAboveCharm_, (On + "trackSip3dValAboveCharm_/F").c_str());
+    addBranch(tree, (On + "TagVarCSV_trackSip3dSigAboveCharm").c_str(), &trackSip3dSigAboveCharm_, (On + "trackSip3dSigAboveCharm_/F").c_str());
+    //track info
+    addBranch(tree, (On + "n_TagVarCSV_jetNSelectedTracks").c_str(), &n_jetNSelectedTracks_, (On + "n_jetNSelectedTracks_/i").c_str());
+    addBranch(tree, (On + "TagVarCSV_jetNSelectedTracks").c_str(), &jetNSelectedTracks_, (On + "jetNSelectedTracks_/f").c_str());
+
+    addBranch(tree, (On + "TagVarCSVTrk_trackPtRel").c_str()     , &trackPtRel_      , (On + "trackPtRel_[n_jetNSelectedTracks_]/f").c_str()     );
+    addBranch(tree, (On + "TagVarCSVTrk_trackDeltaR").c_str()    , &trackDeltaR_     , (On + "trackDeltaR_[n_jetNSelectedTracks_]/f").c_str()    );
+    addBranch(tree, (On + "TagVarCSVTrk_trackPtRatio").c_str()   , &trackPtRatio_    , (On + "trackPtRatio_[n_jetNSelectedTracks_]/f").c_str()   );
+    addBranch(tree, (On + "TagVarCSVTrk_trackSip3dSig").c_str()  , &trackSip3dSig_   , (On + "trackSip3dSig_[n_jetNSelectedTracks_]/f").c_str()  );
+    addBranch(tree, (On + "TagVarCSVTrk_trackSip2dSig").c_str()  , &trackSip2dSig_   , (On + "trackSip2dSig_[n_jetNSelectedTracks_]/f").c_str()  );
+    addBranch(tree, (On + "TagVarCSVTrk_trackDecayLenVal").c_str(), &trackDecayLenVal_, (On + "trackDecayLenVal_[n_jetNSelectedTracks_]/f").c_str());
+    addBranch(tree, (On + "TagVarCSVTrk_trackJetDistVal").c_str(), &trackJetDistVal_ , (On + "trackJetDistVal_[n_jetNSelectedTracks_]/f").c_str());
+
+    addBranch(tree, (On + "n_TagVarCSV_jetNTracksEtaRel").c_str(), &n_jetNTracksEtaRel_, (On + "n_jetNTracksEtaRel_/i").c_str()               );
+    addBranch(tree, (On + "TagVarCSV_jetNTracksEtaRel").c_str(), &jetNTracksEtaRel_, (On + "jetNTracksEtaRel_/f").c_str()               );
+
+    addBranch(tree, (On + "TagVarCSV_trackEtaRel").c_str()    , &trackEtaRel_     , (On + "trackEtaRel_[n_jetNTracksEtaRel_]/f").c_str() );
+
+    addBranch(tree, (On + "trackPParRatio").c_str() , &trackPParRatio_  , (On + "trackPParRatio_[n_jetNSelectedTracks_]/f").c_str() );
+    addBranch(tree, (On + "trackSip2dVal").c_str()  , &trackSip2dVal_   , (On + "trackSip2dVal_[n_jetNSelectedTracks_]/f").c_str()  );
+    addBranch(tree, (On + "trackSip3dVal").c_str()  , &trackSip3dVal_   , (On + "trackSip3dVal_[n_jetNSelectedTracks_]/f").c_str()  );
+    addBranch(tree, (On + "trackMomentum").c_str()  , &trackMomentum_   , (On + "trackMomentum_[n_jetNSelectedTracks_]/f").c_str()  );
+    addBranch(tree, (On + "trackEta").c_str()       , &trackEta_        , (On + "trackEta_[n_jetNSelectedTracks_]/f").c_str()       );
+    addBranch(tree, (On + "trackPPar").c_str()      , &trackPPar_       , (On + "trackPPar_[n_jetNSelectedTracks_]/f").c_str()      );
+    //SV info
+    addBranch(tree, (On + "n_StoredVertices").c_str()   , &n_StoredVertices_    , (On + "n_StoredVertices_/i").c_str() );
+    addBranch(tree, (On + "NStoredVertices").c_str()   , &NStoredVertices_    , (On + "NStoredVertices_/f").c_str() );
+
+    addBranch(tree, (On + "TagVarCSV_vertexMass").c_str()        , &vertexMass_         , (On + "vertexMass_[n_StoredVertices_]/f").c_str()        );
+    addBranch(tree, (On + "TagVarCSV_vertexNTracks").c_str()     , &vertexNTracks_      , (On + "vertexNTracks_[n_StoredVertices_]/f").c_str()     );
+    addBranch(tree, (On + "TagVarCSV_vertexEnergyRatio").c_str() , &vertexEnergyRatio_  , (On + "vertexEnergyRatio_[n_StoredVertices_]/f").c_str() );
+    addBranch(tree, (On + "TagVarCSV_vertexJetDeltaR").c_str()   , &vertexJetDeltaR_    , (On + "vertexJetDeltaR_[n_StoredVertices_]/f").c_str()   );
+    addBranch(tree, (On + "TagVarCSV_flightDistance2dVal").c_str(), &flightDistance2dVal_, (On + "flightDistance2dVal_[n_StoredVertices_]/f").c_str());
+    addBranch(tree, (On + "TagVarCSV_flightDistance2dSig").c_str(), &flightDistance2dSig_, (On + "flightDistance2dSig_[n_StoredVertices_]/f").c_str());
+    addBranch(tree, (On + "TagVarCSV_flightDistance3dVal").c_str(), &flightDistance3dVal_, (On + "flightDistance3dVal_[n_StoredVertices_]/f").c_str());
+    addBranch(tree, (On + "TagVarCSV_flightDistance3dSig").c_str(), &flightDistance3dSig_, (On + "flightDistance3dSig_[n_StoredVertices_]/f").c_str());
+}
+
 
 //use either of these functions
 bool ntuple_bTagVars::fillBranches(const pat::Jet & jet, const size_t& jetidx, const edm::View<pat::Jet> *){
@@ -73,7 +79,15 @@ bool ntuple_bTagVars::fillBranches(const pat::Jet & jet, const size_t& jetidx, c
                 ". The available ones are: " << stream.str() << endl;
     }
     const reco::ShallowTagInfo* tagInfo = dynamic_cast<const reco::ShallowTagInfo*>(jet.tagInfo(tagInfoName_)); //to be fixed with new names
-    reco::TaggingVariableList vars = tagInfo->taggingVariables();
+
+    return fillBranches(*tagInfo);
+}
+
+
+bool ntuple_bTagVars::fillBranches(const reco::ShallowTagInfo & tagInfo){
+
+
+    reco::TaggingVariableList vars = tagInfo.taggingVariables();
 
     //*******************
     //
