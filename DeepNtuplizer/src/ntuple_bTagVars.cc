@@ -79,12 +79,12 @@ bool ntuple_bTagVars::fillBranches(const pat::Jet & jet, const size_t& jetidx, c
                 ". The available ones are: " << stream.str() << endl;
     }
     const reco::ShallowTagInfo* tagInfo = dynamic_cast<const reco::ShallowTagInfo*>(jet.tagInfo(tagInfoName_)); //to be fixed with new names
+    fillBranches(*tagInfo);
 
-    return fillBranches(*tagInfo);
+    return true;
 }
 
-
-bool ntuple_bTagVars::fillBranches(const reco::ShallowTagInfo & tagInfo){
+bool ntuple_bTagVars::fillBranches(const reco::ShallowTagInfo &tagInfo){
 
 
     reco::TaggingVariableList vars = tagInfo.taggingVariables();
@@ -148,3 +148,57 @@ bool ntuple_bTagVars::fillBranches(const reco::ShallowTagInfo & tagInfo){
 
     return true;
 }
+
+bool ntuple_bTagVars::Copy(TreeReader & Reader,int & jet){
+
+    trackJetPt_                 = Reader.trackJetPt_[jet];
+    jetNSecondaryVertices_      = Reader.jetNSecondaryVertices_[jet];
+    trackSumJetEtRatio_         = Reader.trackSumJetEtRatio_[jet];
+    trackSumJetDeltaR_          = Reader.trackSumJetDeltaR_[jet];
+    vertexCategory_             = Reader.vertexCategory_[jet];
+    trackSip2dValAboveCharm_    = Reader.trackSip2dValAboveCharm_[jet];
+    trackSip2dSigAboveCharm_    = Reader.trackSip2dSigAboveCharm_[jet];
+    trackSip3dValAboveCharm_    = Reader.trackSip3dValAboveCharm_[jet];
+    trackSip3dSigAboveCharm_    = Reader.trackSip3dSigAboveCharm_[jet];
+    jetNTracks_ = Reader.jetNTracks_[jet];
+    jetNTracksEtaRel_ = Reader.jetNTracksEtaRel_[jet];
+    n_jetNTracksEtaRel_=jetNTracksEtaRel_;
+    jetNSelectedTracks_ = Reader.jetNSelectedTracks_[jet];
+    n_jetNSelectedTracks_ = jetNSelectedTracks_;
+    int TrkIndex = Reader.Jet_nFirstTrkTagVarCSV_[jet];
+    for(int z = 0; z<n_jetNSelectedTracks_; z++){
+      trackEta_[z] = Reader.trackEta_[TrkIndex];
+      trackPtRel_[z] = Reader.trackPtRel_[TrkIndex];
+      trackPPar_[z] = Reader.trackPPar_[TrkIndex];
+      trackDeltaR_[z] = Reader.trackDeltaR_[TrkIndex];
+      trackPtRatio_[z] = Reader.trackPtRatio_[TrkIndex];
+      trackPParRatio_[z] = Reader.trackPParRatio_[TrkIndex];
+      trackSip2dVal_[z] = Reader.trackSip2dVal_[TrkIndex];
+      trackSip2dSig_[z] = Reader.trackSip2dSig_[TrkIndex];
+      trackSip3dVal_[z] = Reader.trackSip3dVal_[TrkIndex];
+      trackSip3dSig_[z] = Reader.trackSip3dSig_[TrkIndex];
+      trackDecayLenVal_[z] = Reader.trackDecayLenVal_[TrkIndex];
+      trackJetDistVal_[z] = Reader.trackJetDistVal_[TrkIndex];
+      TrkIndex++;
+    }
+    int VIndex = Reader.Jet_nFirstSV_[jet];
+    NStoredVertices_ = jetNSecondaryVertices_;
+    n_StoredVertices_ = jetNSecondaryVertices_;
+    for(int z = 0; z<n_StoredVertices_; z++){
+      vertexNTracks_[z] = Reader.vertexNTracks_[VIndex];
+      vertexEnergyRatio_[z] = Reader.vertexEnergyRatio_[VIndex];
+      vertexJetDeltaR_[z] = Reader.vertexJetDeltaR_[VIndex];
+      flightDistance2dVal_[z] = Reader.flightDistance2dVal_[VIndex];
+      flightDistance2dSig_[z] = Reader.flightDistance2dSig_[VIndex];
+      flightDistance3dVal_[z] = Reader.flightDistance3dVal_[VIndex];
+      flightDistance3dSig_[z] = Reader.flightDistance3dSig_[VIndex];
+      VIndex++;
+    }
+    int EtaRelIndex = Reader.Jet_nFirstTrkEtaRelTagVarCSV_[jet];
+    for(int z = 0; z<n_jetNTracksEtaRel_; z++){
+      trackEtaRel_[z] = Reader.trackEtaRel_[EtaRelIndex];
+      EtaRelIndex++;
+    }
+    return true;
+}
+

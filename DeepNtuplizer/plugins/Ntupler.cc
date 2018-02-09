@@ -32,6 +32,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 //ROOT includes
+
 #include "TTree.h"
 #include <TFile.h>
 #include <TROOT.h>
@@ -253,7 +254,7 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        matches.push_back(index);	 
      }
    }
- 
+   
    if(OntagInfos.isValid() & OfftagInfos.isValid() & offbtagdisc.isValid() & oncsvtagdisc.isValid() & offcsvtagdisc.isValid() & oncsvcalotagdisc.isValid() & onbtagdisc.isValid() & offctagdisc.isValid() & onctagdisc.isValid() & offudsgtagdisc.isValid() & onudsgtagdisc.isValid() & onudsgcalotagdisc.isValid() & onbcalotagdisc.isValid() & onccalotagdisc.isValid()){
      for(size_t p = 0; p < OntagInfos->size(); p++){
        //matches.at(p) = p; //for testing purposes
@@ -264,6 +265,8 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        lumiBlock_ = iEvent.eventAuxiliary().luminosityBlock();
        runNumber_ = iEvent.eventAuxiliary().run();
        eventNumber_ = iEvent.eventAuxiliary().event();
+       if(iEvent.eventAuxiliary().isRealData()){
+       }
        DeepCSVProbb_ = (*offbtagdisc)[matches.at(p)].second;
        DeepCSVProbc_ = (*offctagdisc)[matches.at(p)].second;
        DeepCSVProbudsg_ = (*offudsgtagdisc)[matches.at(p)].second;
