@@ -127,7 +127,7 @@ public:
 private:
 
     template <class T>
-    void addBranch(TTree* t, const char* name,  T* address, const char* leaflist){
+    void addBranch(TTree* t, const char* name,  T* address){
       t->SetBranchStatus(name, 1);
       t->SetBranchAddress(name,address);
     }

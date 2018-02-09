@@ -229,7 +229,7 @@ void SetXS(TString generator, bool MuEnriched, int TeV){
   double pythia_xs13[12]   = { 0., 1.83741E9, 1.40932E8, 1.92043E7, 2762530., 471100., 117276., 7823., 648.2, 186.9, 32.293, 9.4183 };
   double pythia_xs13MU[12] = { 1.27319E9*0.003, 5.58528E8*0.0053, 1.39803E8*0.01182, 1.92225E7*0.02276, 2.758420E6*0.03844, 469797.*0.05362, 117989.*0.07335, 7820.25*0.10196, 645.528*0.12242, 187.109*0.13412, 32.3486*0.14552, 10.4305*0.15544 };
 
-  cout << generator << " " << MuEnriched << " " << TeV << endl;
+  // cout << generator << " " << MuEnriched << " " << TeV << endl;
  
   if      (generator=="pythia" && !MuEnriched && TeV==8){       for (int i=0; i<12; i++){ x_section[i]=pythia_xs8[i]; }        }
   else if (generator=="pythia" &&  MuEnriched && TeV==8){       for (int i=0; i<12; i++){ x_section[i]=pythia_xs8MU[i]; }        }
@@ -372,29 +372,21 @@ int main(int argc, char *argv[]){
   int nBitTrigger, nPV;
   int BitTrigger[3];
 
-  double   n15    = 0. ; 
-  double   n20    = 0; 
-  double   n30    = 86762; 
-  double   n50    = 60198; 
-  double   n80    = 64117; 
-  double   n120  = 76945; 
-  double   n170  = 58831; 
-  double   n300  = 49816; 
-  double   n470  = 71712; 
+
+  double   n15    = 0.; 
+  double   n20    = 0.; 
+  double   n30    = 19503604.; 
+  double   n50    = 18828383.; 
+  double   n80    = 25098641.; 
+  double   n120  = 25098641.; 
+  double   n170  = 29394249.; 
+  double   n300  = 29115849.; 
+  double   n470  = 25011264.; 
   double   n600  = 0; 
   double   n800  = 0; 
-  double   n1000 = 0;
-
-  /*
-  n30   =  19503604.;
-  n50   =  18828383.; 
-  n80   =  27989430.;
-  n120  =  25098641.;
-  n170  =  29394249.;
-  n300  =  29115849.;
-  n470  =  25011264.;
-  */
+  double   n1000 = 0; 
   Fill_nevent(n15,n20,n30,n50,n80,n120,n170,n300,n470,n600,n800,n1000);
+
   gentype = "pythia";
   qcdtype = false;
   sqrtstev = 13;

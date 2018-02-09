@@ -530,15 +530,15 @@ int main(int argc, char *argv[]){
   float ptmax = 250;
 
 
-  double   n15    = 0. ;
-  double   n20    = 0;
-  double   n30    = 86762;
-  double   n50    = 60198;
-  double   n80    = 64117;
-  double   n120  = 76945;
-  double   n170  = 58831;
-  double   n300  = 49816;
-  double   n470  = 71712;
+  double   n15    = 0.;
+  double   n20    = 0.;
+  double   n30    = 19503604.;
+  double   n50    = 18828383.;
+  double   n80    = 25098641.;
+  double   n120  = 25098641.;
+  double   n170  = 29394249.;
+  double   n300  = 29115849.;
+  double   n470  = 25011264.;
   double   n600  = 0;
   double   n800  = 0;
   double   n1000 = 0;

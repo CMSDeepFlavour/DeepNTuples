@@ -2,7 +2,7 @@ import os
 from subprocess import call
 from fnmatch import fnmatch
 
-outputdir = "/afs/cern.ch/work/e/ebols/public/tuples/"
+outputdir = "/afs/cern.ch/work/e/ebols/public/hists/"
 
 datadir = ["JetHT/runB/171220_125115/0000", "JetHT/runC/171220_125350/0000", "JetHT/runC/171220_125350/0001", "JetHT/runD/171220_125424/0000", "JetHT/runE/171220_125459/0000", "JetHT/runE/171220_125459/0001", "JetHT/runF/171220_125533/0000", "JetHT/runF/171220_125533/0001"]
 
