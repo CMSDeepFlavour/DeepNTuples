@@ -44,7 +44,7 @@ void Fill_nevent(double n15,double n20,double n30,double n50,double n80,double n
 }
 
 
-bool passTrigger(TString trigger, int pttrig, int BitTrigger[], int nJet, float Jet_pt[], float Jet_eta[]) {
+bool passTrigger(TString trigger, int pttrig, int & BitTrigger[], int & nJet, float & Jet_pt[], float & Jet_eta[]) {
 
 
   // FOR 2012 Trigger ! Not valid for 2011...

@@ -21,7 +21,7 @@ for root, dirs, files in os.walk(root+"JetHT/runB"):
             index = str(blah)
             call(["WeightDistrubtions", os.path.join(root,file), outputdir+outfile+index+outend, "DATA"])
             blah += 1
-            if blah%100 == 0:
+            if blah%20 == 0:
                 print(blah)
 
 for x in mcdir:
@@ -30,5 +30,5 @@ for x in mcdir:
             index = str(blah)
             call(["WeightDistrubtions", os.path.join(root+x,file), outputdir+outfile+index+outend, "MC"])
             blah += 1
-            if blah%100 == 0:
+            if blah%20 == 0:
                 print(blah)
