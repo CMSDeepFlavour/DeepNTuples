@@ -561,7 +561,7 @@ int main(int argc, char *argv[]){
   SetInfo("pythia",0,13);
   SetXS(gentype,qcdtype,sqrtstev);     // Assign the correct x-sections to QCD pthat bins, depending on SetInfo(), default = use inclusive pythia x-sections for 8 TeV.
   SetSumXS();  // Compute the Total x-section of all the samples
-  SetPV("/afs/cern.ch/work/e/ebols/public/tuples/TestPV.root");
+  SetPV("/afs/cern.ch/work/e/ebols/public/hists/nPV_optimal.root");
   TFile *f = new TFile(outputfile,"RECREATE");
   tree_ = new TTree("tree","tree");
   TreeReader Data;
