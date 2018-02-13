@@ -382,7 +382,7 @@ else
    then
      cp $OUTPUT*.root $NTUPLEOUTFILEPATH
    else
-     eos cp $OUTPUT*.root $NTUPLEOUTFILEPATH
+     eoscp $OUTPUT*.root $NTUPLEOUTFILEPATH
    fi
    exitstatus=$?
    rm -f $OUTPUT*.root
