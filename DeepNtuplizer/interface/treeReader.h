@@ -1,5 +1,5 @@
 /*
- * TreeReader.h
+ * treeReader.h
  *
  *  Created on: 7 Feb 2018
  *      Author: ebols
@@ -9,19 +9,18 @@
 #define DEEPNTUPLES_DEEPNTUPLIZER_INTERFACE_TREEREADER_H_
 
 #include "ntuple_content.h"
-#include "TRandom3.h"
-#include "DataFormats/BTauReco/interface/ShallowTagInfo.h"
 
 /*
  * For global jet info such as eta, pt, gen info
  */
-class TreeReader{
+class treeReader{
 public:
     void initBranches(TTree* tree, bool MCtest);
     void initBranches(TTree* tree, std::string On, bool MCtest);
 
     static constexpr size_t max_jetN_=1000;
     //jet general
+    float Jet_uncorrpt[max_jetN_];
     int nJet_;
     int Jet_nFirstSV_[max_jetN_];
     int Jet_nFirstTrkTagVarCSV_[max_jetN_];

@@ -9,7 +9,7 @@
 #define DEEPNTUPLES_DEEPNTUPLIZER_INTERFACE_NTUPLE_BTAGVARS_H_
 
 #include "ntuple_content.h"
-#include "TreeReader.h"
+#include "treeReader.h"
 #include "TRandom3.h"
 #include "DataFormats/BTauReco/interface/ShallowTagInfo.h"
 
@@ -28,7 +28,7 @@ public:
     //use either of these functions
     bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0);
     bool fillBranches(const reco::ShallowTagInfo &tagInfo);
-    bool Copy(TreeReader & Reader,int & jet);
+    bool Copy(treeReader & Reader,int & jet);
 private:
     template <typename T>
     int dump_vector(reco::TaggingVariableList& from, T* to, reco::btau::TaggingVariableName name, const size_t& max) {

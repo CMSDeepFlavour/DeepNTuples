@@ -10,19 +10,43 @@
 #include <TH1F.h>
 #include "TLorentzVector.h"
 #include "TMath.h"
-
-#include "../interface/NtupleConverter.h"
-#include "../interface/TreeReader.h"
-#include "../interface/ntuple_bTagVars.h"
-
-
+#include <iostream>
 
 using namespace std;
 
+TString gentype;
+bool qcdtype;
+int sqrtstev;
+float sum_xs; 
+float x_section[12]; 
+float nmc_evt_vect[12];
 
-bool passTrigger(TString trigger, int pttrig, TreeReader & Reader) {
+float Jet_pt_[1000]; 
+float Jet_eta_[1000]; 
+int nJet_;
 
-  // FOR 2012 Trigger ! Not valid for 2011...
+void Fill_nevent(double n15,double n20,double n30,double n50,double n80,double n120,double n170,double n300,double n470,double n600, double n800, double n1000){
+
+ 
+  nmc_evt_vect[0]=n15;
+  nmc_evt_vect[1]=n20;
+  nmc_evt_vect[2]=n30;  
+  nmc_evt_vect[3]=n50;  
+  nmc_evt_vect[4]=n80;  
+  nmc_evt_vect[5]=n120;
+  nmc_evt_vect[6]=n170;  
+  nmc_evt_vect[7]=n300;  
+  nmc_evt_vect[8]=n470;   
+  nmc_evt_vect[9]=n600;
+  nmc_evt_vect[10]=n800;
+  nmc_evt_vect[11]=n1000;
+  
+}
+
+
+bool passTrigger(TString trigger, int pttrig, int BitTrigger[], int & nJet, float Jet_pt[], float Jet_eta[]) {
+
+
 
   bool passTrig=false;
   //bool Jet30  = false, Jet60  = false, Jet150 = false, Jet190 = false, Jet240 = false;
@@ -35,43 +59,43 @@ bool passTrigger(TString trigger, int pttrig, TreeReader & Reader) {
   if ( trigger=="jet") {
     triggerIdx = 0;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet40  = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet40  = true;
 
     triggerIdx = 1;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet60  = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet60  = true;
    
     triggerIdx = 2;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet80  = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet80  = true;
    
     triggerIdx = 3;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet140 = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet140 = true;
    
     triggerIdx = 4;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet200 = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet200 = true;
    
     triggerIdx = 5;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet260 = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet260 = true;
    
     triggerIdx = 6;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet320 = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet320 = true;
 
     triggerIdx = 7;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet400 = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet400 = true;
 
     triggerIdx = 8;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet450 = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet450 = true;
 
     triggerIdx = 9;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet500 = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet500 = true;
 
 
     if ( pttrig ==  40 && Jet40 )  passTrig=true;
@@ -94,9 +118,9 @@ bool passTrigger(TString trigger, int pttrig, TreeReader & Reader) {
     //-----------------------------------
 
     bool JetPtCut = false;
-    for (int ijet=0; ijet<Reader.nJet_ ; ijet++) {
-      float ptjet = Reader.Jet_pt_[ijet];
-      float etajet = fabs(Reader.Jet_eta_[ijet]);
+    for (int ijet=0; ijet<nJet ; ijet++) {
+      float ptjet = Jet_pt[ijet];
+      float etajet = fabs(Jet_eta[ijet]);
       //            if (      pttrig ==  40 && ptjet >  60. && etajet < 2.4 ) JetPtCut = true;
       if (      pttrig ==  40 && ptjet >  50. && etajet < 2.4 ) JetPtCut = true;
       else if ( pttrig ==  60 && ptjet >  70. && etajet < 2.4 ) JetPtCut = true;
@@ -116,27 +140,27 @@ bool passTrigger(TString trigger, int pttrig, TreeReader & Reader) {
   else if ( trigger=="btag" ) {
     triggerIdx = 32;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet20  = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet20  = true;
    
     triggerIdx = 33;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet40  = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet40  = true;
    
     triggerIdx = 34;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet70  = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet70  = true;
    
     triggerIdx = 35;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet110 = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet110 = true;
    
     triggerIdx = 36;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet170 = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet170 = true;
 
     triggerIdx = 37;
     bitIdx = int(triggerIdx/32);
-    if ( Reader.BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet300 = true;
+    if ( BitTrigger[bitIdx] & ( 1 << (triggerIdx - bitIdx*32) ) ) Jet300 = true;
 
     if ( pttrig ==  20 && Jet20 )  passTrig=true;
     if ( pttrig ==  40 && Jet40 )  passTrig=true;
@@ -156,9 +180,9 @@ bool passTrigger(TString trigger, int pttrig, TreeReader & Reader) {
 
     int njtrig=0;
     if (pttrig ==300) njtrig+=1;
-    for (int ijet = 0; ijet < Reader.nJet_; ijet++) {
-      float ptjet = Reader.Jet_pt_[ijet];
-      float etajet = fabs(Reader.Jet_eta_[ijet]);
+    for (int ijet = 0; ijet < nJet; ijet++) {
+      float ptjet = Jet_pt[ijet];
+      float etajet = fabs(Jet_eta[ijet]);
       //            if ( pttrig ==20  &&  ptjet > 60. && etajet < 2.4 )  njtrig++;
       if ( pttrig == 20  &&  ptjet > 30. && etajet < 2.4 )  njtrig++;
       if ( pttrig == 40  &&  ptjet > 50. && etajet < 2.4 )  njtrig++;
@@ -173,68 +197,6 @@ bool passTrigger(TString trigger, int pttrig, TreeReader & Reader) {
   }
   return false;
 }
-
-void SetPV(TString rootpv){
-
-
-  vector<float> mc_vect;
-  vector<float> data_vect;
-  //cout << " PU in MC from " << rootpv << endl;
-
-  TFile *filepuest = new TFile(rootpv);
-
-
-  TH1D* npu_mc= (TH1D*) filepuest->Get("nPV_mc_unw");
-  TH1D* npu_dat= (TH1D*) filepuest->Get("nPV_data");
-
-  float n_integral_mc = npu_mc->Integral();
-  float n_integral_da = npu_dat->Integral();
-  npu_mc->Scale(1./n_integral_mc);
-  npu_dat->Scale(1./n_integral_da);
-
-  int n_bins= npu_mc->GetNbinsX();
-  for (int i=0; i<n_bins+2; i++){
-    mc_vect.push_back(npu_mc->GetBinContent(i+1));
-    data_vect.push_back(npu_dat->GetBinContent(i+1));
-  }
-
-  LumiWeights = reweight::LumiReWeighting(mc_vect,data_vect);
-
-}
-
-/*void SetPV(){
-
-
-  vector<float> mc_vect;
-  vector<float> data_vect;
-  
-  //TFile *filepuest = new TFile(filePUstring);
-  // Note, in this version SetPV is dummy ;-)
-  TFile *filepuest = new TFile("/afs/cern.ch/work/e/ebols/public/tuples/PVTuple.root");
-  //TFile *filepuest = new TFile("/home/fynu/bfrancois/bTag/CMSSW_7_4_5/src/RecoBTag/PerformanceMeasurements/test/BTagAnalyzerMacros/muEnQCD_ptBin20to300_star1_TrigDijet20_Jet60_250_notPUReweighted_goldenJSON/muEnQCD_ptBin20to300_star1_TrigDijet20_Jet60_250_notPUReweighted_goldenJSON.root");
-  TH1D* npu_mc= (TH1D*) filepuest->Get("nPV_mc_unw");
-  TH1D* npu_dat= (TH1D*) filepuest->Get("nPV_data");
-    
-  float n_integral_mc = npu_mc->Integral();
-  float n_integral_da = npu_dat->Integral();
-  npu_mc->Scale(1./n_integral_mc);
-  npu_dat->Scale(1./n_integral_da);
-
-  for (int i=0; i<60; i++){
-    mc_vect.push_back(npu_mc->GetBinContent(i+1));
-    data_vect.push_back(npu_dat->GetBinContent(i+1));
-  }
-  
-  LumiWeights = reweight::LumiReWeighting(mc_vect,data_vect);
-  
-  }*/
-
-void SetInfo(TString generator, bool qcd, int TeV){
-  gentype = generator;
-  qcdtype = qcd;
-  sqrtstev = TeV;
-}
-
 
 void SetXS(TString generator, bool MuEnriched, int TeV){
   /*
@@ -266,7 +228,7 @@ void SetXS(TString generator, bool MuEnriched, int TeV){
   double pythia_xs13[12]   = { 0., 1.83741E9, 1.40932E8, 1.92043E7, 2762530., 471100., 117276., 7823., 648.2, 186.9, 32.293, 9.4183 };
   double pythia_xs13MU[12] = { 1.27319E9*0.003, 5.58528E8*0.0053, 1.39803E8*0.01182, 1.92225E7*0.02276, 2.758420E6*0.03844, 469797.*0.05362, 117989.*0.07335, 7820.25*0.10196, 645.528*0.12242, 187.109*0.13412, 32.3486*0.14552, 10.4305*0.15544 };
 
-  //cout << generator << " " << MuEnriched << " " << TeV << endl;
+  // cout << generator << " " << MuEnriched << " " << TeV << endl;
  
   if      (generator=="pythia" && !MuEnriched && TeV==8){       for (int i=0; i<12; i++){ x_section[i]=pythia_xs8[i]; }        }
   else if (generator=="pythia" &&  MuEnriched && TeV==8){       for (int i=0; i<12; i++){ x_section[i]=pythia_xs8MU[i]; }        }
@@ -291,12 +253,12 @@ void SetSumXS(){
 
 }
 
-double GetEvtWeight(TreeReader & Reader){
+float GetEvtWeight(float pthat){
 
   float WeightXS=0.0;
   float  nevt  =0.0;
   float  xs    =0.0;
-  pthat = Reader.pthat;
+  
   
   if (qcdtype==0) { // inclusive
     if ( pthat >=  15. && pthat <  30. ){
@@ -381,209 +343,89 @@ double GetEvtWeight(TreeReader & Reader){
    
 }
 
-void Fill_nevent(double n15,double n20,double n30,double n50,double n80,double n120,double n170,double n300,double n470,double n600, double n800, double n1000){
-
- 
-  nmc_evt_vect[0]=n15;
-  nmc_evt_vect[1]=n20;
-  nmc_evt_vect[2]=n30;  
-  nmc_evt_vect[3]=n50;  
-  nmc_evt_vect[4]=n80;  
-  nmc_evt_vect[5]=n120;
-  nmc_evt_vect[6]=n170;  
-  nmc_evt_vect[7]=n300;  
-  nmc_evt_vect[8]=n470;   
-  nmc_evt_vect[9]=n600;
-  nmc_evt_vect[10]=n800;
-  nmc_evt_vect[11]=n1000;
-  
-}
-
-
-
-void initExtraBranches(TTree * input){
-  
-  input->Branch("Jet_DeepCSVBDisc", &Jet_DeepCSVBDisc, "Jet_DeepCSVBDisc_/F");
-  input->Branch("Jet_DeepCSVBDiscN", &Jet_DeepCSVBDiscN, "Jet_DeepCSVBDiscN_/F");
-  input->Branch("Jet_DeepCSVBDiscP", &Jet_DeepCSVBDiscP, "Jet_DeepCSVBDiscP_/F");
-  input->Branch("Jet_DeepCSVCvsLDisc", &Jet_DeepCSVCvsLDisc, "Jet_DeepCSVCvsLDisc_/F");
-  input->Branch("Jet_DeepCSVCvsLDiscN", &Jet_DeepCSVCvsLDiscN, "Jet_DeepCSVCvsLDiscN_/F");
-  input->Branch("Jet_DeepCSVCvsLDiscP", &Jet_DeepCSVCvsLDiscP, "Jet_DeepCSVCvsLDiscP_/F");
-  input->Branch("Jet_DeepCSVCvsBDisc", &Jet_DeepCSVCvsBDisc, "Jet_DeepCSVCvsBDisc_/F");
-  input->Branch("Jet_DeepCSVCvsBDiscN", &Jet_DeepCSVCvsBDiscN, "Jet_DeepCSVCvsBDiscN_/F");
-  input->Branch("Jet_DeepCSVCvsBDiscP", &Jet_DeepCSVCvsBDiscP, "Jet_DeepCSVCvsBDiscP_/F");
-  input->Branch("Jet_DeepCSVb", &Jet_DeepCSVb, "Jet_DeepCSVb_/F");
-  input->Branch("Jet_DeepCSVc", &Jet_DeepCSVc, "Jet_DeepCSVc_/F");
-  input->Branch("Jet_DeepCSVl", &Jet_DeepCSVl, "Jet_DeepCSVl_/F");
-  input->Branch("Jet_DeepCSVbb", &Jet_DeepCSVbb, "Jet_DeepCSVbb_/F");
-  input->Branch("Jet_DeepCSVcc", &Jet_DeepCSVcc, "Jet_DeepCSVcc_/F");
-  input->Branch("Jet_DeepCSVbN", &Jet_DeepCSVbN, "Jet_DeepCSVbN_/F");
-  input->Branch("Jet_DeepCSVcN", &Jet_DeepCSVcN, "Jet_DeepCSVcN_/F");
-  input->Branch("Jet_DeepCSVlN", &Jet_DeepCSVlN, "Jet_DeepCSVlN_/F");
-  input->Branch("Jet_DeepCSVbbN", &Jet_DeepCSVbbN, "Jet_DeepCSVbbN_/F");
-  input->Branch("Jet_DeepCSVccN", &Jet_DeepCSVccN, "Jet_DeepCSVccN_/F");
-  input->Branch("Jet_DeepCSVbP", &Jet_DeepCSVbP, "Jet_DeepCSVbP_/F");
-  input->Branch("Jet_DeepCSVcP", &Jet_DeepCSVcP, "Jet_DeepCSVcP_/F");
-  input->Branch("Jet_DeepCSVlP", &Jet_DeepCSVlP, "Jet_DeepCSVlP_/F");
-  input->Branch("Jet_DeepCSVbbP", &Jet_DeepCSVbbP, "Jet_DeepCSVbbP_/F");
-  input->Branch("Jet_DeepCSVccP", &Jet_DeepCSVccP, "Jet_DeepCSVccP_/F");
-  input->Branch("nBitTrigger", &nBitTrigger, "nBitTrigger_/I");
-  input->Branch("BitTrigger", &BitTrigger, "BitTrigger_[3]_/I");
-  input->Branch("nPV", &nPV, "nPV_/I");
-  input->Branch("Jet_pt", &Jet_pt, "Jet_pt/F"); 
-  input->Branch("pthat", &pthat, "pthat_/F"); 
-  input->Branch("isB", &isB, "isB_/i");
-  input->Branch("isC", &isC, "isC_/i");
-  input->Branch("isUDSG", &isUDSG, "isUDSG_/i");
-  input->Branch("WeightPU", &WeightPU, "WeightPU/f");
-  input->Branch("weightXS", &weightXS, "weightXS/f");
-
- 
-}
-
-bool CopyExtraBranches(TreeReader & Reader,int & jet){
-
-
-  Jet_DeepCSVCvsLDisc = Reader.Jet_DeepCSVCvsLDisc[jet];
-  Jet_DeepCSVCvsLDiscN = Reader.Jet_DeepCSVCvsLDiscN[jet];
-  Jet_DeepCSVCvsLDiscP = Reader.Jet_DeepCSVCvsLDiscP[jet];
-  Jet_DeepCSVBDisc = Reader.Jet_DeepCSVBDisc[jet];
-  Jet_DeepCSVBDiscN = Reader.Jet_DeepCSVBDiscN[jet];
-  Jet_DeepCSVBDiscP = Reader.Jet_DeepCSVBDiscP[jet];
-  Jet_DeepCSVCvsBDisc = Reader.Jet_DeepCSVCvsBDisc[jet];
-  Jet_DeepCSVCvsBDiscN = Reader.Jet_DeepCSVCvsBDiscN[jet];
-  Jet_DeepCSVCvsBDiscP = Reader.Jet_DeepCSVCvsBDiscP[jet];
-  Jet_DeepCSVb = Reader.Jet_DeepCSVb[jet];
-  Jet_DeepCSVc = Reader.Jet_DeepCSVc[jet];
-  Jet_DeepCSVl = Reader.Jet_DeepCSVl[jet];
-  Jet_DeepCSVbb = Reader.Jet_DeepCSVbb[jet];
-  Jet_DeepCSVcc = Reader.Jet_DeepCSVcc[jet];
-  Jet_DeepCSVbN = Reader.Jet_DeepCSVbN[jet];
-  Jet_DeepCSVcN = Reader.Jet_DeepCSVcN[jet];
-  Jet_DeepCSVlN = Reader.Jet_DeepCSVlN[jet];
-  Jet_DeepCSVbbN = Reader.Jet_DeepCSVbbN[jet];
-  Jet_DeepCSVccN = Reader.Jet_DeepCSVccN[jet];
-  Jet_DeepCSVbP = Reader.Jet_DeepCSVbP[jet];
-  Jet_DeepCSVcP = Reader.Jet_DeepCSVcP[jet];
-  Jet_DeepCSVlP = Reader.Jet_DeepCSVlP[jet];
-  Jet_DeepCSVbbP = Reader.Jet_DeepCSVbbP[jet];
-  Jet_DeepCSVccP = Reader.Jet_DeepCSVccP[jet];
-  Jet_pt = Reader.Jet_pt_[jet];
-  if(isMC){
-    if(Reader.Jet_hadronFlavour[jet] == 4){
-      isB = 0;
-      isC = 1;
-      isUDSG = 0;
-    }
-    else if(Reader.Jet_hadronFlavour[jet] == 5){
-      isB = 1;
-      isC = 0;
-      isUDSG = 0;
-    }
-    else{
-      isB = 0;
-      isC = 0;
-      isUDSG = 1;
-    }
-    WeightPU  = LumiWeights.weight( Reader.nPV );
-    weightXS = GetEvtWeight(Reader);
-  }
-  else{
-    WeightPU  = -1;
-    weightXS = -1;
-    isB = -1;
-    isC = -1;
-    isUDSG = -1;
-  }
-  nBitTrigger = Reader.nBitTrigger;
-  for(int n = 0; n<nBitTrigger; n++){
-    BitTrigger[n] = Reader.BitTrigger[n];
-  }
-  nPV = Reader.nPV;
-  pthat = Reader.pthat;    
-  return true;
-}
-
-
 int main(int argc, char *argv[]){
 
   if(argc != 4){
     cout << "missing input arguments, should be input file, output file, and then MC or DATA" << endl;
     return 0;
   }
-
-  const char* inputfile = argv[1];
+  
+  const char* inputfile = argv[1]; 
   const char* outputfile = argv[2];
-  isMC = false;
-  string mcarg = argv[3];
+  bool isMC = false;
+  string mcarg = argv[3]; 
   if(mcarg == "MC"){
     isMC = true;
   }
+  
+  
   TFile *ntfile = new TFile(inputfile,"READ");
   TTree *btagana = (TTree*)ntfile->Get("btagana/ttree");
-  btagana->SetBranchStatus("*", 0);
-  TTree *tree_;
-  TString trigname = "jet";
-  //TString trigname = "btag";
-  int trigger = 40;
-  float ptmin = 50;
-  float ptmax = 250;
-
-
-  double   n15    = 0.;
-  double   n20    = 0.;
-  double   n30    = 19503604.;
-  double   n50    = 18828383.;
-  double   n80    = 25098641.;
-  double   n120  = 25098641.;
-  double   n170  = 29394249.;
-  double   n300  = 29115849.;
-  double   n470  = 25011264.;
-  double   n600  = 0;
-  double   n800  = 0;
-  double   n1000 = 0;
-
-
-  //events in mc sample
-  /*
-  n30   =  19503604.;
-  n50   =  18828383.; 
-  n80   =  27989430.;
-  n120  =  25098641.;
-  n170  =  29394249.;
-  n300  =  29115849.;
-  n470  =  25011264.;
-  n600  =  0.;
-  n800  =  0.;
-  n1000  =  0.;
-  */
-  Fill_nevent(n15,n20,n30,n50,n80,n120,n170,n300,n470,n600,n800,n1000);
-  SetInfo("pythia",0,13);
-  SetXS(gentype,qcdtype,sqrtstev);     // Assign the correct x-sections to QCD pthat bins, depending on SetInfo(), default = use inclusive pythia x-sections for 8 TeV.
-  SetSumXS();  // Compute the Total x-section of all the samples
-  SetPV("/afs/cern.ch/work/e/ebols/public/hists/nPV_optimal.root");
   TFile *f = new TFile(outputfile,"RECREATE");
-  tree_ = new TTree("tree","tree");
-  TreeReader Data;
-  ntuple_bTagVars Clone;
-  Data.initBranches(btagana,isMC);
-  Clone.initBranches(tree_);
-  initExtraBranches(tree_);
-  int trackcount = btagana->GetEntries();
-  for (Int_t i=0;i<trackcount;i++) {
+  TH1D* nPV_data                = new TH1D("nPV_data",              "nPV_data",              180,0,180);
+  TH1D* nPV_mc_unw              = new TH1D("nPV_mc_unw",            "nPV_mc_unw",                180,0,180);
+  TH1D* pt_hat_data                  = new TH1D("pt_hat_data",                "pt_hat_data",                100,0,1000);
+  TH1D* pt_hat_mc                  = new TH1D("pt_hat_mc",                "pt_hat_mc",                100,0,1000);
+  int ecount = btagana->GetEntries();
+  float pthat;
+  int nBitTrigger, nPV;
+  int BitTrigger[3];
+
+
+  double   n15    = 0.; 
+  double   n20    = 0.; 
+  double   n30    = 19503604.; 
+  double   n50    = 18828383.; 
+  double   n80    = 27989430.; 
+  double   n120  = 25098641.; 
+  double   n170  = 29394249.; 
+  double   n300  = 29115849.; 
+  double   n470  = 25011264.; 
+  double   n600  = 0; 
+  double   n800  = 0; 
+  double   n1000 = 0; 
+  Fill_nevent(n15,n20,n30,n50,n80,n120,n170,n300,n470,n600,n800,n1000);
+
+  gentype = "pythia";
+  qcdtype = false;
+  sqrtstev = 13;
+  SetXS(gentype,qcdtype,sqrtstev); 
+  SetSumXS();
+  btagana->SetBranchStatus("*", 0);
+
+  btagana->SetBranchStatus("Jet_pt", 1);
+  btagana->SetBranchStatus("Jet_eta", 1);
+  btagana->SetBranchStatus("nJet", 1);
+  btagana->SetBranchStatus("nBitTrigger", 1);
+  btagana->SetBranchStatus("BitTrigger", 1);
+  btagana->SetBranchStatus("nPV", 1);
+  btagana->SetBranchStatus("pthat", 1);
+
+  btagana->SetBranchAddress("Jet_pt", &Jet_pt_);
+  btagana->SetBranchAddress("Jet_eta", &Jet_eta_);
+  btagana->SetBranchAddress("nJet", &nJet_);
+  btagana->SetBranchAddress("nBitTrigger", &nBitTrigger);
+  btagana->SetBranchAddress("BitTrigger", &BitTrigger);
+  btagana->SetBranchAddress("nPV", &nPV);
+  btagana->SetBranchAddress("pthat", &pthat);
+
+  for (Int_t i=0;i<ecount;i++) {
     btagana->GetEntry(i);
-    bool isTrigOK = passTrigger(trigname, trigger, Data);
+    bool isTrigOK = passTrigger("jet", 40, BitTrigger,nJet_,Jet_pt_,Jet_eta_);
     if (!isTrigOK) continue;
-    for(int n = 0; n < Data.nJet_;n++){
-      bool writeit = true;
-      if(Data.Jet_pt_[n] > ptmin && Data.Jet_pt_[n] < ptmax && Data.Jet_eta_[n] < 2.4 ){
-	if(!Clone.Copy(Data,n)){writeit=false;}
-	if(!CopyExtraBranches(Data,n)){writeit=false;}
-	if(writeit){tree_->Fill();}
-      }
+    float ww_woPU = 1.0;
+    if(isMC){
+      ww_woPU = GetEvtWeight(pthat);
+      nPV_mc_unw->Fill(nPV,ww_woPU);    
+      pt_hat_mc->Fill(pthat,ww_woPU);
+    }
+    else{
+      nPV_data->Fill(nPV,ww_woPU);    
+      pt_hat_data->Fill(pthat,ww_woPU);      
     }
   }
-  f = tree_->GetCurrentFile();
   f->Write();
   return 1;
+
+
 }

@@ -37,7 +37,7 @@ int main(){
   TChain *fChain50to80 = new TChain("btagana/ttree");
   fChain50to80->Add("/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_50to80_TuneCP5_13TeV_pythia8/incl_qcd_50/180117_082611/0000/J*root");
   TChain *fChain80to120 = new TChain("btagana/ttree");
-  fChain80to120->Add("/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_120to170_TuneCP5_13TeV_pythia8/incl_qcd_120/180117_082718/0000/J*root");
+  fChain80to120->Add("/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_80to120_TuneCP5_13TeV_pythia8/incl_qcd_80/180117_082645/0000/J*root");
   TChain *fChain120to170 = new TChain("btagana/ttree");
   fChain120to170->Add("/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_120to170_TuneCP5_13TeV_pythia8/incl_qcd_120/180117_082718/0000/J*root");
   TChain *fChain170to300 = new TChain("btagana/ttree");

@@ -7,10 +7,10 @@
 
 <bin name="createMergeList" file="createMergeList.cc" />
 <bin name="merge" file="merge.cc" />
-<bin name="Count" file="Count.cc" />
+<bin name="count" file="count.cc" />
 
 <bin name="printBranches" file="printBranches.cc" />
-<bin name="NtupleConverter" file="NtupleConverter.cc" />
-<bin name="WeightDistrubtions" file="WeightDistrubtions.cc" />
+<bin name="ntupleConverter" file="ntupleConverter.cc" />
+<bin name="weightDistribution" file="weightDistribution.cc" />
 
 <bin name="checkFileList" file="checkFileList.cc" />

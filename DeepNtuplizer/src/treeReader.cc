@@ -1,10 +1,10 @@
 /*
- * TreeReader.cc
+ * treeReader.cc
  *
  *      Author: ebols
  */
 
-#include "../interface/TreeReader.h"
+#include "../interface/treeReader.h"
 #include <sstream>
 #include <algorithm>
 
@@ -12,12 +12,12 @@ using namespace std;
 
 
 
-void TreeReader::initBranches(TTree* tree, bool MCtest){
+void treeReader::initBranches(TTree* tree, bool MCtest){
   initBranches(tree,"", MCtest);
 }
 
 
-void TreeReader::initBranches(TTree* tree, string On, bool MCtest){
+void treeReader::initBranches(TTree* tree, string On, bool MCtest){
     //jet general
     addBranch(tree, (On + "Jet_pt").c_str()            , &Jet_pt_);
     addBranch(tree, (On + "Jet_eta").c_str()            , &Jet_eta_);
@@ -67,7 +67,7 @@ void TreeReader::initBranches(TTree* tree, string On, bool MCtest){
     addBranch(tree, (On + "TagVarCSV_flightDistance2dSig").c_str(), &flightDistance2dSig_);
     addBranch(tree, (On + "TagVarCSV_flightDistance3dVal").c_str(), &flightDistance3dVal_);
     addBranch(tree, (On + "TagVarCSV_flightDistance3dSig").c_str(), &flightDistance3dSig_);
-
+    addBranch(tree, (On + "Jet_uncorrpt").c_str(), &Jet_uncorrpt);
 
     if(MCtest){
       addBranch(tree, "Jet_hadronFlavour", &Jet_hadronFlavour);

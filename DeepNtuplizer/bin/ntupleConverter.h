@@ -1,5 +1,5 @@
 /*
- * NtupleConverter.h
+ * ntupleConverter.h
  *
  *  Created on: 8 Feb 2018
  *      Author: ebols
@@ -19,6 +19,7 @@
 
 bool isMC;
 
+Float_t         Jet_uncorrpt;
 Float_t         Jet_DeepFlavourBDisc;   //[nJet]                                                                                                 
 Float_t         Jet_DeepFlavourCvsLDisc;   //[nJet]                                                                                              
 Float_t         Jet_DeepFlavourCvsBDisc;   //[nJet]                                                                                              
@@ -65,15 +66,22 @@ Float_t         pthat;
 Int_t           nPV;
 
 
-TString gentype;
-bool qcdtype;
-int sqrtstev;
+const TString gentype = "pythia";
+const bool qcdtype = false;
+const int sqrtstev = 13;
+
+const TString PVpath = "/afs/cern.ch/work/e/ebols/public/hists2/NPVRunB.root"; // NPVRunC.root NPVRunD.root NPVRunE.root NPVRunF.root and NPVAllData.root
 
 float WeightPU;
 float weightXS;
 
 double x_section[12]; 
-double nmc_evt_vect[12];
+const double nmc_evt_vect[12] = {0,0,19503604.,18828383.,27989430.,25098641.,29394249.,29115849.,25011264.,0,0,0};
+
+// entry 0 pt 15 to 20, entry 1 pt 20 to 30, entry 2 pt 30 to 50, entry 3 pt 50 to 80, entry 4 pt 80 to 120, entry 5 pt 120 to 170, entry 6 pt 170 to 300, entry 7 pt 300 to 470, entry 8 pt 470 to 600, entry 9 pt 600 to 800, entry 10 pt 800 to 1000, entry 11 pt > 1000
+
+
+
 float sum_xs;
 
 reweight::LumiReWeighting LumiWeights;

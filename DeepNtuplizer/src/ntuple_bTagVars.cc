@@ -149,7 +149,7 @@ bool ntuple_bTagVars::fillBranches(const reco::ShallowTagInfo &tagInfo){
     return true;
 }
 
-bool ntuple_bTagVars::Copy(TreeReader & Reader,int & jet){
+bool ntuple_bTagVars::Copy(treeReader & Reader,int & jet){
 
     trackJetPt_                 = Reader.trackJetPt_[jet];
     jetNSecondaryVertices_      = Reader.jetNSecondaryVertices_[jet];
