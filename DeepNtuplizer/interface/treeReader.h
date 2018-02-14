@@ -23,6 +23,7 @@ public:
     float Jet_uncorrpt[max_jetN_];
     int nJet_;
     int Jet_nFirstSV_[max_jetN_];
+    int Jet_nLastSV_[max_jetN_];
     int Jet_nFirstTrkTagVarCSV_[max_jetN_];
     int Jet_nLastTrkTagVarCSV_[max_jetN_];
     int Jet_nFirstTrkEtaRelTagVarCSV_[max_jetN_];
@@ -69,16 +70,14 @@ public:
     int   n_StoredVertices_[max_jetN_];
     float NStoredVertices_[max_jetN_];
 
-    static constexpr size_t max_nStoredVertices_=50;
-
-    float vertexMass_[max_nStoredVertices_];          // mass of track sum at secondary vertex
-    float vertexNTracks_[max_nStoredVertices_];       // number of tracks at secondary vertex
-    float vertexEnergyRatio_[max_nStoredVertices_];   // ratio of energy at secondary vertex over total energy
-    float vertexJetDeltaR_[max_nStoredVertices_];     // pseudoangular distance between jet axis and secondary vertex direction
-    float flightDistance2dVal_[max_nStoredVertices_]; // transverse distance between primary and secondary vertex
-    float flightDistance2dSig_[max_nStoredVertices_]; // transverse distance significance between primary and secondary vertex
-    float flightDistance3dVal_[max_nStoredVertices_]; // distance between primary and secondary vertex
-    float flightDistance3dSig_[max_nStoredVertices_]; // distance significance between primary and secondary vertex
+    float vertexMass_[max_jetN_];          // mass of track sum at secondary vertex
+    float vertexNTracks_[max_jetN_];       // number of tracks at secondary vertex
+    float vertexEnergyRatio_[max_jetN_];   // ratio of energy at secondary vertex over total energy
+    float vertexJetDeltaR_[max_jetN_];     // pseudoangular distance between jet axis and secondary vertex direction
+    float flightDistance2dVal_[max_jetN_]; // transverse distance between primary and secondary vertex
+    float flightDistance2dSig_[max_jetN_]; // transverse distance significance between primary and secondary vertex
+    float flightDistance3dVal_[max_jetN_]; // distance between primary and secondary vertex
+    float flightDistance3dSig_[max_jetN_]; // distance significance between primary and secondary vertex
 
     Int_t Jet_hadronFlavour[max_jetN_];
 

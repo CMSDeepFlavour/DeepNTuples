@@ -23,6 +23,7 @@ void treeReader::initBranches(TTree* tree, string On, bool MCtest){
     addBranch(tree, (On + "Jet_eta").c_str()            , &Jet_eta_);
     addBranch(tree, (On + "nJet").c_str()            , &nJet_);
     addBranch(tree, (On + "Jet_nFirstSV").c_str()            , &Jet_nFirstSV_);
+    addBranch(tree, (On + "Jet_nLastSV").c_str()            , &Jet_nLastSV_);
     addBranch(tree, (On + "Jet_nFirstTrkTagVarCSV").c_str()            , &Jet_nFirstTrkTagVarCSV_ );
     addBranch(tree, (On + "Jet_nLastTrkTagVarCSV").c_str()            , &Jet_nLastTrkTagVarCSV_  );
     addBranch(tree, (On + "Jet_nFirstTrkEtaRelTagVarCSV").c_str()            , &Jet_nFirstTrkEtaRelTagVarCSV_ );

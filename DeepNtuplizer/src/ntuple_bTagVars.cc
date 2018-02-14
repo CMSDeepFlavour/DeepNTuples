@@ -181,19 +181,30 @@ bool ntuple_bTagVars::Copy(treeReader & Reader,int & jet){
       trackJetDistVal_[z] = Reader.trackJetDistVal_[TrkIndex];
       TrkIndex++;
     }
-    int VIndex = Reader.Jet_nFirstSV_[jet];
-    NStoredVertices_ = jetNSecondaryVertices_;
-    n_StoredVertices_ = jetNSecondaryVertices_;
-    for(int z = 0; z<n_StoredVertices_; z++){
-      vertexNTracks_[z] = Reader.vertexNTracks_[VIndex];
-      vertexEnergyRatio_[z] = Reader.vertexEnergyRatio_[VIndex];
-      vertexJetDeltaR_[z] = Reader.vertexJetDeltaR_[VIndex];
-      flightDistance2dVal_[z] = Reader.flightDistance2dVal_[VIndex];
-      flightDistance2dSig_[z] = Reader.flightDistance2dSig_[VIndex];
-      flightDistance3dVal_[z] = Reader.flightDistance3dVal_[VIndex];
-      flightDistance3dSig_[z] = Reader.flightDistance3dSig_[VIndex];
-      VIndex++;
+    if((Reader.vertexCategory_[jet] == 0) | (Reader.vertexCategory_[jet] == 1)){
+      NStoredVertices_ = 1;
+      n_StoredVertices_ = 1;
     }
+    else{
+      NStoredVertices_ = 0;
+      n_StoredVertices_ = 0;    
+    }
+    /*
+    if(Reader.vertexCategory_[jet] == 1){
+      std::cout << "stored vertices with a pseudovertex = " << n_StoredVertices_ << std::endl:
+    }
+    */
+    if((Reader.vertexCategory_[jet] == 0) | (Reader.vertexCategory_[jet] == 1)){
+      vertexMass_[0] = Reader.vertexMass_[jet];
+      vertexNTracks_[0] = Reader.vertexNTracks_[jet];
+      vertexEnergyRatio_[0] = Reader.vertexEnergyRatio_[jet];
+      vertexJetDeltaR_[0] = Reader.vertexJetDeltaR_[jet];
+      flightDistance2dVal_[0] = Reader.flightDistance2dVal_[jet];
+      flightDistance2dSig_[0] = Reader.flightDistance2dSig_[jet];
+      flightDistance3dVal_[0] = Reader.flightDistance3dVal_[jet];
+      flightDistance3dSig_[0] = Reader.flightDistance3dSig_[jet];
+    }
+
     int EtaRelIndex = Reader.Jet_nFirstTrkEtaRelTagVarCSV_[jet];
     for(int z = 0; z<n_jetNTracksEtaRel_; z++){
       trackEtaRel_[z] = Reader.trackEtaRel_[EtaRelIndex];
