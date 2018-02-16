@@ -20,6 +20,11 @@
 using namespace std;
 
 
+/*
+Code for turning ntuples in the btag analyzer format into the DeepNtuples format. weightDistributions.cc can be used to create histograms for nPV weighting, and count.cc can be used to
+count the total amount MC events, which is needed to make the MC weights.
+ */
+
 bool passTrigger(TString trigger, int pttrig, treeReader & Reader) {
 
   // FOR 2012 Trigger ! Not valid for 2011...

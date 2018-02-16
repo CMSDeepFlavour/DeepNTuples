@@ -189,11 +189,6 @@ bool ntuple_bTagVars::Copy(treeReader & Reader,int & jet){
       NStoredVertices_ = 0;
       n_StoredVertices_ = 0;    
     }
-    /*
-    if(Reader.vertexCategory_[jet] == 1){
-      std::cout << "stored vertices with a pseudovertex = " << n_StoredVertices_ << std::endl:
-    }
-    */
     if((Reader.vertexCategory_[jet] == 0) | (Reader.vertexCategory_[jet] == 1)){
       vertexMass_[0] = Reader.vertexMass_[jet];
       vertexNTracks_[0] = Reader.vertexNTracks_[jet];
