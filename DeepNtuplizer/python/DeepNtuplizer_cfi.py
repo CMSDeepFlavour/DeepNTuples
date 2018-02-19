@@ -7,6 +7,7 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                 jetR       = cms.double(0.4),
 				                runFatJet = cms.bool(False),
                                 pupInfo = cms.InputTag("slimmedAddPileupInfo"),
+                                lheInfo = cms.InputTag("externalLHEProducer"),
                                 rhoInfo = cms.InputTag("fixedGridRhoFastjetAll"),	
                                 SVs  = cms.InputTag("slimmedSecondaryVertices"),
                                 LooseSVs = cms.InputTag("inclusiveCandidateSecondaryVertices"),
@@ -31,5 +32,12 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                 useHerwigCompatible=cms.bool(False),
                                 isHerwig=cms.bool(False),
                                 useOffsets=cms.bool(True),
-                                applySelection=cms.bool(True)
+                                applySelection=cms.bool(True),
+
+                                isData=cms.bool(False),
+                                useLHEWeights=cms.bool(False),
+
+                                crossSection=cms.double(1.0),
+                                luminosity = cms.double(42.0),
+                                efficiency = cms.double(1.0) #1/((effective) number of events
                                 )
