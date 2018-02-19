@@ -18,6 +18,12 @@ options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singl
 options.register('selectJets', True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool,"select jets with good gen match")
 options.register('isData', False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "switch off generator jets")
 options.register('deepNtuplizer',True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "run deepNtuplizer or just the ttbar selection")
+options.register('lheWeights',False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "use LHE weights")
+options.register('crossSection', 1.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "cross section")
+options.register('luminosity', 1.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "luminosity")
+options.register('nEvents', 1.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "total number of the events for this process (to compute efficiency)")
+
+
 
 import os
 
@@ -72,7 +78,7 @@ if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtupliz
 
 #process.source.fileNames=['file:./00E02A09-853C-E711-93FF-3417EBE644A7.root']   #store/data/Run2016H/SingleMuon/MINIAOD/18Apr2017-v1/00000/00E02A09-853C-E711-93FF-3417EBE644A7.root
 #process.source.fileNames=['file:./000C6E52-8BEC-E611-B3FF-0025905C42FE.root']   #isData=True
-process.source.fileNames=['file:./0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root']    #isData=False
+#process.source.fileNames=['file:./0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root']    #isData=False
 
 numberOfFiles = len(process.source.fileNames)
 numberOfJobs = options.nJobs
@@ -371,6 +377,13 @@ process.deepntuplizer.bDiscriminators.append('pfCombinedMVAV2BJetTags')
 process.deepntuplizer.LooseSVs = cms.InputTag("looseIVFinclusiveCandidateSecondaryVertices")
 
 process.deepntuplizer.applySelection = cms.bool(options.selectJets)
+
+process.deepntuplizer.isData = cms.bool(options.isData)
+process.deepntuplizer.useLHEWeights = cms.bool(options.lheWeights)
+process.deepntuplizer.crossSection = cms.double(options.crossSection)
+process.deepntuplizer.luminosity = cms.double(options.luminosity)
+process.deepntuplizer.efficiency = cms.double(1./options.nEvents)
+
 
 if int(release.replace("_", "")) >= 840:
     process.deepntuplizer.tagInfoName = cms.string('pfDeepCSV')
