@@ -35,9 +35,6 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                 applySelection=cms.bool(True),
 
                                 isData=cms.bool(False),
-                                useLHEWeights=cms.bool(False),
+                                useLHEWeights=cms.bool(True),
 
-                                crossSection=cms.double(1.0),
-                                luminosity = cms.double(42.0),
-                                efficiency = cms.double(1.0) #1/((effective) number of events
                                 )

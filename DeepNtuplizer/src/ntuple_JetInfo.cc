@@ -15,9 +15,6 @@
 #include <algorithm>
 #include "DataFormats/Math/interface/deltaR.h"
 
-#include <TFile.h>
-#include <TH1.h>
-
 using namespace std;
 
 void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
@@ -28,16 +25,10 @@ void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
     jetAbsEtaMin_=(iConfig.getParameter<double>("jetAbsEtaMin"));
     jetAbsEtaMax_=(iConfig.getParameter<double>("jetAbsEtaMax"));
 
-    useLHEWeights_ = (iConfig.getParameter<bool>("useLHEWeights"));
-    crossSection_ = (iConfig.getParameter<double>("crossSection"));
-    luminosity_ = (iConfig.getParameter<double>("luminosity"));
-    efficiency_ = (iConfig.getParameter<double>("efficiency"));
-
     vector<string> disc_names = iConfig.getParameter<vector<string> >("bDiscriminators");
     for(auto& name : disc_names) {
         discriminators_[name] = 0.;
     }
-
 }
 void ntuple_JetInfo::initBranches(TTree* tree){
 
@@ -92,7 +83,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"jet_mass", &jet_mass_);
     addBranch(tree,"jet_energy", &jet_energy_);
 
-    addBranch(tree,"event_weight", &event_weight_);
+
     //jet id
     addBranch(tree,"jet_looseId", &jet_looseId_);
 
@@ -147,18 +138,19 @@ void ntuple_JetInfo::initBranches(TTree* tree){
 
 void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
 
+    isData_ = iEvent.isRealData();
+
     iEvent.getByToken(qglToken_, qglHandle);
     iEvent.getByToken(ptDToken_, ptDHandle);
     iEvent.getByToken(axis2Token_, axis2Handle);
     iEvent.getByToken(multToken_, multHandle);
 
-    if(!iEvent.isRealData()){
+    if(!isData_){
         iEvent.getByToken(genJetMatchReclusterToken_, genJetMatchRecluster);
         iEvent.getByToken(genJetMatchWithNuToken_, genJetMatchWithNu);
 
         iEvent.getByToken(genParticlesToken_, genParticlesHandle);
 
-        iEvent.getByToken(lheToken_, lheInfo);
     }
 
 
@@ -179,7 +171,7 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
     Bhadron_daughter_.clear();
 
     //std::cout << " start search for a b in this event "<<std::endl;
-    if(!iEvent.isRealData()){
+    if(!isData_){
         for (const reco::Candidate &genC : *genParticlesHandle){
 
             const reco::GenParticle &gen = static_cast< const reco::GenParticle &>(genC);
@@ -196,17 +188,17 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
                         if(gen.daughter(0)->numberOfDaughters()>0)
                         {
 
-                        const reco::GenParticle &daughter_ = static_cast< const reco::GenParticle &>(*(gen.daughter(0)->daughter(0)));
+                            const reco::GenParticle &daughter_ = static_cast< const reco::GenParticle &>(*(gen.daughter(0)->daughter(0)));
 
-                        if(daughter_.vx()!=gen.vx())
-                        {
-                            Bhadron_daughter_.push_back(daughter_);
+                            if(daughter_.vx()!=gen.vx())
+                            {
+                                Bhadron_daughter_.push_back(daughter_);
+                            }
+                            //	 else {
+                            //  std::cout << "only b daughters " << endl;
+                            // }
                         }
-                        //	 else {
-                        //  std::cout << "only b daughters " << endl;
-                        // }
-                    }
-                    else  Bhadron_daughter_.push_back(gen);
+                        else  Bhadron_daughter_.push_back(gen);
 
                     }
                     else{
@@ -304,23 +296,7 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
                 ntrueInt_ = v.getTrueNumInteractions();
             }
         }
-        double lheWeight = 1.;
-
-        if(useLHEWeights_){
-            lheWeight = lheInfo->weights()[0].wgt/std::abs(lheInfo->weights()[0].wgt);
-        }
-
-        double pupWeight = 0;
-        if(ntrueInt_ < pupWeights.size()){
-            pupWeight = pupWeights.at(ntrueInt_);
-        }
-
-        event_weight_ = luminosity_ *  crossSection_ * efficiency_ * lheWeight * pupWeight;
     }
-    else{
-        event_weight_ = luminosity_;
-    }
-
 
     rho_ = rhoInfo()[0];
 

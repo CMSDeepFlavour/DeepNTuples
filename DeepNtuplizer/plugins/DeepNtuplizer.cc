@@ -13,6 +13,8 @@
 #include "../interface/ntuple_bTagVars.h"
 #include "../interface/ntuple_FatJetInfo.h"
 #include "../interface/ntuple_DeepVertex.h"
+#include "../interface/ntuple_eventInfo.h"
+
 
 //ROOT includes
 #include "TTree.h"
@@ -126,6 +128,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     //not implemented yet
     const bool useHerwigCompatibleMatching=iConfig.getParameter<bool>("useHerwigCompatible");
     const bool isHerwig=iConfig.getParameter<bool>("isHerwig");
+
     const bool isData=iConfig.getParameter<bool>("isData");
 
     ntuple_content::useoffsets = iConfig.getParameter<bool>("useOffsets");
@@ -157,7 +160,6 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
 
     jetinfo->setUseHerwigCompatibleMatching(useHerwigCompatibleMatching);
     jetinfo->setIsHerwig(isHerwig);
-    jetinfo->setIsData(isData);
 
     if(!isData){
         jetinfo->setGenJetMatchReclusterToken(
@@ -166,12 +168,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
         jetinfo->setGenJetMatchWithNuToken(
                 consumes<edm::Association<reco::GenJetCollection> >(
                         iConfig.getParameter<edm::InputTag>( "genJetMatchWithNu" )));
-
-
     }
-    jetinfo->setLHEToken(
-            consumes<LHEEventProduct>(
-                    iConfig.getParameter<edm::InputTag>("lheInfo")));
 
 
     jetinfo->setGenParticlesToken(
@@ -194,6 +191,13 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     addModule(pfcands);
 
     addModule(new ntuple_bTagVars());
+
+    ntuple_eventInfo *evweight = new ntuple_eventInfo();
+    if(!isData){
+        evweight->setLHEToken(consumes<LHEEventProduct>(iConfig.getParameter<edm::InputTag>("lheInfo")));
+    }
+
+    addModule(evweight);
 
     if(runFatJets_){
         auto *fatjetinfo = new ntuple_FatJetInfo(jetR);
