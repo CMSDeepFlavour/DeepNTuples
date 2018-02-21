@@ -12,6 +12,7 @@
 #include "TLorentzVector.h"
 #include "TMath.h"
 #include <iostream>
+#include "Riostream.h"
 
 using namespace std;
 
@@ -30,30 +31,45 @@ Long64_t LoadTree(Long64_t entry, TChain * fChain)
 }
 
 
-int main(){
+int main(int argc, char *argv[]){
+
+  if(argc != 2){
+    cout << "missing input directories" << endl;
+    return 0;
+  }
+  string dir = argv[1];
+  string dir30to50,dir50to80,dir80to120,dir120to170,dir170to300,dir300to470,dir470to600;
+  ifstream in;
+  in.open(dir);
+  std::getline(in,dir30to50);
+  std::getline(in,dir50to80);
+  std::getline(in,dir80to120);
+  std::getline(in,dir120to170);
+  std::getline(in,dir170to300);
+  std::getline(in,dir300to470);
+  std::getline(in,dir470to600);
+
+
 
   TChain *fChain30to50 = new TChain("btagana/ttree");
-  fChain30to50->Add("/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_30to50_TuneCP5_13TeV_pythia8/incl_qcd_30/180117_082536/0000/J*root");
+  fChain30to50->Add((dir30to50).c_str());
   TChain *fChain50to80 = new TChain("btagana/ttree");
-  fChain50to80->Add("/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_50to80_TuneCP5_13TeV_pythia8/incl_qcd_50/180117_082611/0000/J*root");
+  fChain50to80->Add((dir50to80).c_str());
   TChain *fChain80to120 = new TChain("btagana/ttree");
-  fChain80to120->Add("/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_80to120_TuneCP5_13TeV_pythia8/incl_qcd_80/180117_082645/0000/J*root");
+  fChain80to120->Add((dir80to120).c_str());
   TChain *fChain120to170 = new TChain("btagana/ttree");
-  fChain120to170->Add("/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_120to170_TuneCP5_13TeV_pythia8/incl_qcd_120/180117_082718/0000/J*root");
+  fChain120to170->Add((dir120to170).c_str());
   TChain *fChain170to300 = new TChain("btagana/ttree");
-  fChain170to300->Add("/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_170to300_TuneCP5_13TeV_pythia8/incl_qcd_170/180117_082753/0000/J*root");
+  fChain170to300->Add((dir170to300).c_str());
   TChain *fChain300to470 = new TChain("btagana/ttree");
-  fChain300to470->Add("/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_300to470_TuneCP5_13TeV_pythia8/incl_qcd_300/180117_082827/0000/J*root");
+  fChain300to470->Add((dir300to470).c_str());
   TChain *fChain470to600 = new TChain("btagana/ttree");
-  fChain470to600->Add("/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/incl_qcd_470/180117_082905/0000/J*root");
+  fChain470to600->Add((dir470to600).c_str());
 
 
-  Float_t         pthat;
-  TBranch        *b_pthat;
   fCurrent = -1;
   Long64_t           n15_20, n20_30, n30_50,n50_80,n80_120,n120_170,n170_300,n300_470,n470_600,n600_800, n800_1000, n1000_inf;
-  Long64_t           n15_30, n120_150, n150_inf;
-
+  
 
   n15_20   =0;
   n20_30   =0;
@@ -73,50 +89,23 @@ int main(){
   n600_800 =0;
   n800_1000=0;
   n1000_inf=0;
-  n15_30   =0;
-  n120_150 =0;
-  n150_inf =0;
-
-  int   Nevent = 0;
-  
-  // Long64_t nentries = fChain->GetEntriesFast();
-  
-  Long64_t nbytes = 0, nb = 0;
+ 
   
   
-  int qcdtype = 0;
-  int sqrtstev = 13;
-  cout << " To write in runCode.C " << endl;
-  if (qcdtype==0) { // inclusive qcd 
-    cout << " double   n15    = 0. ; " <<endl;
-    cout << " double   n20    = "<< n15_30 << "; " << endl;
-  }
-  else { // MuEnriched qcd
-    cout << " double   n15    = "<< n15_20 << "; " << endl;
-    cout << " double   n20    = "<< n20_30 << "; " << endl;
-  }
-  cout << " double   n30    = "<< n30_50 << "; " << endl;
-  cout << " double   n50    = "<< n50_80 << "; " << endl;
-  cout << " double   n80    = "<< n80_120 << "; " << endl;
-  if (sqrtstev!=7) { // 8 TeV
-    cout << " double   n120  = "<< n120_170 << "; " << endl;
-    cout << " double   n170  = "<< n170_300 << "; " << endl;
-    cout << " double   n300  = "<< n300_470 << "; " << endl;
-    cout << " double   n470  = "<< n470_600 << "; " << endl;
-    cout << " double   n600  = "<< n600_800 << "; " << endl;
-    cout << " double   n800  = "<< n800_1000 << "; " << endl;
-    cout << " double   n1000 = "<< n1000_inf << "; " << endl;
-  }
-  else if (qcdtype==1) { // 7 TeV MuEnriched qcd
-    cout << " double   n120  = "<< n120_150 << "; " << endl;
-    cout << " double   n170  = "<< n150_inf << "; " << endl;
-    cout << " double   n300  = 0.; " << endl;
-    cout << " double   n470  = 0.; " << endl; 
-    cout << " double   n600  = 0.; " << endl;
-    cout << " double   n800  = 0.; " << endl;
-    cout << " double   n1000 = 0.; " << endl;
-  }
-  cout << " m.Fill_nevent(n15,n20,n30,n50,n80,n120,n170,n300,n470,n600,n800,n1000);" << endl;
-
+  cout << " To write in config file after the pvPath and MC configurations " << endl;
+  
+  cout << n15_20 << endl;
+  cout << n20_30 << endl;
+  cout << n30_50 << endl;
+  cout << n50_80 << endl;
+  cout << n80_120 << endl;
+  cout << n120_170 << endl;
+  cout << n170_300 << endl;
+  cout << n300_470 << endl;
+  cout << n470_600 << endl;
+  cout << n600_800 << endl;
+  cout << n800_1000 << endl;
+  cout << n1000_inf << endl;
+  
   return 1;
 }

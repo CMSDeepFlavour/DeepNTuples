@@ -11,37 +11,22 @@
 #include "TLorentzVector.h"
 #include "TMath.h"
 #include <iostream>
+#include "Riostream.h"
 
 using namespace std;
 
-TString gentype;
+string gentype;
+string PVpath;
 bool qcdtype;
 int sqrtstev;
 float sum_xs; 
 float x_section[12]; 
-float nmc_evt_vect[12];
+double nmc_evt_vect[12];
 
 float Jet_pt_[1000]; 
 float Jet_eta_[1000]; 
 int nJet_;
 
-void Fill_nevent(double n15,double n20,double n30,double n50,double n80,double n120,double n170,double n300,double n470,double n600, double n800, double n1000){
-
- 
-  nmc_evt_vect[0]=n15;
-  nmc_evt_vect[1]=n20;
-  nmc_evt_vect[2]=n30;  
-  nmc_evt_vect[3]=n50;  
-  nmc_evt_vect[4]=n80;  
-  nmc_evt_vect[5]=n120;
-  nmc_evt_vect[6]=n170;  
-  nmc_evt_vect[7]=n300;  
-  nmc_evt_vect[8]=n470;   
-  nmc_evt_vect[9]=n600;
-  nmc_evt_vect[10]=n800;
-  nmc_evt_vect[11]=n1000;
-  
-}
 
 
 bool passTrigger(TString trigger, int pttrig, int BitTrigger[], int & nJet, float Jet_pt[], float Jet_eta[]) {
@@ -345,7 +330,7 @@ float GetEvtWeight(float pthat){
 
 int main(int argc, char *argv[]){
 
-  if(argc != 4){
+  if(argc != 5){
     cout << "missing input arguments, should be input file, output file, and then MC or DATA" << endl;
     return 0;
   }
@@ -371,24 +356,30 @@ int main(int argc, char *argv[]){
   int nBitTrigger, nPV;
   int BitTrigger[3];
 
+  string dir = argv[4];
+  ifstream in;
+  in.open(dir);
+  std::getline(in,PVpath);
+  if (!in.good()) return 0;
+  std::getline(in,gentype);
+  if (!in.good()) return 0;
+  in >> qcdtype;
+  if (!in.good()) return 0;
+  in >> sqrtstev;
+  if (!in.good()) return 0;
+  cout << PVpath << endl;
+  cout << gentype << endl;
+  cout << qcdtype << endl;
+  cout << sqrtstev << endl;
+  Int_t nlines = 0;
+  while (1) {
+    in >> nmc_evt_vect[nlines];
+    if (!in.good()) break;
+    cout << nmc_evt_vect[nlines] << endl;
+    nlines++;
+  }
 
-  double   n15    = 0.; 
-  double   n20    = 0.; 
-  double   n30    = 19503604.; 
-  double   n50    = 18828383.; 
-  double   n80    = 27989430.; 
-  double   n120  = 25098641.; 
-  double   n170  = 29394249.; 
-  double   n300  = 29115849.; 
-  double   n470  = 25011264.; 
-  double   n600  = 0; 
-  double   n800  = 0; 
-  double   n1000 = 0; 
-  Fill_nevent(n15,n20,n30,n50,n80,n120,n170,n300,n470,n600,n800,n1000);
-
-  gentype = "pythia";
-  qcdtype = false;
-  sqrtstev = 13;
+  in.close();
   SetXS(gentype,qcdtype,sqrtstev); 
   SetSumXS();
   btagana->SetBranchStatus("*", 0);

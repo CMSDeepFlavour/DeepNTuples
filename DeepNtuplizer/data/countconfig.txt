@@ -1,0 +1,7 @@
+/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_30to50_TuneCP5_13TeV_pythia8/incl_qcd_30/180117_082536/0000/J*root
+/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_50to80_TuneCP5_13TeV_pythia8/incl_qcd_50/180117_082611/0000/J*root
+/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_80to120_TuneCP5_13TeV_pythia8/incl_qcd_80/180117_082645/0000/J*root
+/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_120to170_TuneCP5_13TeV_pythia8/incl_qcd_120/180117_082718/0000/J*root
+/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_170to300_TuneCP5_13TeV_pythia8/incl_qcd_170/180117_082753/0000/J*root
+/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_300to470_TuneCP5_13TeV_pythia8/incl_qcd_300/180117_082827/0000/J*root
+/eos/cms/store/group/phys_btag/gpaspala/Commissioning_2018/QCD_Pt_470to600_TuneCP5_13TeV_pythia8/incl_qcd_470/180117_082905/0000/J*root

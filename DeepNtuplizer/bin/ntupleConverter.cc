@@ -9,6 +9,7 @@
 #include <TH2F.h>
 #include <TH1F.h>
 #include "TLorentzVector.h"
+#include "Riostream.h"
 #include "TMath.h"
 
 #include "ntupleConverter.h"
@@ -462,8 +463,8 @@ bool CopyExtraBranches(treeReader & Reader,int & jet){
 
 int main(int argc, char *argv[]){
 
-  if(argc != 4){
-    cout << "missing input arguments, should be input file, output file, and then MC or DATA" << endl;
+  if(argc != 5){
+    cout << "missing input arguments, should be input file, output file, then note MC or DATA, finally the config file with the path to PV dir and the MC event counts" << endl;
     return 0;
   }
 
@@ -471,9 +472,34 @@ int main(int argc, char *argv[]){
   const char* outputfile = argv[2];
   isMC = false;
   string mcarg = argv[3];
+  string dir = argv[4];
+
   if(mcarg == "MC"){
     isMC = true;
   }
+  ifstream in;
+  in.open(dir);
+  std::getline(in,PVpath);
+  if (!in.good()) return 0;
+  std::getline(in,gentype);
+  if (!in.good()) return 0;
+  in >> qcdtype;
+  if (!in.good()) return 0;
+  in >> sqrtstev;
+  if (!in.good()) return 0;
+  cout << PVpath << endl;
+  cout << gentype << endl;
+  cout << qcdtype << endl;
+  cout << sqrtstev << endl;
+  Int_t nlines = 0;
+  while (1) {
+    in >> nmc_evt_vect[nlines];
+    if (!in.good()) break;
+    cout << nmc_evt_vect[nlines] << endl;
+    nlines++;
+  }
+  in.close();
+
   TFile *ntfile = new TFile(inputfile,"READ");
   TTree *btagana = (TTree*)ntfile->Get("btagana/ttree");
   btagana->SetBranchStatus("*", 0);
