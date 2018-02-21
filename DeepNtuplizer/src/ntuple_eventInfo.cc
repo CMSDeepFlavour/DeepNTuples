@@ -8,13 +8,33 @@
 #include "../interface/ntuple_eventInfo.h"
 
 
-#include <vector>
-
-
 
 void ntuple_eventInfo::getInput(const edm::ParameterSet& iConfig){
 
     useLHEWeights_ = (iConfig.getParameter<bool>("useLHEWeights"));
+    pupDataDir_ = (iConfig.getParameter<std::string>("pileupDataDir"));
+    pupMCDir_ = (iConfig.getParameter<std::string>("pileupMCDir"));
+
+    if(pupDataDir_=="" || pupMCDir_==""){
+        std::cout<<"no pileup histograms, proceed without pileup reweighting. \n";
+    }
+    else{
+        pupMCFile = new TFile(pupMCDir_.c_str());
+        pupDataFile = new TFile(pupDataDir_.c_str());
+
+        pupMCHist = (TH1F*)pupMCFile->Get("pileup");
+        pupDataHist = (TH1F*)pupDataFile->Get("pileup");
+
+        pupMCHist->Scale(1./pupMCHist->Integral());
+        pupDataHist->Scale(1./pupDataHist->Integral());
+
+        pupWeights.push_back(1.0);
+        for(int bin = 1; bin < pupMCHist->GetNbinsX() + 1; bin++){
+            pupWeights.push_back(pupDataHist->GetBinContent(bin)/pupMCHist->GetBinContent(bin));
+        }
+    }
+
+
 
 }
 void ntuple_eventInfo::initBranches(TTree* tree){
@@ -43,11 +63,10 @@ void ntuple_eventInfo::readEvent(const edm::Event& iEvent){
             lheWeight = lheInfo->weights()[0].wgt/std::abs(lheInfo->weights()[0].wgt);
         }
 
-        double pupWeight = 0;
+        double pupWeight = 1.;
         if(ntrueInt_ < pupWeights.size()){
             pupWeight = pupWeights.at(ntrueInt_);
         }
-
         event_weight_ = lheWeight * pupWeight;
     }
     else{

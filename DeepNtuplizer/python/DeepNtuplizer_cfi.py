@@ -1,4 +1,7 @@
 import FWCore.ParameterSet.Config as cms
+import os
+
+datapath=os.environ['CMSSW_BASE']+'/src/DeepNTuples/DeepNtuplizer/data/'
 
 deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                 vertices   = cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -36,5 +39,8 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
 
                                 isData=cms.bool(False),
                                 useLHEWeights=cms.bool(True),
+
+                                pileupDataDir=cms.string(datapath+"pileup_data_2016.root"),
+                                pileupMCDir=cms.string(datapath+"pileup_MC_2016.root")
 
                                 )

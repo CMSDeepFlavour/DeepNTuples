@@ -130,7 +130,7 @@ globalInfo::endJob()
 
     infolist = (fs->make<TList>());
 
-    infolist->Add(new TNamed("nInitialEvents",std::to_string(nEvents_).c_str()));
+    infolist->Add(new TNamed("nInitialEvents",std::to_string(nEvents_ - nNegLHEEvents_).c_str()));
 
 }
 
