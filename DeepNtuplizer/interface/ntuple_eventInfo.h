@@ -11,6 +11,8 @@
 #include "ntuple_content.h"
 
 #include <vector>
+#include <TObjString.h>
+
 
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 

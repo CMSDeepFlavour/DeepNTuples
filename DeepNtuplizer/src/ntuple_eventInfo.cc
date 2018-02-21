@@ -20,7 +20,6 @@ void ntuple_eventInfo::getInput(const edm::ParameterSet& iConfig){
 void ntuple_eventInfo::initBranches(TTree* tree){
 
     addBranch(tree,"event_weight", &event_weight_);
-
 }
 
 
