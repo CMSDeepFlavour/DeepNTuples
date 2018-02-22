@@ -367,15 +367,10 @@ int main(int argc, char *argv[]){
   if (!in.good()) return 0;
   in >> sqrtstev;
   if (!in.good()) return 0;
-  cout << PVpath << endl;
-  cout << gentype << endl;
-  cout << qcdtype << endl;
-  cout << sqrtstev << endl;
   Int_t nlines = 0;
   while (1) {
     in >> nmc_evt_vect[nlines];
     if (!in.good()) break;
-    cout << nmc_evt_vect[nlines] << endl;
     nlines++;
   }
 

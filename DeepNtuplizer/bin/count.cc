@@ -65,7 +65,7 @@ int main(int argc, char *argv[]){
   fChain300to470->Add((dir300to470).c_str());
   TChain *fChain470to600 = new TChain("btagana/ttree");
   fChain470to600->Add((dir470to600).c_str());
-
+  in.close();
 
   fCurrent = -1;
   Long64_t           n15_20, n20_30, n30_50,n50_80,n80_120,n120_170,n170_300,n300_470,n470_600,n600_800, n800_1000, n1000_inf;
