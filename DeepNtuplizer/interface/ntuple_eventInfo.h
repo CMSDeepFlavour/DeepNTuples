@@ -15,11 +15,14 @@
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
+#include "TGraphAsymmErrors.h"
 #include <TObjString.h>
 
 
 
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+
+void readHistoFromGraph(TGraphAsymmErrors* graph, TH1D** h, TString name);
 
 /*
  * For MC weights such as pileup, lhe, ... later: lepton scalefactors
@@ -41,18 +44,24 @@ public:
     void setLHEToken(edm::EDGetTokenT<LHEEventProduct> lheToken) {
         lheToken_ = lheToken;
     }
-    void setMuonsToken(edm::EDGetTokenT<edm::View<pat::Muon>> muonToken){
+    void setMuonsToken(edm::EDGetTokenT<edm::View<pat::Muon> > muonToken){
         muonToken_ = muonToken;
+    }
+    void setElectronsToken(edm::EDGetTokenT<edm::View<pat::Electron> > electronToken){
+        electronToken_ = electronToken;
     }
 
 
 private:
 
     edm::EDGetTokenT<LHEEventProduct> lheToken_;
-    edm::EDGetTokenT<edm::View<pat::Muon>> muonToken_;
+    edm::EDGetTokenT<edm::View<pat::Muon> > muonToken_;
+    edm::EDGetTokenT<edm::View<pat::Electron> > electronToken_;
 
     edm::Handle<LHEEventProduct> lheInfo;
-    edm::Handle<edm::View<pat::Muon>> muons;
+    edm::Handle<edm::View<pat::Muon> > muons;
+    edm::Handle<edm::View<pat::Electron> > electrons;
+
 
     bool isData_;
     bool useLHEWeights_;
@@ -61,16 +70,31 @@ private:
     std::string pupMCDir_;
     std::string sfMuonIdDir_;
     std::string sfMuonIdName_;
+    std::string sfMuonIsoDir_;
+    std::string sfMuonIsoName_;
+    std::string sfMuonTrackingDir_;
+    std::string sfMuonTrackingName_;
+    std::string sfElIdAndIsoDir_;
+    std::string sfElIdAndIsoName_;
+
 
     TH2F *sfMuonIdHist;
+    TH2F *sfMuonIsoHist;
+    TH2F *sfElIdAndIsoHist;
+    TGraphAsymmErrors* sfMuonTrackingTGraph;
+    TH1D *sfMuonTrackingHist;
 
     TAxis *sfMuonIdHist_xaxis;
     TAxis *sfMuonIdHist_yaxis;
+    TAxis *sfMuonIsoHist_xaxis;
+    TAxis *sfMuonIsoHist_yaxis;
+    TAxis *sfElIdAndIsoHist_xaxis;
+    TAxis *sfElIdAndIsoHist_yaxis;
+    TAxis *sfMuonTrackingHist_axis;
 
     // global variables
 
     float ntrueInt_;
-
     std::vector<double> pupWeights;
 
     /////////branches

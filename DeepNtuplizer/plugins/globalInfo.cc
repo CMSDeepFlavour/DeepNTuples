@@ -32,6 +32,8 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "TTree.h"
+
 
 
 class globalInfo : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
@@ -52,11 +54,12 @@ class globalInfo : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
         edm::EDGetTokenT<LHEEventProduct> t_LHEInfo;
         edm::Handle<LHEEventProduct>  h_LHEWeights;
 
-        long nEvents_ = 0;
-        long nNegLHEEvents_ = 0;
+        int nEvents_ = 0;
+        int nNegLHEEvents_ = 0;
+        int nEffEvents_ = 0;
         bool useLHEWeights_ = true;
 
-        TList * infolist = new TList;
+        TTree * tree_ = new TTree();
 
 
       // ----------member data ---------------------------
@@ -120,17 +123,21 @@ globalInfo::beginJob()
 void
 globalInfo::endJob()
 {
+    nEffEvents_ = nEvents_ - nNegLHEEvents_;
     std::cout<<"total number of initial events is: "<<nEvents_<<std::endl;
     std::cout<<"number of initial events with negative lhe weight is: "<<nNegLHEEvents_<<std::endl;
-    std::cout<<"effective event number is: "<<nEvents_ - nNegLHEEvents_<<std::endl;
+    std::cout<<"effective event number is: "<<nEffEvents_<<std::endl;
     if( !fs ){
         throw edm::Exception( edm::errors::Configuration,
                 "TFile Service is not registered in cfg file" );
     }
 
-    infolist = (fs->make<TList>());
+    tree_=(fs->make<TTree>("tree" ,"tree" ));
 
-    infolist->Add(new TNamed("nInitialEvents",std::to_string(nEvents_ - nNegLHEEvents_).c_str()));
+    tree_->Branch("nEffEvents",&nEffEvents_,"nEffEvents/I");
+
+    tree_->Fill();
+
 
 }
 
