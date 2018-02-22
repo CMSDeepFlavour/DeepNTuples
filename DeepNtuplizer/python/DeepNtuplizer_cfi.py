@@ -40,7 +40,14 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                 isData=cms.bool(False),
                                 useLHEWeights=cms.bool(True),
 
-                                pileupDataDir=cms.string(datapath+"pileup_data_2016.root"),
-                                pileupMCDir=cms.string(datapath+"pileup_MC_2016.root")
+                                #leave empty string if you don't want to use pileup weights
+                                pileupData=cms.string(datapath+"pileup_data_2016.root"),
+                                pileupMC=cms.string(datapath+"pileup_MC_2016.root"),
+
+                                #scalefactor information
+                                sfMuons = cms.InputTag("goodMuons"),
+                                    # leave an empty string if you don't want to use a scalefactor
+                                sfMuonId = cms.string(datapath+"EfficienciesAndSF_ID_GH.root"),
+                                sfMuonIdName = cms.string("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
 
                                 )

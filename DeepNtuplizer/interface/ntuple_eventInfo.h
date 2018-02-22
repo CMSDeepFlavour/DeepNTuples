@@ -14,6 +14,7 @@
 #include <string>
 #include <TFile.h>
 #include <TH1.h>
+#include <TH2.h>
 #include <TObjString.h>
 
 
@@ -37,27 +38,34 @@ public:
 
     bool fillBranches(const pat::Jet &, const size_t& jetidx, const  edm::View<pat::Jet> * coll=0);
 
-
     void setLHEToken(edm::EDGetTokenT<LHEEventProduct> lheToken) {
         lheToken_ = lheToken;
+    }
+    void setMuonsToken(edm::EDGetTokenT<edm::View<pat::Muon>> muonToken){
+        muonToken_ = muonToken;
     }
 
 
 private:
 
     edm::EDGetTokenT<LHEEventProduct> lheToken_;
+    edm::EDGetTokenT<edm::View<pat::Muon>> muonToken_;
+
     edm::Handle<LHEEventProduct> lheInfo;
+    edm::Handle<edm::View<pat::Muon>> muons;
 
     bool isData_;
     bool useLHEWeights_;
+
     std::string pupDataDir_;
     std::string pupMCDir_;
+    std::string sfMuonIdDir_;
+    std::string sfMuonIdName_;
 
-    TFile *pupMCFile;
-    TFile *pupDataFile;
+    TH2F *sfMuonIdHist;
 
-    TH1F * pupMCHist;
-    TH1F * pupDataHist;
+    TAxis *sfMuonIdHist_xaxis;
+    TAxis *sfMuonIdHist_yaxis;
 
     // global variables
 

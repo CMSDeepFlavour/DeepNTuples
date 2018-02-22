@@ -195,6 +195,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     ntuple_eventInfo *evweight = new ntuple_eventInfo();
     if(!isData){
         evweight->setLHEToken(consumes<LHEEventProduct>(iConfig.getParameter<edm::InputTag>("lheInfo")));
+        evweight->setMuonsToken(consumes<edm::View<pat::Muon>>(iConfig.getParameter<edm::InputTag>("sfMuons")));
     }
 
     addModule(evweight);

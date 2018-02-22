@@ -10,7 +10,7 @@ options = VarParsing.VarParsing()
 
 options.register('inputScript', '', VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string,"input Script")
 options.register('outputFile', 'output', VarParsing.VarParsing.multiplicity.singleton,VarParsing.VarParsing.varType.string, "output File (w/o .root)")
-options.register('maxEvents', 200, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int,"maximum events")
+options.register('maxEvents', 500, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int,"maximum events")
 options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "skip N events")
 options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int,"job number")
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
@@ -140,7 +140,7 @@ else:
     ]
 
 ###### ttbar selection
-outFileName = options.outputFile + '_' + str(options.job) + '.root'
+outFileName = options.outputFile + '_00' + str(options.job) + '.root'
 print ('Using output file ' + outFileName)
 
 if options.deepNtuplizer:
@@ -148,8 +148,8 @@ if options.deepNtuplizer:
                                    fileName=cms.string(outFileName))
 else:
     process.MINIAODSIMEventContent.outputCommands.extend([
-        'keep *_GoodElectron_*_*',
-        'keep *_GoodMuon_*_*',
+        'keep *_goodElectrons_*_*',
+        'keep *_goodMuons_*_*',
         'keep *_GoodJets_*_*',
         'keep *_GoodOFLeptonPair_*_*'
     ])
@@ -157,7 +157,7 @@ else:
     process.outmod = cms.OutputModule("PoolOutputModule",
                                     process.MINIAODSIMEventContent,
                                     SelectEvents = cms.untracked.PSet(
-                                        SelectEvents = cms.vstring('ttbaremupath')
+                                        SelectEvents = cms.vstring('p')
                                     ),
                                     fileName = cms.untracked.string(outFileName)
                                     )
@@ -189,61 +189,36 @@ process.TriggerSel = cms.EDFilter("HLTHighLevel",
                                        throw = cms.bool(True)    # throw exception on unknown path names
 )
 # Electron Selection
-process.EleIdEmbed = cms.EDProducer("ElectronIdAdder",
+process.goodElectrons = cms.EDProducer("ElectronIdAdder",
                                     src=cms.InputTag("slimmedElectrons"),
                                     vSrc=cms.InputTag("offlineSlimmedPrimaryVertices"),
-                                    idMap=cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-tight")
-                                   )
+                                    idMap=cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-tight"),
+                                    minPt=cms.double(20.0),
+                                    maxAbsEta=cms.double(2.4),
+                                    )
 
-process.GoodElectron = cms.EDFilter("CandViewSelector",
-    src = cms.InputTag("EleIdEmbed"),
-    cut = cms.string("pt > 20.0 && abs(eta)<2.4 "
-                     "&& userFloat('tightcutbased')"
-                     "&& userFloat('notInEtaVetoRegion')"
-                     "&& userFloat('inAbsD0')"
-                     "&& userFloat('inAbsDz')"
-                     )
-    )
 
 ### Muon Selection
-process.MuonIdEmbed = cms.EDProducer("MuonIdAdder",
+process.goodMuons = cms.EDProducer("MuonIdAdder",
                                      src=cms.InputTag("slimmedMuons"),
-                                     vSrc=cms.InputTag("offlineSlimmedPrimaryVertices")
+                                     vSrc=cms.InputTag("offlineSlimmedPrimaryVertices"),
+                                     minPt=cms.double(20.0),
+                                     maxAbsEta=cms.double(2.4),
+                                     maxRMI=cms.double(0.15)
                                      )
 
-process.GoodMuon = cms.EDFilter("CandViewSelector",
-    src = cms.InputTag("MuonIdEmbed"),
-    cut = cms.string("pt > 20.0 && abs(eta)<2.4 "
-                     "&& userFloat('tightcutbased')"
-                     "&& (pfIsolationR04().sumChargedHadronPt + max(0.0, (pfIsolationR04().sumNeutralHadronEt + pfIsolationR04().sumPhotonEt -0.5*pfIsolationR04().sumPUPt)))/pt < 0.15"
-    )
-)
+
 ### Jets
 
-# Jet Energy Corrections
-if options.isData:
-    jetCorrections = cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual'])
-else:
-    jetCorrections = cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute'])
-
-from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-
-updateJetCollection(
-    process,
-    jetSource = cms.InputTag('slimmedJets'),
-    labelName = 'UpdatedJEC',
-    jetCorrections = ('AK4PFchs', jetCorrections, 'None')
-)
-
 process.GoodJets = cms.EDProducer("PATJetCleaner",
-    src = cms.InputTag("updatedPatJetsUpdatedJEC"),
+    src = cms.InputTag("slimmedJets"),
     preselection = cms.string("pt>30 && abs(eta) < 2.4 && neutralHadronEnergyFraction < 0.99 "
                      "&& neutralEmEnergyFraction < 0.99 && (chargedMultiplicity+neutralMultiplicity) > 1 "
                      "&& chargedHadronEnergyFraction > 0.0 "
                      "&& chargedMultiplicity > 0.0 && chargedEmEnergyFraction < 0.99 "),
     checkOverlaps = cms.PSet(
         muons = cms.PSet(
-           src       = cms.InputTag("GoodMuon"),
+           src       = cms.InputTag("goodMuons"),
            algorithm = cms.string("byDeltaR"),
            preselection        = cms.string(""),
            deltaR              = cms.double(0.4),
@@ -252,7 +227,7 @@ process.GoodJets = cms.EDProducer("PATJetCleaner",
            requireNoOverlaps   = cms.bool(True), # overlaps cause the jet to be discarded
         ),
         electrons = cms.PSet(
-           src       = cms.InputTag("GoodElectron"),
+           src       = cms.InputTag("goodElectrons"),
            algorithm = cms.string("byDeltaR"),
            preselection        = cms.string(""),
            deltaR              = cms.double(0.4),
@@ -265,7 +240,7 @@ process.GoodJets = cms.EDProducer("PATJetCleaner",
   )
 
 process.GoodOFLeptonPair = cms.EDProducer("CandViewShallowCloneCombiner",
-    decay = cms.string("GoodMuon@+ GoodElectron@-"),
+    decay = cms.string("goodMuons@+ goodElectrons@-"),
     cut = cms.string("20.0 < mass"
                      "&& (daughter(0).pt > 25 || daughter(1).pt > 25)")
   )
@@ -277,23 +252,28 @@ process.FinalSel = cms.EDFilter("CandViewCountFilter",
   )
 ### end selection
 
+# Jet Energy Corrections
+if options.isData:
+    jetCorrections = cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute', 'L2L3Residual'])
+else:
+    jetCorrections = cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute'])
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 updateJetCollection(
-    process,
-    labelName="DeepFlavour",
-    #         jetSource=cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked', 'SubJets'),  # 'subjets from AK8'
-    jetSource=cms.InputTag('GoodJets'),  # 'ak4Jets'
-    jetCorrections=('AK4PFchs', jetCorrections, 'None'),
-    pfCandidates=cms.InputTag('packedPFCandidates'),
-    pvSource=cms.InputTag("offlineSlimmedPrimaryVertices"),
-    svSource=cms.InputTag('slimmedSecondaryVertices'),
-    muSource=cms.InputTag('slimmedMuons'),
-    elSource=cms.InputTag('slimmedElectrons'),
-    btagInfos=bTagInfos,
-    btagDiscriminators=bTagDiscriminators,
-    explicitJTA=False
-)
+        process,
+        labelName="DeepFlavour",
+        #         jetSource=cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked', 'SubJets'),  # 'subjets from AK8'
+        jetSource=cms.InputTag('GoodJets'),  # 'ak4Jets'
+        jetCorrections=('AK4PFchs', jetCorrections, 'None'),
+        pfCandidates=cms.InputTag('packedPFCandidates'),
+        pvSource=cms.InputTag("offlineSlimmedPrimaryVertices"),
+        svSource=cms.InputTag('slimmedSecondaryVertices'),
+        muSource=cms.InputTag('slimmedMuons'),
+        elSource=cms.InputTag('slimmedElectrons'),
+        btagInfos=bTagInfos,
+        btagDiscriminators=bTagDiscriminators,
+        explicitJTA=False
+        )
 
 if hasattr(process, 'updatedPatJetsTransientCorrectedDeepFlavour'):
     process.updatedPatJetsTransientCorrectedDeepFlavour.addTagInfos = cms.bool(True)
@@ -402,13 +382,13 @@ process.ProfilerService = cms.Service(
 )
 
 
-if options.isData:
-    if options.deepNtuplizer:
+if options.deepNtuplizer:
+    if options.isData:
         process.p = cms.Path(process.globalInfo + process.TriggerSel + process.FinalSel + process.QGTagger + process.deepntuplizer)
     else:
-        process.p = cms.Path(process.globalInfo + process.TriggerSel + process.FinalSel + process.QGTagger)
-else:
-    if options.deepNtuplizer:
         process.p = cms.Path(process.globalInfo + process.TriggerSel + process.FinalSel + process.QGTagger + process.genJetSequence * process.deepntuplizer)
-    else:
-        process.p = cms.Path(process.globalInfo + process.TriggerSel + process.FinalSel + process.QGTagger + process.genJetSequence)
+else:
+        process.p = cms.Path(process.TriggerSel + process.FinalSel)
+
+        process.endp = cms.EndPath(process.outmod)
+
