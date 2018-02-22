@@ -140,7 +140,7 @@ else:
     ]
 
 ###### ttbar selection
-outFileName = options.outputFile + '_00' + str(options.job) + '.root'
+outFileName = options.outputFile + '_' + str(options.job) + '.root'
 print ('Using output file ' + outFileName)
 
 if options.deepNtuplizer:
@@ -204,7 +204,7 @@ process.goodMuons = cms.EDProducer("MuonIdAdder",
                                      vSrc=cms.InputTag("offlineSlimmedPrimaryVertices"),
                                      minPt=cms.double(20.0),
                                      maxAbsEta=cms.double(2.4),
-                                     maxRMI=cms.double(0.15)
+                                     maxRMI=cms.double(0.15)    #RMI = relative muon isolation
                                      )
 
 

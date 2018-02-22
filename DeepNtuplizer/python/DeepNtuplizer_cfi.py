@@ -46,8 +46,16 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
 
                                 #scalefactor information
                                 sfMuons = cms.InputTag("goodMuons"),
-                                    # leave an empty string if you don't want to use a scalefactor
+                                sfElectrons=cms.InputTag("goodElectrons"),
+
+                                # leave an empty string for the root file if you don't want to use a scalefactor
                                 sfMuonId = cms.string(datapath+"EfficienciesAndSF_ID_GH.root"),
-                                sfMuonIdName = cms.string("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
+                                sfMuonIdHist = cms.string("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio"),
+                                sfMuonIso=cms.string(datapath+"EfficienciesAndSF_ISO_GH.root"),
+                                sfMuonIsoHist=cms.string("TightISO_TightID_pt_eta/abseta_pt_ratio"),
+                                sfMuonTracking=cms.string(datapath+"Tracking_EfficienciesAndSF_BCDEFGH.root"),
+                                sfMuonTrackingHist=cms.string("ratio_eff_aeta_dr030e030_corr"),
+                                sfElIdAndIso=cms.string(datapath+"egammaEffi.txt_EGM2D.root"),
+                                sfElIdAndIsoHist=cms.string("EGamma_SF2D"),
 
                                 )
