@@ -54,6 +54,8 @@ Float_t         Jet_DeepCSVlP;   //[nJet]
 Float_t         Jet_DeepCSVbbP;   //[nJet]
 Float_t         Jet_DeepCSVccP;   //[nJet]
 Float_t         Jet_pt;   //[nJet]
+Float_t         Jet_eta;   //[nJet]
+
 
 Int_t           isB;
 Int_t           isC;
