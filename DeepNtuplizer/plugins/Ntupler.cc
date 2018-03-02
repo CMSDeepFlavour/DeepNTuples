@@ -120,6 +120,10 @@ class Ntupler : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       ntuple_bTagVars Onl;
 
   float DeepCSVProbb_;
+  float jet_eta_;
+  float Onjet_eta_;
+  float jet_pt_;
+  float Onjet_pt_;
   float CSVProbb_;
   float DeepCSVProbc_;
   float DeepCSVProbudsg_;
@@ -267,12 +271,16 @@ Ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        eventNumber_ = iEvent.eventAuxiliary().event();
        if(iEvent.eventAuxiliary().isRealData()){
        }
+
+       jet_pt_ = (*offbtagdisc)[matches.at(p)].first->pt();
+       jet_eta_ = (*offbtagdisc)[matches.at(p)].first->eta();
        DeepCSVProbb_ = (*offbtagdisc)[matches.at(p)].second;
        DeepCSVProbc_ = (*offctagdisc)[matches.at(p)].second;
        DeepCSVProbudsg_ = (*offudsgtagdisc)[matches.at(p)].second;
        CSVProbb_ = (*offcsvtagdisc)[matches.at(p)].second;
        DeepCSVProbbb_ = (*offbbtagdisc)[matches.at(p)].second;
-
+       Onjet_pt_ = (*onbtagdisc)[p].first->pt();
+       Onjet_eta_ = (*onbtagdisc)[p].first->eta();
        OnDeepCSVProbb_          = (*onbtagdisc)[p].second;
        OnDeepCSVProbc_          = (*onctagdisc)[p].second;
        OnDeepCSVProbudsg_          = (*onudsgtagdisc)[p].second;
@@ -308,6 +316,10 @@ Ntupler::beginJob()
   tree_->Branch("lumiBlock"             , &lumiBlock_             , "lumiBlock_/i"             );
   tree_->Branch("runNumber"             , &runNumber_             , "runNumber_/i"             );
   tree_->Branch("eventNumber"             , &eventNumber_             , "eventNumber_/i"             );
+  tree_->Branch("jet_eta"             , &jet_eta_             ,  "jet_eta_/F"             );
+  tree_->Branch("Onjet_eta"             , &Onjet_eta_             ,  "Onjet_eta_/F"             );
+  tree_->Branch("jet_pt"             , &jet_pt_             ,  "jet_pt_/F"             );
+  tree_->Branch("Onjet_pt"             , &Onjet_pt_             ,  "Onjet_pt_/F"             );
   tree_->Branch("DeepCSVProbb"             , &DeepCSVProbb_             , "DeepCSVProbb_/F"             );
   tree_->Branch("DeepCSVProbc"             , &DeepCSVProbc_             , "DeepCSVProbc_/F"             );
   tree_->Branch("DeepCSVProbudsg"             , &DeepCSVProbudsg_             , "DeepCSVProbudsg_/F"             );

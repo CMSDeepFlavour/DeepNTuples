@@ -393,6 +393,7 @@ void initExtraBranches(TTree * input){
   input->Branch("WeightPU", &WeightPU, "WeightPU/f");
   input->Branch("weightXS", &weightXS, "weightXS/f");
   input->Branch("Jet_uncorrpt", &Jet_uncorrpt,"Jet_uncorrpt/f");
+  input->Branch("Jet_eta", &Jet_eta,"Jet_eta/f");
  
 }
 
@@ -425,6 +426,7 @@ bool CopyExtraBranches(treeReader & Reader,int & jet){
   Jet_DeepCSVccP = Reader.Jet_DeepCSVccP[jet];
   Jet_pt = Reader.Jet_pt_[jet];
   Jet_uncorrpt = Reader.Jet_uncorrpt[jet];
+  Jet_eta = Reader.Jet_eta_[jet];
   if(isMC){
     if(Reader.Jet_hadronFlavour[jet] == 4){
       isB = 0;
@@ -464,7 +466,7 @@ bool CopyExtraBranches(treeReader & Reader,int & jet){
 int main(int argc, char *argv[]){
 
   if(argc != 5){
-    cout << "missing input arguments, should be input file, output file, then note MC or DATA, finally the config file with the path to PV dir and the MC event counts" << endl;
+    cout << "missing input arguments, should be input file, output file, then either MC or DATA, finally the config file with the path to PV dir and the MC event counts" << endl;
     return 0;
   }
 
