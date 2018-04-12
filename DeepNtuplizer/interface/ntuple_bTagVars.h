@@ -86,7 +86,8 @@ private:
     //SV info
     int   n_StoredVertices_;
     float NStoredVertices_;
-
+    int n_StoredFlightDist_;
+    float NStoredFlightDist_;
     static constexpr size_t max_nStoredVertices_=10;
 
     float vertexMass_[max_nStoredVertices_];          // mass of track sum at secondary vertex
