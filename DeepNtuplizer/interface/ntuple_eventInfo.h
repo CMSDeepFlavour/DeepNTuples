@@ -68,6 +68,8 @@ private:
 
     std::string pupDataDir_;
     std::string pupMCDir_;
+    std::string sfMuonTriggerDir_;
+    std::string sfMuonTriggerName_;
     std::string sfMuonIdDir_;
     std::string sfMuonIdName_;
     std::string sfMuonIsoDir_;
@@ -77,13 +79,15 @@ private:
     std::string sfElIdAndIsoDir_;
     std::string sfElIdAndIsoName_;
 
-
+    TH2F *sfMuonTriggerHist;
     TH2F *sfMuonIdHist;
     TH2F *sfMuonIsoHist;
     TH2F *sfElIdAndIsoHist;
     TGraphAsymmErrors* sfMuonTrackingTGraph;
     TH1D *sfMuonTrackingHist;
 
+    TAxis *sfMuonTriggerHist_xaxis;
+    TAxis *sfMuonTriggerHist_yaxis;
     TAxis *sfMuonIdHist_xaxis;
     TAxis *sfMuonIdHist_yaxis;
     TAxis *sfMuonIsoHist_xaxis;

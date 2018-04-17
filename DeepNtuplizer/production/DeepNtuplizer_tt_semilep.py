@@ -1,4 +1,5 @@
 # this can be run with CMSSW 8_0_29; in CMSSW 8_0_25 the module 'cutBasedElectronID_Summer16_80X_V1_cff' is missing
+#basically deepntuplizer with tt semileptonic selection
 
 import FWCore.ParameterSet.Config as cms
 
@@ -10,7 +11,7 @@ options = VarParsing.VarParsing()
 
 options.register('inputScript', '', VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string,"input Script")
 options.register('outputFile', 'output', VarParsing.VarParsing.multiplicity.singleton,VarParsing.VarParsing.varType.string, "output File (w/o .root)")
-options.register('maxEvents', 500, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int,"maximum events")
+options.register('maxEvents', -1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int,"maximum events")
 options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "skip N events")
 options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int,"job number")
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
@@ -38,7 +39,7 @@ options.register(
 if hasattr(sys, "argv"):
     options.parseArguments()
 
-process = cms.Process("ttbarSelectedDNNFiller")
+process = cms.Process("semilepSelectedDNNFiller")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("Configuration.EventContent.EventContent_cff")
@@ -82,6 +83,9 @@ if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtupliz
 #process.source.fileNames=['file:./000C6E52-8BEC-E611-B3FF-0025905C42FE.root']   #isData=True
 #process.source.fileNames=['file:./0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root']    #isData=False
 #process.source.fileNames=['file:./EE95DEDC-96BE-E611-B45D-A0000420FE80.root']    #isData=False
+process.source.fileNames=['file:./0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root']    #store/mc/RunIISummer16MiniAODv2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/
+#process.source.fileNames=['file:./00E02A09-853C-E711-93FF-3417EBE644A7.root']    #store/data/Run2016H/SingleMuon/MINIAOD/18Apr2017-v1/00000/
+
 
 numberOfFiles = len(process.source.fileNames)
 numberOfJobs = options.nJobs
@@ -141,8 +145,8 @@ else:
         'deepFlavourJetTags:probcc',
     ]
 
-###### ttbar selection
-outFileName = options.outputFile + '_' + str(options.job) + '.root'
+###### semilep selection
+outFileName = options.outputFile + '_ntuples_180417_' + str(options.job) + '.root'
 print ('Using output file ' + outFileName)
 
 if options.deepNtuplizer:
@@ -152,8 +156,7 @@ else:
     process.MINIAODSIMEventContent.outputCommands.extend([
         'keep *_goodElectrons_*_*',
         'keep *_goodMuons_*_*',
-        'keep *_GoodJets_*_*',
-        'keep *_GoodOFLeptonPair_*_*'
+        'keep *_goodJets_*_*',
     ])
 
     process.outmod = cms.OutputModule("PoolOutputModule",
@@ -175,12 +178,7 @@ for idmod in my_id_modules:
 
 
 #HighLevelTrigger
-HLTlistSM = cms.vstring(#"HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*",       #Run B-G
-                        #"HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*",        #Run B-G
-                        #"HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*",    #Run H
-                        #"HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v*",     #Run H
-                        "HLT_Ele27_WPTight_Gsf_v*",                                 #Run B-H
-                        "HLT_IsoTkMu24_v*",                                         #Run B-H
+HLTlistSM = cms.vstring("HLT_IsoTkMu24_v*",                                         #Run B-H
                         "HLT_IsoMu24_v*"                                            #Run B-H
                         )
 process.TriggerSel = cms.EDFilter("HLTHighLevel",
@@ -190,7 +188,7 @@ process.TriggerSel = cms.EDFilter("HLTHighLevel",
                                        andOr = cms.bool(True),   # how to deal with multiple triggers: True (OR) accept if ANY is true, False (AND) accept if ALL are true
                                        throw = cms.bool(True)    # throw exception on unknown path names
 )
-# Electron Selection
+### Electron Selection
 process.goodElectrons = cms.EDProducer("ElectronIdAdder",
                                     src=cms.InputTag("slimmedElectrons"),
                                     vSrc=cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -199,20 +197,17 @@ process.goodElectrons = cms.EDProducer("ElectronIdAdder",
                                     maxAbsEta=cms.double(2.4),
                                     )
 
-
 ### Muon Selection
 process.goodMuons = cms.EDProducer("MuonIdAdder",
                                      src=cms.InputTag("slimmedMuons"),
                                      vSrc=cms.InputTag("offlineSlimmedPrimaryVertices"),
-                                     minPt=cms.double(20.0),
+                                     minPt=cms.double(30.0),
                                      maxAbsEta=cms.double(2.4),
                                      maxRMI=cms.double(0.15)    #RMI = relative muon isolation
                                      )
 
-
-### Jets
-
-process.GoodJets = cms.EDProducer("PATJetCleaner",
+### Jet Selection
+process.goodJets = cms.EDProducer("PATJetCleaner",
     src = cms.InputTag("slimmedJets"),
     preselection = cms.string("pt>30 && abs(eta) < 2.4 && neutralHadronEnergyFraction < 0.99 "
                      "&& neutralEmEnergyFraction < 0.99 && (chargedMultiplicity+neutralMultiplicity) > 1 "
@@ -241,17 +236,18 @@ process.GoodJets = cms.EDProducer("PATJetCleaner",
     finalCut = cms.string('')
   )
 
-process.GoodOFLeptonPair = cms.EDProducer("CandViewShallowCloneCombiner",
-    decay = cms.string("goodMuons@+ goodElectrons@-"),
-    cut = cms.string("20.0 < mass"
-                     "&& (daughter(0).pt > 25 || daughter(1).pt > 25)")
-  )
+
+### Event Filter
+process.ttsemilepFilter = cms.EDFilter("ttsemilepFilter",
+                                       src_muons = cms.InputTag("goodMuons"),
+                                       src_electrons = cms.InputTag("goodElectrons"),
+                                       src_jets = cms.InputTag("goodJets"),
+                                       src_mets = cms.InputTag("slimmedMETs"),
+                                       cut_minMT_muonMETpair = cms.double(50.0)
+                                       )
 
 
-process.FinalSel = cms.EDFilter("CandViewCountFilter",
-     src = cms.InputTag("GoodOFLeptonPair"),
-     minNumber = cms.uint32(1),
-  )
+
 ### end selection
 
 # Jet Energy Corrections
@@ -265,7 +261,7 @@ updateJetCollection(
         process,
         labelName="DeepFlavour",
         #         jetSource=cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked', 'SubJets'),  # 'subjets from AK8'
-        jetSource=cms.InputTag('GoodJets'),  # 'ak4Jets'
+        jetSource=cms.InputTag('goodJets'),  # 'ak4Jets'
         jetCorrections=('AK4PFchs', jetCorrections, 'None'),
         pfCandidates=cms.InputTag('packedPFCandidates'),
         pvSource=cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -355,8 +351,8 @@ process.looseIVFcandidateVertexArbitrator.tracks = cms.InputTag("packedPFCandida
 process.looseIVFcandidateVertexArbitrator.secondaryVertices = cms.InputTag("looseIVFcandidateVertexMerger")
 process.looseIVFcandidateVertexArbitrator.fitterSigmacut = 20
 
-#datapath=os.environ['CMSSW_BASE']+'/src/DeepNTuples/DeepNtuplizer/data/'
-datapath=''
+datapath=os.environ['CMSSW_BASE']+'/src/DeepNTuples/DeepNtuplizer/data/'
+#datapath=''
 
 # DeepNtuplizer configurations
 process.load("DeepNTuples.DeepNtuplizer.DeepNtuplizer_cfi")
@@ -364,26 +360,20 @@ process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour')
 process.deepntuplizer.bDiscriminators = bTagDiscriminators
 process.deepntuplizer.bDiscriminators.append('pfCombinedMVAV2BJetTags')
 process.deepntuplizer.LooseSVs = cms.InputTag("looseIVFinclusiveCandidateSecondaryVertices")
-
 process.deepntuplizer.applySelection = cms.bool(options.selectJets)
-
 process.deepntuplizer.isData = cms.bool(options.isData)
 process.deepntuplizer.useLHEWeights = cms.bool(options.lheWeights)
-
 process.deepntuplizer.pileupData=cms.string(datapath+"pileup_data_2016.root")
 process.deepntuplizer.pileupMC=cms.string(datapath+"pileup_MC_2016.root")
-
 process.deepntuplizer.sfMuons = cms.InputTag("goodMuons")
-process.deepntuplizer.sfElectrons=cms.InputTag("goodElectrons")
-
+process.deepntuplizer.sfMuonTrigger=cms.string(datapath + "EfficienciesAndSF_Period4.root")
+process.deepntuplizer.sfMuonTriggerHist = cms.string("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio")
 process.deepntuplizer.sfMuonId = cms.string(datapath+"EfficienciesAndSF_ID_GH.root")
 process.deepntuplizer.sfMuonIdHist = cms.string("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
 process.deepntuplizer.sfMuonIso=cms.string(datapath+"EfficienciesAndSF_ISO_GH.root")
 process.deepntuplizer.sfMuonIsoHist=cms.string("TightISO_TightID_pt_eta/abseta_pt_ratio")
 process.deepntuplizer.sfMuonTracking=cms.string(datapath+"Tracking_EfficienciesAndSF_BCDEFGH.root")
 process.deepntuplizer.sfMuonTrackingHist=cms.string("ratio_eff_aeta_dr030e030_corr")
-process.deepntuplizer.sfElIdAndIso=cms.string(datapath+"egammaEffi.txt_EGM2D.root")
-process.deepntuplizer.sfElIdAndIsoHist=cms.string("EGamma_SF2D")
 
 
 if int(release.replace("_", "")) >= 840:
@@ -402,11 +392,11 @@ process.ProfilerService = cms.Service(
 
 if options.deepNtuplizer:
     if options.isData:
-        process.p = cms.Path(process.globalInfo + process.TriggerSel + process.FinalSel + process.QGTagger + process.deepntuplizer)
+        process.p = cms.Path(process.globalInfo + process.TriggerSel + process.ttsemilepFilter + process.QGTagger + process.deepntuplizer)
     else:
-        process.p = cms.Path(process.globalInfo + process.TriggerSel + process.FinalSel + process.QGTagger + process.genJetSequence * process.deepntuplizer)
+        process.p = cms.Path(process.globalInfo + process.TriggerSel + process.ttsemilepFilter + process.QGTagger + process.genJetSequence * process.deepntuplizer)
 else:
-        process.p = cms.Path(process.TriggerSel + process.FinalSel)
+        process.p = cms.Path(process.TriggerSel + process.ttsemilepFilter)
 
         process.endp = cms.EndPath(process.outmod)
 

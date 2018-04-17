@@ -15,6 +15,8 @@ void ntuple_eventInfo::getInput(const edm::ParameterSet& iConfig){
 
     pupDataDir_ = (iConfig.getParameter<std::string>("pileupData"));
     pupMCDir_ = (iConfig.getParameter<std::string>("pileupMC"));
+    sfMuonTriggerDir_ = (iConfig.getParameter<std::string>("sfMuonTrigger"));
+    sfMuonTriggerName_ = (iConfig.getParameter<std::string>("sfMuonTriggerHist"));
     sfMuonIdDir_ = (iConfig.getParameter<std::string>("sfMuonId"));
     sfMuonIdName_ = (iConfig.getParameter<std::string>("sfMuonIdHist"));
     sfMuonIsoDir_ = (iConfig.getParameter<std::string>("sfMuonIso"));
@@ -40,6 +42,17 @@ void ntuple_eventInfo::getInput(const edm::ParameterSet& iConfig){
         for(int bin = 1; bin < pupMCHist->GetNbinsX() + 1; bin++){
             pupWeights.push_back(pupDataHist->GetBinContent(bin)/pupMCHist->GetBinContent(bin));
         }
+    }
+
+    if(sfMuonTriggerDir_ == "")
+        std::cout<<"no muon trigger scalefactor histogram, proceed without muon trigger scalefactor"<<std::endl;
+    else{
+        TFile *sfMuonTriggerFile = new TFile(sfMuonTriggerDir_.c_str());
+
+        sfMuonTriggerHist = (TH2F*)sfMuonTriggerFile->Get(sfMuonTriggerName_.c_str());
+
+        sfMuonTriggerHist_xaxis = sfMuonTriggerHist->GetXaxis();
+        sfMuonTriggerHist_yaxis = sfMuonTriggerHist->GetYaxis();
     }
 
     if(sfMuonIdDir_ == "")
@@ -134,6 +147,16 @@ void ntuple_eventInfo::readEvent(const edm::Event& iEvent){
                 leadingMuon_eta = muon.eta();
             }
         }
+        // Muon Trigger
+        double muonTriggerSf = 1.;
+        if(sfMuonTriggerDir_ != ""){
+            int binx = sfMuonTriggerHist_xaxis->FindBin(std::abs(leadingMuon_eta));
+            int biny = sfMuonTriggerHist_yaxis->FindBin(leadingMuon_pt);
+            if(leadingMuon_pt > 500.)   //dont take overflow bin, but the last one
+                biny -= 1;
+            muonTriggerSf = sfMuonTriggerHist->GetBinContent(binx, biny);
+        }
+
         // Muon ID
         double muonIdSf = 1.;
         if(sfMuonIdDir_ != ""){
@@ -180,7 +203,7 @@ void ntuple_eventInfo::readEvent(const edm::Event& iEvent){
         }
 
 
-        event_weight_ = lheWeight * pupWeight * muonIdSf * muonIsoSf * muonTrackingSf * elIdAndIsoSf;
+        event_weight_ = lheWeight * pupWeight * muonTriggerSf * muonIdSf * muonIsoSf * muonTrackingSf * elIdAndIsoSf;
     }
     else{
         event_weight_ = 1.;
