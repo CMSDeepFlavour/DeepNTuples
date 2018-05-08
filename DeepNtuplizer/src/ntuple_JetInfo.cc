@@ -393,7 +393,6 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     if (Bhadrons_in_jet.size() > 0){ 
 
-        //for (reco::GenParticle bhad : Bhadron_){
         for (unsigned int idx=0; idx<Bhadron_.size(); ++idx){
 
             reco::GenParticle bhad = Bhadron_[idx];
