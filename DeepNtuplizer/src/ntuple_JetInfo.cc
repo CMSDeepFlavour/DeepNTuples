@@ -413,9 +413,12 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
                     float vx = Bhadron_daughter_[idx].vx() - bhad.vx();
                     float vy = Bhadron_daughter_[idx].vy() - bhad.vy();
 
-                    genDecay_= sqrt(vx*vx+vy*vy);
+                    float dxy = sqrt(vx*vx+vy*vy);
+                    if (dxy > genDecay_)
+                        genDecay_= dxy;
                 }
-                else genDecay_ = -0.1;
+                else if (genDecay_ < 0) 
+                    genDecay_ = -0.1;
                 break;
             }
         }
