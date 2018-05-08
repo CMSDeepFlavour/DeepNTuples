@@ -419,7 +419,6 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
                 }
                 else if (genDecay_ < 0) 
                     genDecay_ = -0.1;
-                break;
             }
         }
     }
