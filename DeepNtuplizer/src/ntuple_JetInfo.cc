@@ -56,7 +56,7 @@ void ntuple_JetInfo::initBranches(TTree* tree){
     addBranch(tree,"isS",&isS_, "isS_/i");
     addBranch(tree,"isG",&isG_, "isG_/i");
     addBranch(tree,"isUndefined",&isUndefined_, "isUndefined_/i");
-    addBranch(tree,"genDecay",&genDecay_, "genDecay_/f");
+    addBranch(tree,"genDecay",&genDecay_, "genDecay_/f"); //dxy corresponds to the distance the Bhadron traveled
 
     //truth labeling with fallback to physics definition for light/gluon/undefined of standard flavor definition
     addBranch(tree,"isPhysB",&isPhysB_, "isPhysB_/i");
@@ -187,7 +187,7 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
 		   { 
 		     Bhadron_daughter_.push_back(daughter_);
 		   }
-		 //	 else {
+                 else Bhadron_daughter_.push_back(gen);
 		 //  std::cout << "only b daughters " << endl;
 		 // }
 	       }
@@ -386,28 +386,43 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     jet_corr_pt_ = jet.pt();
     jet_mass_ = jet.mass();
     jet_energy_ = jet.energy();
-    int iterIndex = 0;
 
     genDecay_ = -1.;
-    // std::cout << "looking for a B"<<jet.eta()<< " "<<jet.phi() <<std::endl;
-    for  (std::vector<reco::GenParticle>::const_iterator it = Bhadron_.begin(); it != Bhadron_.end(); ++it){
-      if(reco::deltaR(it->eta(),it->phi(),jet.eta(),jet.phi()) < 0.4) 
-	{
-	  //  std::cout <<it->eta()<<" "<<it->phi()<< " "<<reco::deltaR(it->eta(),it->phi(),jet.eta(),jet.phi())<<" "<< sqrt(Bhadron_daughter_[iterIndex].vx()*Bhadron_daughter_[iterIndex].vx()+Bhadron_daughter_[iterIndex].vy()*Bhadron_daughter_[iterIndex].vy())<< " dXY "<<  iterIndex << std::endl;
-	  if(Bhadron_daughter_[iterIndex].vx()!=it->vx()){
-	    float vx = Bhadron_daughter_[iterIndex].vx()-it->vx();
-	    float vy = Bhadron_daughter_[iterIndex].vy()-it->vy();
-	    
-	    
-	    genDecay_= sqrt(vx*vx+vy*vy);}
-	  else {
-	    // std::cout << "b hadron without daughter matched"<<std::endl;
-	    genDecay_= -0.1;
-	  }
-	  break;
-	}
-      iterIndex++;
+
+    reco::GenParticleRefVector Bhadrons_in_jet = jet.jetFlavourInfo().getbHadrons();
+
+    if (Bhadrons_in_jet.size() > 0){ 
+
+        for (unsigned int idx=0; idx<Bhadron_.size(); ++idx){
+
+            reco::GenParticle bhad = Bhadron_[idx];
+
+            bool bhad_is_in_jet = false;
+
+            for (reco::GenParticleRefVector::const_iterator bhad_in_jet = Bhadrons_in_jet.begin(); bhad_in_jet!=Bhadrons_in_jet.end(); ++bhad_in_jet) {
+
+                //check if bhad is identical to bhad_in_jet
+                if ( (*bhad_in_jet)->pt() == bhad.pt() && (*bhad_in_jet)->eta() == bhad.eta()
+                        && (*bhad_in_jet)->phi() == bhad.phi() && (*bhad_in_jet)->pdgId() == bhad.pdgId())              
+                    bhad_is_in_jet = true;
+            }
+            if (bhad_is_in_jet){
+
+                if (Bhadron_daughter_[idx].vx()!=bhad.vx()){
+                    
+                    float vx = Bhadron_daughter_[idx].vx() - bhad.vx();
+                    float vy = Bhadron_daughter_[idx].vy() - bhad.vy();
+
+                    float dxy = sqrt(vx*vx+vy*vy);
+                    if (dxy > genDecay_)
+                        genDecay_= dxy;
+                }
+                else if (genDecay_ < 0) 
+                    genDecay_ = -0.1;
+            }
+        }
     }
+
 
 
     //https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016
