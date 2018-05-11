@@ -27,6 +27,8 @@ if not os.path.isdir(args.outdir):
         allins+=' '+l
         
     syscall('createMergeList '+str(args.nsamples)+' '+args.outdir+' '+allins)
+else :
+    raise IOError('The output directory', args.outdir, 'does already exist! Stop merging process')
     
     
 #read number of jobs

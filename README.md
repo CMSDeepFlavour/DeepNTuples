@@ -105,9 +105,13 @@ When the file lists are created, the part used for training of the ttbar and QCD
 ```
 mergeSamples <no of jets per file> <output dir> <file lists 1> <file lists 2> <file lists 3> ...
 ```
+Note that there should be at least two separate file lists. One for ttbar and one for QCD. 
+Otherwise the jets are not randomized properly.
+
 For example:
 ```
-mergeSamples 400000 merged ntuple_*/train_val_samples.txt
+mergeSamples 400000 merged ntuple_ttbar*/train_val_samples.txt ntuple_qcd*/train_val_samples.txt
+
 ```
 This will take a significant amount of time - likely more than the ntuple production itself. It is therefore recommended to run the command within 'screen'.
 
