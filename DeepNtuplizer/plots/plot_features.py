@@ -20,6 +20,13 @@ ROOT.gROOT.SetBatch()  # don't pop up canvases
 ROOT.gROOT.SetStyle('Plain')  # white background
 ROOT.gStyle.SetFillStyle(0)
 
+def isInt(a):
+    try:
+        int(a)
+        return True
+    except:
+        return False
+
 def hist_bin_uncertainty(data, weights, bin_edges):
     """
     The statistical uncertainity per bin of the binned data.
@@ -146,6 +153,26 @@ class datacollection:
                 err_mc = hist_bin_uncertainty(max_col_mc, self.weight_mc, binEdges)
                 err_data = hist_bin_uncertainty(max_col_data, self.weight_data, binEdges)
 
+            if isInt(ifeature.fillopt):
+                ientry = int(ifeature.fillopt)
+                col_mc = np.empty((self.collection_mc[ifeature.name].shape))
+                col_data = np.empty((self.collection_data[ifeature.name].shape))
+                for j, arr in enumerate(self.collection_mc[ifeature.name]):
+                    if len(arr) > ientry:
+                        col_mc[j] = arr[ientry]
+                    else:
+                        col_mc[j] = -100
+
+                for j, arr in enumerate(self.collection_data[ifeature.name]):
+                    if len(arr) > ientry:
+                        col_data[j] = arr[ientry]
+                    else:
+                        col_data[j] = -100
+                entries_mc, binEdges = np.histogram(col_mc, ifeature.bins, weights=self.weight_mc)
+                entries_data, _ = np.histogram(col_data, ifeature.bins, weights=self.weight_data)
+                err_mc = hist_bin_uncertainty(col_mc, self.weight_mc, binEdges)
+                err_data = hist_bin_uncertainty(col_data, self.weight_data, binEdges)
+
             if ifeature.fillopt == '':
                 entries_mc, binEdges = np.histogram(self.collection_mc[ifeature.name], ifeature.bins, weights=self.weight_mc)
                 entries_data, _ = np.histogram(self.collection_data[ifeature.name], ifeature.bins, weights=self.weight_data)
@@ -159,11 +186,11 @@ class datacollection:
             binWidth = binEdges[1:] - binEdges[:-1]
             ax.bar(bincenters, entries_mc, yerr = err_mc, width = binWidth, align='center', color='w', edgecolor='k',ecolor='k', label='mc')
             ax.errorbar(bincenters,entries_data*self.scalefactor_data, yerr=err_data*self.scalefactor_data, fmt='k.',ecolor='k', label='data')
-            ax.legend()
+            ax.legend(loc='best',numpoints=1, fontsize=20)
             ax.set_xlim(binEdges[0], binEdges[-1])
-            ax.set_ylabel('weighted frequency')
-            ax.set_xlabel(ifeature.xlabel)
-            #ax.set_title(ifeature.fillopt+' entries of '+ifeature.name+' in GoodJets')
+            ax.set_ylabel('weighted frequency', fontsize=20)
+            ax.set_xlabel(ifeature.xlabel, fontsize=20)
+            ax.set_title(ifeature.description)
             ax.set_ylim(bottom=0)
             if ifeature.ymax != None:
                 ax.set_ylim(top=ifeature.ymax)
@@ -172,43 +199,60 @@ class datacollection:
             #ax.text(x_min + 0.01*(x_max-x_min),y_max*0.95,ifeature.description)
 
             ax.ticklabel_format(style='sci', scilimits=(-3, 4), axis='both')
+            plt.gcf().subplots_adjust(bottom=0.15)
 
             plt.savefig(ifeature.name+"_"+ifeature.fillopt+".png")
 
 
 
 
-files_mc = ["tt_1_0.root","tt_2_0.root","tt_3_0.root","tt_4_0.root","tt_5_0.root",
-            "dy50_1_0.root","dy10to50_1_0.root","wantit_1_0.root","wt_1_0.root",
-            "ww_1_0.root","wz_1_0.root","zz_1_0.root","wjets_1_0.root"]
+#files_mc = ["tt_1_0.root","tt_2_0.root","tt_3_0.root","tt_4_0.root","tt_5_0.root",
+#            "dy50_1_0.root","dy10to50_1_0.root","wantit_1_0.root","wt_1_0.root",
+#            "ww_1_0.root","wz_1_0.root","zz_1_0.root","wjets_1_0.root"]
+files_mc = ["tt.root","tt_backup.root","tt_backup_2.root",
+            "dy50.root","dy10to50.root","wantit.root","wt.root",
+            "ww.root","wz.root","zz.root","wjets.root"]
 files_data = "muonEG_H_0.root"
 
 dc = datacollection(files_mc,files_data)
 
-dc.add_feature("jet_pt", np.arange(0,390,15), xlabel='$p_\mathrm{T}(j)$ (GeV)', description='jet')
-dc.add_feature("jet_eta", np.arange(-2.4,2.6,0.2), xlabel='$\eta(j)$', description='jet')
-dc.add_feature("nCpfcand", np.arange(-0.5,30.5,1), xlabel='$N_\mathrm{cPF}$', description='charged particle flow candidate')
-dc.add_feature("nNpfcand", np.arange(-0.5,30.5,1), xlabel='$N_\mathrm{nPF}$', description='neutral particle flow candidate')
-dc.add_feature("npv", np.arange(-0.5,50.5,1), xlabel='$N_\mathrm{SV}$', description='primary vertices')
-dc.add_feature("nsv", np.arange(-0.5,5.5,1), xlabel='$N_\mathrm{PV}$', description='secondary vertices')
-dc.add_feature("TagVarCSV_trackSumJetEtRatio", np.arange(0.,1.04,0.04), xlabel='trackSumJetEtRatio', description='des')
-dc.add_feature("TagVarCSV_trackSumJetDeltaR", np.arange(0.,0.26,0.01), xlabel='trackSumJetDeltaR', description='des')
-dc.add_feature("TagVarCSV_vertexCategory", np.arange(-0.5,4.5,1), xlabel='vertexCategory', description='des')
-dc.add_feature("TagVarCSV_trackSip2dValAboveCharm", np.array((-1.1,-0.9,-0.1,-0.08,-0.06,-0.04,-0.02,0.,0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18,0.2,0.22)), xlabel='trackSip2dValAboveCharm', description='des')
-dc.add_feature("TagVarCSV_trackSip2dSigAboveCharm", np.arange(-1,21,1), xlabel='trackSip2dSigAboveCharm', description='des')
-dc.add_feature("TagVarCSV_trackSip3dValAboveCharm", np.array((-1.1,-0.9,-0.1,-0.08,-0.06,-0.04,-0.02,0.,0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18,0.2,0.22)), xlabel='trackSip3dValAboveCharm', description='des')
-dc.add_feature("TagVarCSV_trackSip3dSigAboveCharm", np.arange(-1,21,1), xlabel='trackSip3dSigAboveCharm', description='des')
-dc.add_feature("TagVarCSV_jetNSelectedTracks", np.arange(0,21,1), xlabel='jetNSelectedTracks', description='des')
-dc.add_feature("TagVarCSV_jetNTracksEtaRel", np.arange(0,16,1), xlabel='jetNTracksEtaRel', description='des')
+#dc.add_feature("jet_pt", np.arange(0,390,15), xlabel='$p_\mathrm{T}(j)$ (GeV)', description='')
+#dc.add_feature("jet_eta", np.arange(-2.4,2.6,0.2), xlabel='$\eta(j)$', description='')
+#dc.add_feature("nCpfcand", np.arange(-0.5,30.5,1), xlabel='$N_\mathrm{cPF}$', description='')
+#dc.add_feature("nNpfcand", np.arange(-0.5,30.5,1), xlabel='$N_\mathrm{nPF}$', description='')
+#dc.add_feature("npv", np.arange(-0.5,50.5,1), xlabel='$N_\mathrm{PV}$', description='')
+#dc.add_feature("nsv", np.arange(-0.5,5.5,1), xlabel='$N_\mathrm{SV}$', description='')
+#dc.add_feature("TagVarCSV_trackSumJetEtRatio", np.arange(0.,1.04,0.04), xlabel='trackSumJetEtRatio', description='')
+#dc.add_feature("TagVarCSV_trackSumJetDeltaR", np.arange(0.,0.26,0.01), xlabel='trackSumJetDeltaR', description='')
+#dc.add_feature("TagVarCSV_vertexCategory", np.arange(-0.5,3.5,1), xlabel='vertexCategory', description='')
+#dc.add_feature("TagVarCSV_trackSip2dValAboveCharm", np.array((-1.01,-0.99,-0.1,-0.08,-0.06,-0.04,-0.02,0.,0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18,0.2,0.22)), xlabel='trackSip2dValAboveCharm', description='')
+#dc.add_feature("TagVarCSV_trackSip2dSigAboveCharm", np.arange(-1,21,1), xlabel='trackSip2dSigAboveCharm', description='')
+#dc.add_feature("TagVarCSV_trackSip3dValAboveCharm", np.array((-1.01,-0.99,-0.1,-0.08,-0.06,-0.04,-0.02,0.,0.02,0.04,0.06,0.08,0.1,0.12,0.14,0.16,0.18,0.2,0.22)), xlabel='trackSip3dValAboveCharm', description='')
+#dc.add_feature("TagVarCSV_trackSip3dSigAboveCharm", np.arange(-1,21,1), xlabel='trackSip3dSigAboveCharm', description='')
+#dc.add_feature("TagVarCSV_jetNSelectedTracks", np.arange(-0.5,15.5,1), xlabel='jetNSelectedTracks', description='')
+#dc.add_feature("TagVarCSV_jetNTracksEtaRel", np.arange(-0.5,15.5,1), xlabel='jetNTracksEtaRel', description='')
+
+dc.add_feature("pfDeepCSVJetTags_probb", np.arange(0, 1.05, 0.05), xlabel='pfDeepCSVJetTags_probb', description='')
+dc.add_feature("pfDeepCSVJetTags_probbb", np.arange(0, 1.05, 0.05), xlabel='pfDeepCSVJetTags_probbb', description='')
+dc.add_feature("pfDeepCSVJetTags_probc", np.arange(0, 1.05, 0.05), xlabel='pfDeepCSVJetTags_probc', description='')
+dc.add_feature("pfDeepCSVJetTags_probcc", np.arange(0, 1.05, 0.05), xlabel='pfDeepCSVJetTags_probcc', description='')
+dc.add_feature("pfDeepCSVJetTags_probudsg", np.arange(0, 1.05, 0.05), xlabel='pfDeepCSVJetTags_probudsg', description='')
+
 
 #dc.add_feature("Cpfcan_pt", np.arange(0,105,5),fillopt='max',ymax=225000, xlabel='$p_\mathrm{T}(j)$ (GeV)', description='charged particle flow candidate')
 #dc.add_feature("Npfcan_pt", np.arange(0,105,5),fillopt='max',xlabel='$p_\mathrm{T}$ (GeV)', description='neutral particle flow candidate')
 #dc.add_feature("sv_pt", np.arange(0,110,10),fillopt='max', xlabel='$p_\mathrm{T}$ (GeV)', description='secondary vertice')
 
+#dc.add_feature("Cpfcan_ptrel", np.arange(-1,-0.616,0.016),fillopt='0',xlabel=r'$\frac{p_\mathrm{T}(cPF)}{p_\mathrm{T}(j)}$', description='first entry')
+#dc.add_feature("Npfcan_deltaR", np.arange(-0.6,0.024,0.024),fillopt='0',xlabel='$\Delta R_m(nPF,SV)$', description='first entry')
+#dc.add_feature("Cpfcan_drminsv", np.arange(-0.5,0.02,0.02),fillopt='0',xlabel='$\Delta R_m(cPF,SV)$', description='first entry')
+#dc.add_feature("sv_d3dsig", np.arange(0,102,2),fillopt='0',xlabel='$S_{3D}(SV)$', description='first entry')
+
+
 #dc.add_feature("Cpfcan_pt", np.arange(0,55,2.5),fillopt='all',ymax=5500000, xlabel='$p_\mathrm{T}$ (GeV)', description='charged particle flow candidate')
 #dc.add_feature("Npfcan_pt", np.arange(0,55,2.5),fillopt='all',ymax=6500000, xlabel='$p_\mathrm{T}$ (GeV)', description='neutral particle flow candidate')
 #dc.add_feature("sv_pt", np.arange(0,110,10),fillopt='all',ymax=190000, xlabel='$p_\mathrm{T}$ (GeV)', description='secondary vertice')
-#dc.add_feature("sv_deltaR", np.arange(-0.5,0.02,0.02),fillopt='all', xlabel='$\Delta R$', description='secondary vertice')
+#dc.add_feature("sv_deltaR", np.arange(-0.5,-0.116,0.016),fillopt='all', xlabel='$\Delta R$', description='secondary vertice')
 
 
 
