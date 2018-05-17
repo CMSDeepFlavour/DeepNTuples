@@ -25,6 +25,8 @@ void ntuple_JetInfo::getInput(const edm::ParameterSet& iConfig){
     jetAbsEtaMin_=(iConfig.getParameter<double>("jetAbsEtaMin"));
     jetAbsEtaMax_=(iConfig.getParameter<double>("jetAbsEtaMax"));
 
+    removeUndefined_=(iConfig.getParameter<bool>("removeUndefined"));
+
     vector<string> disc_names = iConfig.getParameter<vector<string> >("bDiscriminators");
     for(auto& name : disc_names) {
         discriminators_[name] = 0.;
@@ -194,9 +196,10 @@ void ntuple_JetInfo::readEvent(const edm::Event& iEvent){
                             {
                                 Bhadron_daughter_.push_back(daughter_);
                             }
-                            //	 else {
+                            else {
                             //  std::cout << "only b daughters " << endl;
-                            // }
+                                Bhadron_daughter_.push_back(gen);
+                            }
                         }
                         else  Bhadron_daughter_.push_back(gen);
 
@@ -276,8 +279,6 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         // often we have way to many gluons that we do not need. This randomply reduces the gluons
         if (gluonReduction_>0 && jet.partonFlavour()==21)
             if(TRandom_.Uniform()>gluonReduction_) returnval=false;
-
-        if(jet.genJet()==NULL)returnval=false;
     }
 
 
@@ -387,16 +388,16 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
         }
     }
 
-    if(!jet.genJet()){//for data
-        isUndefined_=1;isPhysUndefined_=1;
+    if(!jet.genJet() || jet.genJet()==NULL){
+        isUndefined_=1;
+        isPhysUndefined_=1;
+        if(removeUndefined_) returnval=false;
     }
 
     if(isData_){
         isRealData_=1;
     }
-    else{
-        if(isUndefined_ && isPhysUndefined_) returnval=false; //skip event, if neither standard flavor definition nor physics definition fallback define a "proper flavor"
-    }
+
     pat::JetCollection h;
 
     jet_pt_ = jet.correctedJet("Uncorrected").pt();
@@ -488,9 +489,6 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
     y_axis1_  =  std::get<4>(qgtuple);
     y_axis2_  =  std::get<5>(qgtuple);
     y_pt_dr_log_=std::get<6>(qgtuple);
-
-   
-
 
 
     return returnval;

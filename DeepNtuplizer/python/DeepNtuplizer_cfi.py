@@ -36,6 +36,7 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                 useOffsets=cms.bool(True),
                                 applySelection=cms.bool(True),
 
+                                removeUndefined=cms.bool(True),
                                 isData=cms.bool(False),
                                 useLHEWeights=cms.bool(True),
 
@@ -47,17 +48,26 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                 sfMuons = cms.InputTag("slimmedMuons"),
                                 sfElectrons=cms.InputTag("slimmedElectrons"),
 
-                                # leave an empty string for the root file if you don't want to use a scalefactor
-                                sfMuonTrigger=cms.string(""),
-                                sfMuonTriggerHist = cms.string(""),
-                                sfMuonId = cms.string(""),
-                                sfMuonIdHist = cms.string(""),
-                                sfMuonIso=cms.string(""),
-                                sfMuonIsoHist=cms.string(""),
-                                sfMuonTracking=cms.string(""),
-                                sfMuonTrackingHist=cms.string(""),
-                                sfElIdAndIso=cms.string(""),
-                                sfElIdAndIsoHist=cms.string(""),
+                                periods=cms.vstring(),
+                                lumis=cms.vdouble(),
+
+                                # The scalefactors can be computed on different ways:
+                                # - empty vector to not use a specific scalefactor,
+                                # - one string to use the same hist for all periods
+                                # - number of strings equal to number of periods to use a different hist for each period
+                                sfTrigger_mu=cms.vstring(),
+                                sfTrigger_mu_Hist = cms.vstring(),
+
+                                sfTrigger_emu=cms.vstring(),
+                                sfTrigger_emu_Hist=cms.vstring(),
+                                sfMuonId = cms.vstring(),
+                                sfMuonId_Hist = cms.vstring(),
+                                sfMuonIso=cms.vstring(),
+                                sfMuonIso_Hist=cms.vstring(),
+                                sfMuonTracking=cms.vstring(),
+                                sfMuonTracking_Hist=cms.vstring(),
+                                sfElIdAndIso=cms.vstring(),
+                                sfElIdAndIso_Hist=cms.vstring(),
 
 
 

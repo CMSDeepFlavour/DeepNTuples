@@ -22,8 +22,6 @@ options.register('isData', False, VarParsing.VarParsing.multiplicity.singleton, 
 options.register('deepNtuplizer',True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "run deepNtuplizer or just the ttbar selection")
 options.register('lheWeights',False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "use LHE weights")
 
-
-
 import os
 
 release = os.environ['CMSSW_VERSION'][6:12]
@@ -57,6 +55,9 @@ else:
     process.GlobalTag.globaltag = options.globalTag
 
 process.maxEvents = cms.untracked.PSet(input=cms.untracked.int32(-1))
+#process.PoolSource = cms.untracked.PSet(
+#    firstEvent = cms.untracked.uint32(33285817),
+#)
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.MessageLogger.cerr.FwkReport.reportEvery = 10
@@ -85,8 +86,9 @@ if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtupliz
 #process.source.fileNames=['file:./EE95DEDC-96BE-E611-B45D-A0000420FE80.root']    #isData=False
 process.source.fileNames=['file:./0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root']    #store/mc/RunIISummer16MiniAODv2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/
 #process.source.fileNames=['file:./00E02A09-853C-E711-93FF-3417EBE644A7.root']    #store/data/Run2016H/SingleMuon/MINIAOD/18Apr2017-v1/00000/
+#process.source.fileNames=['file:./F21AE451-7EBA-E611-9399-0025905B858E.root']    #store/mc/RunIISummer16MiniAODv2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_backup_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/00000/
 
-
+#process.source.fileNames=['file:./00CC509E-0C3B-E711-98F2-0242AC130004.root']   #Run2016B/SingleMuon/MINIAOD/18Apr2017_ver2-v1/
 numberOfFiles = len(process.source.fileNames)
 numberOfJobs = options.nJobs
 jobNumber = options.job
@@ -146,7 +148,7 @@ else:
     ]
 
 ###### semilep selection
-outFileName = options.outputFile + '_ntuples_180417_' + str(options.job) + '.root'
+outFileName = options.outputFile + '_' + str(options.job) + '.root'
 print ('Using output file ' + outFileName)
 
 if options.deepNtuplizer:
@@ -361,19 +363,40 @@ process.deepntuplizer.bDiscriminators = bTagDiscriminators
 process.deepntuplizer.bDiscriminators.append('pfCombinedMVAV2BJetTags')
 process.deepntuplizer.LooseSVs = cms.InputTag("looseIVFinclusiveCandidateSecondaryVertices")
 process.deepntuplizer.applySelection = cms.bool(options.selectJets)
+
+process.deepntuplizer.removeUndefined = cms.bool(False)
 process.deepntuplizer.isData = cms.bool(options.isData)
 process.deepntuplizer.useLHEWeights = cms.bool(options.lheWeights)
 process.deepntuplizer.pileupData=cms.string(datapath+"pileup_data_2016.root")
 process.deepntuplizer.pileupMC=cms.string(datapath+"pileup_MC_2016.root")
+
 process.deepntuplizer.sfMuons = cms.InputTag("goodMuons")
-process.deepntuplizer.sfMuonTrigger=cms.string(datapath + "EfficienciesAndSF_Period4.root")
-process.deepntuplizer.sfMuonTriggerHist = cms.string("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio")
-process.deepntuplizer.sfMuonId = cms.string(datapath+"EfficienciesAndSF_ID_GH.root")
-process.deepntuplizer.sfMuonIdHist = cms.string("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
-process.deepntuplizer.sfMuonIso=cms.string(datapath+"EfficienciesAndSF_ISO_GH.root")
-process.deepntuplizer.sfMuonIsoHist=cms.string("TightISO_TightID_pt_eta/abseta_pt_ratio")
-process.deepntuplizer.sfMuonTracking=cms.string(datapath+"Tracking_EfficienciesAndSF_BCDEFGH.root")
-process.deepntuplizer.sfMuonTrackingHist=cms.string("ratio_eff_aeta_dr030e030_corr")
+
+#process.deepntuplizer.lumi_BCDEF=cms.double(5.404+2.396+4.256+4.054+3.105)
+#process.deepntuplizer.lumi_G=cms.double(7.179)
+#process.deepntuplizer.lumi_H=cms.double(8.746)
+process.deepntuplizer.periods=cms.vstring("2016BtoF","2016GH")
+process.deepntuplizer.lumis=cms.vdouble(5.404+2.396+4.256+4.054+3.105, 7.179+8.746)
+
+
+
+process.deepntuplizer.sfTrigger_mu=cms.vstring(datapath + "EfficienciesAndSF_RunBtoF.root",
+                                               datapath + "EfficienciesAndSF_Period4.root")
+process.deepntuplizer.sfTrigger_mu_Hist=cms.vstring("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio",
+                                                    "IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio")
+
+process.deepntuplizer.sfMuonId = cms.vstring(datapath+"EfficienciesAndSF_ID_BCDEF.root",
+                                            datapath+"EfficienciesAndSF_ID_GH.root")
+process.deepntuplizer.sfMuonId_Hist = cms.vstring("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio",
+                                                 "MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
+
+process.deepntuplizer.sfMuonIso=cms.vstring(datapath+"EfficienciesAndSF_ISO_BCDEF.root",
+                                            datapath+"EfficienciesAndSF_ISO_GH.root")
+process.deepntuplizer.sfMuonIso_Hist=cms.vstring("TightISO_TightID_pt_eta/abseta_pt_ratio",
+                                                "TightISO_TightID_pt_eta/abseta_pt_ratio")
+
+process.deepntuplizer.sfMuonTracking=cms.vstring(datapath+"Tracking_EfficienciesAndSF_BCDEFGH.root")
+process.deepntuplizer.sfMuonTracking_Hist=cms.vstring("ratio_eff_aeta_dr030e030_corr")
 
 
 if int(release.replace("_", "")) >= 840:
@@ -382,12 +405,12 @@ if int(release.replace("_", "")) >= 840:
 process.deepntuplizer.gluonReduction = cms.double(options.gluonReduction)
 
 # 1631
-process.ProfilerService = cms.Service(
-    "ProfilerService",
-    firstEvent=cms.untracked.int32(1631),
-    lastEvent=cms.untracked.int32(1641),
-    paths=cms.untracked.vstring('p')
-)
+#process.ProfilerService = cms.Service(
+#    "ProfilerService",
+#    firstEvent=cms.untracked.int32(1631),
+#    lastEvent=cms.untracked.int32(1641),
+#    paths=cms.untracked.vstring('p')
+#)
 
 
 if options.deepNtuplizer:

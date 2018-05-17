@@ -76,10 +76,12 @@ class globalInfo : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 //
 // constructors and destructor
 //
-globalInfo::globalInfo(const edm::ParameterSet& iConfig):
-    t_LHEInfo(consumes<LHEEventProduct> (iConfig.getParameter<edm::InputTag>("lheInfo")))
-    {
+globalInfo::globalInfo(const edm::ParameterSet& iConfig){
+
     useLHEWeights_ = (iConfig.getParameter<bool>("useLHEWeights"));
+    if(useLHEWeights_){
+        t_LHEInfo = consumes<LHEEventProduct> (iConfig.getParameter<edm::InputTag>("lheInfo"));
+    }
 
 }
 
@@ -123,7 +125,7 @@ globalInfo::beginJob()
 void
 globalInfo::endJob()
 {
-    nEffEvents_ = nEvents_ - nNegLHEEvents_;
+    nEffEvents_ = nEvents_ - 2 * nNegLHEEvents_;
     std::cout<<"total number of initial events is: "<<nEvents_<<std::endl;
     std::cout<<"number of initial events with negative lhe weight is: "<<nNegLHEEvents_<<std::endl;
     std::cout<<"effective event number is: "<<nEffEvents_<<std::endl;

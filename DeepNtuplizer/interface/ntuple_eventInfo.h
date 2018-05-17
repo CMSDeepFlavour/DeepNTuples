@@ -23,6 +23,11 @@
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 
 void readHistoFromGraph(TGraphAsymmErrors* graph, TH1D** h, TString name);
+void initializeScalefactor(std::vector<std::string> dirs, std::vector<std::string> names, std::vector<TH2F*>* sfHists, std::vector<std::string> periods);
+void initializeScalefactor(std::vector<std::string> dirs, std::vector<std::string> names, std::vector<TH1D*>* sfHists, std::vector<std::string> periods);
+double getScalefactor(double x, double y, std::vector<TH2F*> hists, unsigned int period);
+double getScalefactor(double x, std::vector<TH1D*> hists, unsigned int period);
+
 
 /*
  * For MC weights such as pileup, lhe, ... later: lepton scalefactors
@@ -66,35 +71,38 @@ private:
     bool isData_;
     bool useLHEWeights_;
 
+    std::vector<double> lumis;
+    std::vector<std::string> periods;
+
     std::string pupDataDir_;
     std::string pupMCDir_;
-    std::string sfMuonTriggerDir_;
-    std::string sfMuonTriggerName_;
-    std::string sfMuonIdDir_;
-    std::string sfMuonIdName_;
-    std::string sfMuonIsoDir_;
-    std::string sfMuonIsoName_;
-    std::string sfMuonTrackingDir_;
-    std::string sfMuonTrackingName_;
-    std::string sfElIdAndIsoDir_;
-    std::string sfElIdAndIsoName_;
 
-    TH2F *sfMuonTriggerHist;
-    TH2F *sfMuonIdHist;
-    TH2F *sfMuonIsoHist;
-    TH2F *sfElIdAndIsoHist;
-    TGraphAsymmErrors* sfMuonTrackingTGraph;
-    TH1D *sfMuonTrackingHist;
+    //std::string sfTrigger_mu_BCDEF_Dir_;
+    //std::string sfTrigger_mu_BCDEF_Name_;
+    //std::string sfTrigger_mu_GH_Dir_;
+    //std::string sfTrigger_mu_GH_Name_;
 
-    TAxis *sfMuonTriggerHist_xaxis;
-    TAxis *sfMuonTriggerHist_yaxis;
-    TAxis *sfMuonIdHist_xaxis;
-    TAxis *sfMuonIdHist_yaxis;
-    TAxis *sfMuonIsoHist_xaxis;
-    TAxis *sfMuonIsoHist_yaxis;
-    TAxis *sfElIdAndIsoHist_xaxis;
-    TAxis *sfElIdAndIsoHist_yaxis;
-    TAxis *sfMuonTrackingHist_axis;
+    std::vector<std::string> sfTrigger_mu_Dir_;
+    std::vector<std::string> sfTrigger_mu_Name_;
+    std::vector<std::string> sfTrigger_emu_Dir_;
+    std::vector<std::string> sfTrigger_emu_Name_;
+    std::vector<std::string> sfMuonId_Dir_;
+    std::vector<std::string> sfMuonId_Name_;
+    std::vector<std::string> sfMuonIso_Dir_;
+    std::vector<std::string> sfMuonIso_Name_;
+    std::vector<std::string> sfElIdAndIso_Dir_;
+    std::vector<std::string> sfElIdAndIso_Name_;
+    std::vector<std::string> sfMuonTracking_Dir_;
+    std::vector<std::string> sfMuonTracking_Name_;
+
+    std::vector<TH2F*> sfTrigger_mu_Hist;
+    std::vector<TH2F*> sfTrigger_emu_Hist;
+    std::vector<TH2F*> sfMuonId_Hist;
+    std::vector<TH2F*> sfMuonIso_Hist;
+    std::vector<TH2F*> sfElIdAndIso_Hist;
+
+    std::vector<TH1D*> sfMuonTracking_Hist;
+
 
     // global variables
 
@@ -103,6 +111,7 @@ private:
 
     /////////branches
     float event_weight_;
+
 
 
 };

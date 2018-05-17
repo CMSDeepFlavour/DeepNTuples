@@ -100,10 +100,23 @@ public:
     }
 
     static bool compareByABCInv(const sortingClass& a, const sortingClass& b){
-        return !compareByABC(a,b);
+
+        compareResult tmpres=compare(a,b,0);
+        if(tmpres==cmp_smaller) return false;
+        if(tmpres==cmp_greater) return true;
+
+        tmpres=compare(a,b,1);
+        if(tmpres==cmp_smaller) return false;
+        if(tmpres==cmp_greater) return true;
+
+        tmpres=compare(a,b,2);
+        if(tmpres==cmp_smaller) return false;
+        if(tmpres==cmp_greater) return true;
+
+        return false;
     }
 
- //private:
+    //private:
     float sortValA,sortValB,sortValC;
     
 

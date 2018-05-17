@@ -1,4 +1,7 @@
+# tt dileptonic selection of events for domain adaptation studies
+# these studies were done for 2016 data
 # this can be run with CMSSW 8_0_29; in CMSSW 8_0_25 the module 'cutBasedElectronID_Summer16_80X_V1_cff' is missing
+
 
 import FWCore.ParameterSet.Config as cms
 
@@ -10,7 +13,7 @@ options = VarParsing.VarParsing()
 
 options.register('inputScript', '', VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.string,"input Script")
 options.register('outputFile', 'output', VarParsing.VarParsing.multiplicity.singleton,VarParsing.VarParsing.varType.string, "output File (w/o .root)")
-options.register('maxEvents', 500, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int,"maximum events")
+options.register('maxEvents', -1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int,"maximum events")
 options.register('skipEvents', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "skip N events")
 options.register('job', 0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int,"job number")
 options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "total jobs")
@@ -20,6 +23,7 @@ options.register('globalTag', '', VarParsing.VarParsing.multiplicity.singleton, 
 options.register('isData', False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "switch off generator jets")
 options.register('deepNtuplizer',True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "run deepNtuplizer or just the ttbar selection")
 options.register('lheWeights',False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "use LHE weights")
+options.register('dataRun', '', VarParsing.VarParsing.multiplicity.singleton,VarParsing.VarParsing.varType.string, "run for data events of run 2016 B/C/D/E/F/G or H")
 
 
 
@@ -80,8 +84,9 @@ if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtupliz
 
 #process.source.fileNames=['file:./00E02A09-853C-E711-93FF-3417EBE644A7.root']   #store/data/Run2016H/SingleMuon/MINIAOD/18Apr2017-v1/00000/00E02A09-853C-E711-93FF-3417EBE644A7.root
 #process.source.fileNames=['file:./000C6E52-8BEC-E611-B3FF-0025905C42FE.root']   #isData=True
-#process.source.fileNames=['file:./0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root']    #isData=False
 #process.source.fileNames=['file:./EE95DEDC-96BE-E611-B45D-A0000420FE80.root']    #isData=False
+process.source.fileNames=['file:./0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root']    #/store/mc/RunIISummer16MiniAODv2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/
+
 
 numberOfFiles = len(process.source.fileNames)
 numberOfJobs = options.nJobs
@@ -152,7 +157,7 @@ else:
     process.MINIAODSIMEventContent.outputCommands.extend([
         'keep *_goodElectrons_*_*',
         'keep *_goodMuons_*_*',
-        'keep *_GoodJets_*_*',
+        'keep *_goodJets_*_*',
         'keep *_GoodOFLeptonPair_*_*'
     ])
 
@@ -175,14 +180,22 @@ for idmod in my_id_modules:
 
 
 #HighLevelTrigger
-HLTlistSM = cms.vstring(#"HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*",       #Run B-G
-                        #"HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*",        #Run B-G
-                        #"HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*",    #Run H
-                        #"HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v*",     #Run H
-                        "HLT_Ele27_WPTight_Gsf_v*",                                 #Run B-H
-                        "HLT_IsoTkMu24_v*",                                         #Run B-H
-                        "HLT_IsoMu24_v*"                                            #Run B-H
-                        )
+if options.dataRun in ['B','C','D','E','F','G']:
+    HLTlistSM = cms.vstring("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*",       #Run B-G
+                            "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*",        #Run B-G
+                            )
+
+if options.dataRun in ['H']:
+    HLTlistSM = cms.vstring("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*",    #Run H
+                            "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v*",     #Run H
+                            )
+if not options.isData:
+    HLTlistSM = cms.vstring("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*",       #Run B-G
+                            "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*",        #Run B-G
+                            "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*",    #Run H
+                            "HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v*",     #Run H
+                            )
+
 process.TriggerSel = cms.EDFilter("HLTHighLevel",
                                        TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),
                                        HLTPaths = cms.vstring(HLTlistSM),
@@ -212,7 +225,7 @@ process.goodMuons = cms.EDProducer("MuonIdAdder",
 
 ### Jets
 
-process.GoodJets = cms.EDProducer("PATJetCleaner",
+process.goodJets = cms.EDProducer("PATJetCleaner",
     src = cms.InputTag("slimmedJets"),
     preselection = cms.string("pt>30 && abs(eta) < 2.4 && neutralHadronEnergyFraction < 0.99 "
                      "&& neutralEmEnergyFraction < 0.99 && (chargedMultiplicity+neutralMultiplicity) > 1 "
@@ -265,7 +278,7 @@ updateJetCollection(
         process,
         labelName="DeepFlavour",
         #         jetSource=cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked', 'SubJets'),  # 'subjets from AK8'
-        jetSource=cms.InputTag('GoodJets'),  # 'ak4Jets'
+        jetSource=cms.InputTag('goodJets'),  # 'ak4Jets'
         jetCorrections=('AK4PFchs', jetCorrections, 'None'),
         pfCandidates=cms.InputTag('packedPFCandidates'),
         pvSource=cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -355,8 +368,8 @@ process.looseIVFcandidateVertexArbitrator.tracks = cms.InputTag("packedPFCandida
 process.looseIVFcandidateVertexArbitrator.secondaryVertices = cms.InputTag("looseIVFcandidateVertexMerger")
 process.looseIVFcandidateVertexArbitrator.fitterSigmacut = 20
 
-#datapath=os.environ['CMSSW_BASE']+'/src/DeepNTuples/DeepNtuplizer/data/'
-datapath=''
+datapath=os.environ['CMSSW_BASE']+'/src/DeepNTuples/DeepNtuplizer/data/'
+#datapath=''
 
 # DeepNtuplizer configurations
 process.load("DeepNTuples.DeepNtuplizer.DeepNtuplizer_cfi")
@@ -364,9 +377,9 @@ process.deepntuplizer.jets = cms.InputTag('selectedUpdatedPatJetsDeepFlavour')
 process.deepntuplizer.bDiscriminators = bTagDiscriminators
 process.deepntuplizer.bDiscriminators.append('pfCombinedMVAV2BJetTags')
 process.deepntuplizer.LooseSVs = cms.InputTag("looseIVFinclusiveCandidateSecondaryVertices")
-
 process.deepntuplizer.applySelection = cms.bool(options.selectJets)
 
+process.deepntuplizer.removeUndefined = cms.bool(False)
 process.deepntuplizer.isData = cms.bool(options.isData)
 process.deepntuplizer.useLHEWeights = cms.bool(options.lheWeights)
 
@@ -376,14 +389,31 @@ process.deepntuplizer.pileupMC=cms.string(datapath+"pileup_MC_2016.root")
 process.deepntuplizer.sfMuons = cms.InputTag("goodMuons")
 process.deepntuplizer.sfElectrons=cms.InputTag("goodElectrons")
 
-process.deepntuplizer.sfMuonId = cms.string(datapath+"EfficienciesAndSF_ID_GH.root")
-process.deepntuplizer.sfMuonIdHist = cms.string("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
-process.deepntuplizer.sfMuonIso=cms.string(datapath+"EfficienciesAndSF_ISO_GH.root")
-process.deepntuplizer.sfMuonIsoHist=cms.string("TightISO_TightID_pt_eta/abseta_pt_ratio")
-process.deepntuplizer.sfMuonTracking=cms.string(datapath+"Tracking_EfficienciesAndSF_BCDEFGH.root")
-process.deepntuplizer.sfMuonTrackingHist=cms.string("ratio_eff_aeta_dr030e030_corr")
-process.deepntuplizer.sfElIdAndIso=cms.string(datapath+"egammaEffi.txt_EGM2D.root")
-process.deepntuplizer.sfElIdAndIsoHist=cms.string("EGamma_SF2D")
+process.deepntuplizer.periods=cms.vstring("2016BtoF","2016G","2016H")
+process.deepntuplizer.lumis=cms.vdouble(5.404+2.396+4.243+4.054+3.105,7.544,8.453)
+
+#emu trigger scalefactors from
+# https://gitlab.cern.ch/ttH/reference/blob/955cff0b09f2c95bc480ae0bf3145aab9ce08fcc/definitions/Moriond17.md#64-trigger-scale-factors
+# https://gitlab.cern.ch/ttH/reference/blob/955cff0b09f2c95bc480ae0bf3145aab9ce08fcc/definitions/Moriond17.md#41-triggers
+process.deepntuplizer.sfTrigger_emu=cms.vstring(datapath + "triggerSummary_emu_ReReco2016_ttH.root")
+process.deepntuplizer.sfTrigger_emu_Hist = cms.vstring("scalefactor_eta2d_with_syst")
+
+process.deepntuplizer.sfMuonId = cms.vstring(datapath+"EfficienciesAndSF_ID_BCDEF.root",
+                                             datapath + "EfficienciesAndSF_ID_GH.root",
+                                             datapath + "EfficienciesAndSF_ID_GH.root")
+process.deepntuplizer.sfMuonId_Hist = cms.vstring("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio",
+                                                  "MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio",
+                                                  "MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
+process.deepntuplizer.sfMuonIso=cms.vstring(datapath + "EfficienciesAndSF_ISO_BCDEF.root",
+                                            datapath + "EfficienciesAndSF_ISO_GH.root",
+                                            datapath + "EfficienciesAndSF_ISO_GH.root")
+process.deepntuplizer.sfMuonIso_Hist=cms.vstring("TightISO_TightID_pt_eta/abseta_pt_ratio",
+                                                 "TightISO_TightID_pt_eta/abseta_pt_ratio",
+                                                 "TightISO_TightID_pt_eta/abseta_pt_ratio")
+process.deepntuplizer.sfMuonTracking=cms.vstring(datapath+"Tracking_EfficienciesAndSF_BCDEFGH.root")
+process.deepntuplizer.sfMuonTracking_Hist=cms.vstring("ratio_eff_aeta_dr030e030_corr")
+process.deepntuplizer.sfElIdAndIso=cms.vstring(datapath+"egammaEffi.txt_EGM2D.root")
+process.deepntuplizer.sfElIdAndIso_Hist=cms.vstring("EGamma_SF2D")
 
 
 if int(release.replace("_", "")) >= 840:

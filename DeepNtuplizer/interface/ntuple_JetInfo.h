@@ -23,7 +23,7 @@ public:
     useherwcompat_matching_(false),
     isherwig_(false),
     isData_(false)
-{}
+    {}
 
     void getInput(const edm::ParameterSet& iConfig);
     void initBranches(TTree* );
@@ -132,6 +132,7 @@ public:
     bool useherwcompat_matching_;
     bool isherwig_;
     bool isData_;
+    bool removeUndefined_;
 
     /////////branches
 
