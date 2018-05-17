@@ -246,11 +246,6 @@ void ntuple_pfCands::readEvent(const edm::Event& iEvent){
 //use either of these functions
 
 bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, const  edm::View<pat::Jet> * coll){
-    if(jet.pt() > 99.07 && jet.pt()< 99.08){
-        std::cout<<" pfCands ..."<<std::endl;
-        std::cout<<" jet pt = "<< jet.pt()<<std::endl;
-        std::cout<<" number of daughters "<<jet.numberOfDaughters()<<std::endl;
-    }
 
 
     float etasign = 1.;

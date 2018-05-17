@@ -84,7 +84,7 @@ if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtupliz
 #process.source.fileNames=['file:./000C6E52-8BEC-E611-B3FF-0025905C42FE.root']   #isData=True
 #process.source.fileNames=['file:./0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root']    #isData=False
 #process.source.fileNames=['file:./EE95DEDC-96BE-E611-B45D-A0000420FE80.root']    #isData=False
-process.source.fileNames=['file:./0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root']    #store/mc/RunIISummer16MiniAODv2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/
+#process.source.fileNames=['file:./0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root']    #store/mc/RunIISummer16MiniAODv2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/
 #process.source.fileNames=['file:./00E02A09-853C-E711-93FF-3417EBE644A7.root']    #store/data/Run2016H/SingleMuon/MINIAOD/18Apr2017-v1/00000/
 #process.source.fileNames=['file:./F21AE451-7EBA-E611-9399-0025905B858E.root']    #store/mc/RunIISummer16MiniAODv2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_backup_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/00000/
 
@@ -353,8 +353,8 @@ process.looseIVFcandidateVertexArbitrator.tracks = cms.InputTag("packedPFCandida
 process.looseIVFcandidateVertexArbitrator.secondaryVertices = cms.InputTag("looseIVFcandidateVertexMerger")
 process.looseIVFcandidateVertexArbitrator.fitterSigmacut = 20
 
-datapath=os.environ['CMSSW_BASE']+'/src/DeepNTuples/DeepNtuplizer/data/'
-#datapath=''
+#datapath=os.environ['CMSSW_BASE']+'/src/DeepNTuples/DeepNtuplizer/data/'
+datapath=''
 
 # DeepNtuplizer configurations
 process.load("DeepNTuples.DeepNtuplizer.DeepNtuplizer_cfi")
