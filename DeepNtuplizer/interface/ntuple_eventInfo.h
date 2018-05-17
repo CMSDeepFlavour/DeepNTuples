@@ -9,6 +9,7 @@
 #define DEEPNTUPLES_DEEPNTUPLIZER_INTERFACE_NTUPLE_EVENTINFO_H_
 
 #include "ntuple_content.h"
+#include "triggerInfo.h"
 
 #include <vector>
 #include <string>
@@ -55,6 +56,10 @@ public:
     void setElectronsToken(edm::EDGetTokenT<edm::View<pat::Electron> > electronToken){
         electronToken_ = electronToken;
     }
+    void setTriggerToken(edm::EDGetTokenT<edm::TriggerResults> triggerToken){
+        triggerToken_ = triggerToken;
+    }
+
 
 
 private:
@@ -62,6 +67,7 @@ private:
     edm::EDGetTokenT<LHEEventProduct> lheToken_;
     edm::EDGetTokenT<edm::View<pat::Muon> > muonToken_;
     edm::EDGetTokenT<edm::View<pat::Electron> > electronToken_;
+    edm::EDGetTokenT<edm::TriggerResults> triggerToken_;
 
     edm::Handle<LHEEventProduct> lheInfo;
     edm::Handle<edm::View<pat::Muon> > muons;
@@ -103,6 +109,7 @@ private:
 
     std::vector<TH1D*> sfMuonTracking_Hist;
 
+    std::vector<std::string> triggers;
 
     // global variables
 

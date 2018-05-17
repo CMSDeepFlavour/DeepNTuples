@@ -199,6 +199,7 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
         evweight->setLHEToken(consumes<LHEEventProduct>(iConfig.getParameter<edm::InputTag>("lheInfo")));
         evweight->setMuonsToken(consumes<edm::View<pat::Muon> >(iConfig.getParameter<edm::InputTag>("sfMuons")));
         evweight->setElectronsToken(consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("sfElectrons")));
+        evweight->setTriggerToken(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerToken")));
 
         addModule(evweight);
     }

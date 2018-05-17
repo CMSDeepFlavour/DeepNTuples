@@ -372,13 +372,9 @@ process.deepntuplizer.pileupMC=cms.string(datapath+"pileup_MC_2016.root")
 
 process.deepntuplizer.sfMuons = cms.InputTag("goodMuons")
 
-#process.deepntuplizer.lumi_BCDEF=cms.double(5.404+2.396+4.256+4.054+3.105)
-#process.deepntuplizer.lumi_G=cms.double(7.179)
-#process.deepntuplizer.lumi_H=cms.double(8.746)
+
 process.deepntuplizer.periods=cms.vstring("2016BtoF","2016GH")
 process.deepntuplizer.lumis=cms.vdouble(5.404+2.396+4.256+4.054+3.105, 7.179+8.746)
-
-
 
 process.deepntuplizer.sfTrigger_mu=cms.vstring(datapath + "EfficienciesAndSF_RunBtoF.root",
                                                datapath + "EfficienciesAndSF_Period4.root")

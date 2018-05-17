@@ -34,6 +34,8 @@ void ntuple_eventInfo::getInput(const edm::ParameterSet& iConfig){
     sfMuonTracking_Dir_ = (iConfig.getParameter<std::vector<std::string>>("sfMuonTracking"));
     sfMuonTracking_Name_ = (iConfig.getParameter<std::vector<std::string>>("sfMuonTracking_Hist"));
 
+    triggers = (iConfig.getParameter<std::vector<std::string>>("triggers"));
+
 
     if(pupDataDir_=="" || pupMCDir_=="")
         std::cout<<"no pileup histograms, proceed without pileup reweighting. \n";
@@ -70,6 +72,7 @@ void ntuple_eventInfo::initBranches(TTree* tree){
 
 
 void ntuple_eventInfo::readEvent(const edm::Event& iEvent){
+    TriggerInfo triggerInfo(iEvent,triggerToken_);
 
     if(!iEvent.isRealData()){
 
@@ -123,6 +126,7 @@ void ntuple_eventInfo::readEvent(const edm::Event& iEvent){
         for(unsigned int i=0; i< periods.size(); i++){
 
             double isf = 1.;
+            bool itriggered = 1;
 
             isf *= getScalefactor(std::abs(leadingMuon_eta),        leadingMuon_pt,             sfTrigger_mu_Hist, i);
             isf *= getScalefactor(std::abs(leadingElectron_eta),    std::abs(leadingMuon_eta),  sfTrigger_emu_Hist, i);
@@ -130,6 +134,11 @@ void ntuple_eventInfo::readEvent(const edm::Event& iEvent){
             isf *= getScalefactor(std::abs(leadingMuon_eta),        leadingMuon_pt,             sfMuonIso_Hist, i);
             isf *= getScalefactor(std::abs(leadingElectron_sueta),  leadingElectron_pt,         sfElIdAndIso_Hist, i);
             isf *= getScalefactor(std::abs(leadingMuon_eta),                                    sfMuonTracking_Hist, i);
+
+            if(triggers.size() != 0){
+                itriggered = triggerInfo.IsAnyTriggered(triggers[i]);
+                //std::cout<<"istriggered "<<itriggered<<std::endl;
+            }
 
             //std::cout<<getScalefactor(std::abs(leadingMuon_eta), leadingMuon_pt, sfTrigger_mu_Hist, i)<<std::endl;
             //std::cout<<getScalefactor(std::abs(leadingElectron_eta), std::abs(leadingMuon_eta), sfTrigger_emu_Hist, i)<<std::endl;
@@ -140,7 +149,9 @@ void ntuple_eventInfo::readEvent(const edm::Event& iEvent){
 
             //std::cout<<"period "<<periods[i]<<" has sf = "<<isf<<std::endl;
 
-            event_weight_ += lumis[i] * isf;
+            event_weight_ += lumis[i] * isf * itriggered;
+
+            //std::cout<<"period "<<periods[i]<<" has part weight = "<<event_weight_<<std::endl;
 
         }
         event_weight_ *= (float)(lheWeight * pupWeight);

@@ -392,6 +392,10 @@ process.deepntuplizer.sfElectrons=cms.InputTag("goodElectrons")
 process.deepntuplizer.periods=cms.vstring("2016BtoF","2016G","2016H")
 process.deepntuplizer.lumis=cms.vdouble(5.404+2.396+4.243+4.054+3.105,7.544,8.453)
 
+process.deepntuplizer.triggers=cms.vstring("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*||HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*",     #Run B-G
+                               "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*||HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v*",                 #Run B-G
+                               "HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*||HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v*")           #Run H
+
 #emu trigger scalefactors from
 # https://gitlab.cern.ch/ttH/reference/blob/955cff0b09f2c95bc480ae0bf3145aab9ce08fcc/definitions/Moriond17.md#64-trigger-scale-factors
 # https://gitlab.cern.ch/ttH/reference/blob/955cff0b09f2c95bc480ae0bf3145aab9ce08fcc/definitions/Moriond17.md#41-triggers

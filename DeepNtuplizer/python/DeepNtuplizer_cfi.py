@@ -38,18 +38,24 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
 
                                 removeUndefined=cms.bool(True),
                                 isData=cms.bool(False),
+
+                                #All following is for event weight computation
                                 useLHEWeights=cms.bool(True),
 
                                 #leave empty string if you don't want to use pileup weights
                                 pileupData=cms.string(""),
                                 pileupMC=cms.string(""),
 
+                                periods=cms.vstring(),
+                                lumis=cms.vdouble(),        #weights are weighted with the luminosity of the period
+
+                                #to use different triggers for the periods
+                                triggerToken=cms.InputTag("TriggerResults::HLT"),
+                                triggers=cms.vstring(),
+
                                 #scalefactor information
                                 sfMuons = cms.InputTag("slimmedMuons"),
                                 sfElectrons=cms.InputTag("slimmedElectrons"),
-
-                                periods=cms.vstring(),
-                                lumis=cms.vdouble(),
 
                                 # The scalefactors can be computed on different ways:
                                 # - empty vector to not use a specific scalefactor,
