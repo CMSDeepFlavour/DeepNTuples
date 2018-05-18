@@ -16,6 +16,7 @@ options.register('nJobs', 1, VarParsing.VarParsing.multiplicity.singleton, VarPa
 options.register('reportEvery', 100, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int, "report every")
 options.register('gluonReduction', 0.0, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float, "gluon reduction")
 options.register('selectJets', True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "select jets with good gen match")
+options.register('phase2', False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "apply jet selection for phase 2. Currently sets JetEtaMax to 3.0 and picks slimmedJetsPuppi as jet collection.")
 
 import os
 release=os.environ['CMSSW_VERSION'][6:11]
@@ -124,11 +125,16 @@ else :
 jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+if opts.phase2 :
+    jet_collection = 'slimmedJetsPuppi'
+else:
+    jet_collection = 'slimmedJets'
+
 updateJetCollection(
         process,
         labelName = "DeepFlavour",
 #         jetSource=cms.InputTag('slimmedJetsAK8PFPuppiSoftDropPacked', 'SubJets'),  # 'subjets from AK8'
-        jetSource = cms.InputTag('slimmedJets'),  # 'ak4Jets'
+        jetSource = cms.InputTag(jet_collection),  # 'ak4Jets'
         jetCorrections = jetCorrectionsAK4,
         pfCandidates = cms.InputTag('packedPFCandidates'),
         pvSource = cms.InputTag("offlineSlimmedPrimaryVertices"),
@@ -224,6 +230,8 @@ process.deepntuplizer.applySelection = cms.bool(options.selectJets)
 if int(release.replace("_",""))>=840 :
    process.deepntuplizer.tagInfoName = cms.string('pfDeepCSV')
 
+if opts.phase2 :
+    process.deepntuplizer.jetAbsEtaMax = cms.double(3.0)
 
 process.deepntuplizer.gluonReduction  = cms.double(options.gluonReduction)
 
