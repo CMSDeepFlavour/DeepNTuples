@@ -125,7 +125,7 @@ else :
 jetCorrectionsAK4 = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None')
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-if opts.phase2 :
+if options.phase2 :
     jet_collection = 'slimmedJetsPuppi'
 else:
     jet_collection = 'slimmedJets'
@@ -230,7 +230,7 @@ process.deepntuplizer.applySelection = cms.bool(options.selectJets)
 if int(release.replace("_",""))>=840 :
    process.deepntuplizer.tagInfoName = cms.string('pfDeepCSV')
 
-if opts.phase2 :
+if options.phase2 :
     process.deepntuplizer.jetAbsEtaMax = cms.double(3.0)
 
 process.deepntuplizer.gluonReduction  = cms.double(options.gluonReduction)
