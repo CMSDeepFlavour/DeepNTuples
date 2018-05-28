@@ -1,5 +1,5 @@
 # this can be run with CMSSW 8_0_29; in CMSSW 8_0_25 the module 'cutBasedElectronID_Summer16_80X_V1_cff' is missing
-#basically deepntuplizer with tt semileptonic selection
+#basically deepntuplizer with tt semileptonic single electron selection
 
 import FWCore.ParameterSet.Config as cms
 
@@ -21,6 +21,9 @@ options.register('globalTag', '', VarParsing.VarParsing.multiplicity.singleton, 
 options.register('isData', False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "switch off generator jets")
 options.register('deepNtuplizer',True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "run deepNtuplizer or just the ttbar selection")
 options.register('lheWeights',False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "use LHE weights")
+options.register('crossSection', 1., VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.float,"cross section")
+options.register('nEvents', 1, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.int,"number of events to process")
+
 
 import os
 
@@ -37,7 +40,7 @@ options.register(
 if hasattr(sys, "argv"):
     options.parseArguments()
 
-process = cms.Process("semilepSelectedDNNFiller")
+process = cms.Process("semilepElectronSelectedDNNFiller")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("Configuration.EventContent.EventContent_cff")
@@ -80,8 +83,7 @@ if options.inputScript != '' and options.inputScript != 'DeepNTuples.DeepNtupliz
     process.load(options.inputScript)
 
 
-#process.source.fileNames=['file:./00E02A09-853C-E711-93FF-3417EBE644A7.root']   #store/data/Run2016H/SingleMuon/MINIAOD/18Apr2017-v1/00000/00E02A09-853C-E711-93FF-3417EBE644A7.root
-#process.source.fileNames=['file:./000C6E52-8BEC-E611-B3FF-0025905C42FE.root']   #isData=True
+#process.source.fileNames=['file:./00CC509E-0C3B-E711-98F2-0242AC130004.root']   #isData=True
 #process.source.fileNames=['file:./0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root']    #isData=False
 #process.source.fileNames=['file:./EE95DEDC-96BE-E611-B45D-A0000420FE80.root']    #isData=False
 #process.source.fileNames=['file:./0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root']    #store/mc/RunIISummer16MiniAODv2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/
@@ -180,8 +182,7 @@ for idmod in my_id_modules:
 
 
 #HighLevelTrigger
-HLTlistSM = cms.vstring("HLT_IsoTkMu24_v*",                                         #Run B-H
-                        "HLT_IsoMu24_v*"                                            #Run B-H
+HLTlistSM = cms.vstring("HLT_Ele27_WPTight_Gsf_v*"
                         )
 process.TriggerSel = cms.EDFilter("HLTHighLevel",
                                        TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),
@@ -245,7 +246,9 @@ process.ttsemilepFilter = cms.EDFilter("ttsemilepFilter",
                                        src_electrons = cms.InputTag("goodElectrons"),
                                        src_jets = cms.InputTag("goodJets"),
                                        src_mets = cms.InputTag("slimmedMETs"),
-                                       cut_minMT_muonMETpair = cms.double(50.0)
+                                       cut_minMT_leptonMETpair = cms.double(50.0),
+                                       nElectrons=cms.uint32(1),
+                                       nMuons=cms.uint32(0)
                                        )
 
 
@@ -364,41 +367,35 @@ process.deepntuplizer.bDiscriminators.append('pfCombinedMVAV2BJetTags')
 process.deepntuplizer.LooseSVs = cms.InputTag("looseIVFinclusiveCandidateSecondaryVertices")
 process.deepntuplizer.applySelection = cms.bool(options.selectJets)
 
-process.deepntuplizer.removeUndefined = cms.bool(False)
 process.deepntuplizer.isData = cms.bool(options.isData)
-process.deepntuplizer.useLHEWeights = cms.bool(options.lheWeights)
-process.deepntuplizer.pileupData=cms.string(datapath+"pileup_data_2016.root")
-process.deepntuplizer.pileupMC=cms.string(datapath+"pileup_MC_2016.root")
 
-process.deepntuplizer.sfMuons = cms.InputTag("goodMuons")
+process.deepntuplizer.removeUndefined = cms.bool(False)
 
+if not options.isData:
 
-process.deepntuplizer.periods=cms.vstring("2016BtoF","2016GH")
-process.deepntuplizer.lumis=cms.vdouble(5.404+2.396+4.256+4.054+3.105, 7.179+8.746)
+    process.deepntuplizer.useLHEWeights = cms.bool(options.lheWeights)
 
-process.deepntuplizer.sfTrigger_mu=cms.vstring(datapath + "EfficienciesAndSF_RunBtoF.root",
-                                               datapath + "EfficienciesAndSF_Period4.root")
-process.deepntuplizer.sfTrigger_mu_Hist=cms.vstring("IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio",
-                                                    "IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio")
+    process.deepntuplizer.pileupData=cms.string(datapath+"pileup_data_2016.root")
+    process.deepntuplizer.pileupMC=cms.string(datapath+"pileup_MC_2016.root")
 
-process.deepntuplizer.sfMuonId = cms.vstring(datapath+"EfficienciesAndSF_ID_BCDEF.root",
-                                            datapath+"EfficienciesAndSF_ID_GH.root")
-process.deepntuplizer.sfMuonId_Hist = cms.vstring("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio",
-                                                 "MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/abseta_pt_ratio")
+    process.deepntuplizer.sfElectrons = cms.InputTag("goodElectrons")
 
-process.deepntuplizer.sfMuonIso=cms.vstring(datapath+"EfficienciesAndSF_ISO_BCDEF.root",
-                                            datapath+"EfficienciesAndSF_ISO_GH.root")
-process.deepntuplizer.sfMuonIso_Hist=cms.vstring("TightISO_TightID_pt_eta/abseta_pt_ratio",
-                                                "TightISO_TightID_pt_eta/abseta_pt_ratio")
+    process.deepntuplizer.periods=cms.vstring("2016All",)
+    process.deepntuplizer.lumis=cms.vdouble(1.,)
+    process.deepntuplizer.crossSection=cms.double(options.crossSection)
+    process.deepntuplizer.nEvents=cms.uint32(options.nEvents)
 
-process.deepntuplizer.sfMuonTracking=cms.vstring(datapath+"Tracking_EfficienciesAndSF_BCDEFGH.root")
-process.deepntuplizer.sfMuonTracking_Hist=cms.vstring("ratio_eff_aeta_dr030e030_corr")
+    process.deepntuplizer.sfTrigger_e=cms.vstring(datapath + "TriggerSF_Run2016All_v1.root",)
+    process.deepntuplizer.sfTrigger_e_Hist=cms.vstring("Ele27_WPTight_Gsf",)
 
+    process.deepntuplizer.sfElIdAndIso=cms.vstring(datapath+"egammaEffi.txt_EGM2D.root",)
+    process.deepntuplizer.sfElIdAndIso_Hist=cms.vstring("EGamma_SF2D",)
+
+    process.deepntuplizer.gluonReduction = cms.double(options.gluonReduction)
 
 if int(release.replace("_", "")) >= 840:
     process.deepntuplizer.tagInfoName = cms.string('pfDeepCSV')
 
-process.deepntuplizer.gluonReduction = cms.double(options.gluonReduction)
 
 # 1631
 #process.ProfilerService = cms.Service(

@@ -193,16 +193,15 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
 
     ntuple_bTagVars * btagvars = new ntuple_bTagVars();
     addModule(btagvars);
-    if(!isData){
-        ntuple_eventInfo *evweight = new ntuple_eventInfo();
 
+    ntuple_eventInfo *evweight = new ntuple_eventInfo();
+    if(!isData){
         evweight->setLHEToken(consumes<LHEEventProduct>(iConfig.getParameter<edm::InputTag>("lheInfo")));
         evweight->setMuonsToken(consumes<edm::View<pat::Muon> >(iConfig.getParameter<edm::InputTag>("sfMuons")));
         evweight->setElectronsToken(consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("sfElectrons")));
         evweight->setTriggerToken(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerToken")));
-
-        addModule(evweight);
     }
+    addModule(evweight);
 
 
     if(runFatJets_){

@@ -15,13 +15,16 @@ void ntuple_eventInfo::getInput(const edm::ParameterSet& iConfig){
 
     periods = (iConfig.getParameter<std::vector<std::string>>("periods"));
     lumis = (iConfig.getParameter<std::vector<double>>("lumis"));
+    sigma = (iConfig.getParameter<double>("crossSection"));
+    nEvents = (iConfig.getParameter<unsigned int>("nEvents"));
 
     pupDataDir_ = (iConfig.getParameter<std::string>("pileupData"));
     pupMCDir_ = (iConfig.getParameter<std::string>("pileupMC"));
 
     sfTrigger_mu_Dir_ = (iConfig.getParameter<std::vector<std::string>>("sfTrigger_mu"));
     sfTrigger_mu_Name_ = (iConfig.getParameter<std::vector<std::string>>("sfTrigger_mu_Hist"));
-
+    sfTrigger_e_Dir_ = (iConfig.getParameter<std::vector<std::string>>("sfTrigger_e"));
+    sfTrigger_e_Name_ = (iConfig.getParameter<std::vector<std::string>>("sfTrigger_e_Hist"));
     sfTrigger_emu_Dir_ = (iConfig.getParameter<std::vector<std::string>>("sfTrigger_emu"));
     sfTrigger_emu_Name_ = (iConfig.getParameter<std::vector<std::string>>("sfTrigger_emu_Hist"));
     sfMuonId_Dir_ = (iConfig.getParameter<std::vector<std::string>>("sfMuonId"));
@@ -56,6 +59,7 @@ void ntuple_eventInfo::getInput(const edm::ParameterSet& iConfig){
     }
 
     initializeScalefactor(sfTrigger_mu_Dir_, sfTrigger_mu_Name_, &sfTrigger_mu_Hist, periods);
+    initializeScalefactor(sfTrigger_e_Dir_, sfTrigger_e_Name_, &sfTrigger_e_Hist, periods);
     initializeScalefactor(sfTrigger_emu_Dir_, sfTrigger_emu_Name_, &sfTrigger_emu_Hist, periods);
     initializeScalefactor(sfMuonId_Dir_, sfMuonId_Name_, &sfMuonId_Hist, periods);
     initializeScalefactor(sfMuonIso_Dir_, sfMuonIso_Name_, &sfMuonIso_Hist, periods);
@@ -72,9 +76,10 @@ void ntuple_eventInfo::initBranches(TTree* tree){
 
 
 void ntuple_eventInfo::readEvent(const edm::Event& iEvent){
-    TriggerInfo triggerInfo(iEvent,triggerToken_);
 
     if(!iEvent.isRealData()){
+        TriggerInfo triggerInfo(iEvent,triggerToken_);
+
 
         iEvent.getByToken(lheToken_, lheInfo);
         iEvent.getByToken(muonToken_, muons);
@@ -128,12 +133,13 @@ void ntuple_eventInfo::readEvent(const edm::Event& iEvent){
             double isf = 1.;
             bool itriggered = 1;
 
-            isf *= getScalefactor(std::abs(leadingMuon_eta),        leadingMuon_pt,             sfTrigger_mu_Hist, i);
-            isf *= getScalefactor(std::abs(leadingElectron_eta),    std::abs(leadingMuon_eta),  sfTrigger_emu_Hist, i);
-            isf *= getScalefactor(std::abs(leadingMuon_eta),        leadingMuon_pt,             sfMuonId_Hist, i);
-            isf *= getScalefactor(std::abs(leadingMuon_eta),        leadingMuon_pt,             sfMuonIso_Hist, i);
-            isf *= getScalefactor(std::abs(leadingElectron_sueta),  leadingElectron_pt,         sfElIdAndIso_Hist, i);
-            isf *= getScalefactor(std::abs(leadingMuon_eta),                                    sfMuonTracking_Hist, i);
+            isf *= getScalefactor(std::abs(leadingMuon_eta),        leadingMuon_pt,                 sfTrigger_mu_Hist, i);
+            isf *= getScalefactor(leadingElectron_pt,               std::abs(leadingElectron_sueta),sfTrigger_e_Hist, i, true);
+            isf *= getScalefactor(std::abs(leadingElectron_eta),    std::abs(leadingMuon_eta),      sfTrigger_emu_Hist, i);
+            isf *= getScalefactor(std::abs(leadingMuon_eta),        leadingMuon_pt,                 sfMuonId_Hist, i);
+            isf *= getScalefactor(std::abs(leadingMuon_eta),        leadingMuon_pt,                 sfMuonIso_Hist, i);
+            isf *= getScalefactor(std::abs(leadingElectron_sueta),  leadingElectron_pt,             sfElIdAndIso_Hist, i);
+            isf *= getScalefactor(std::abs(leadingMuon_eta),                                        sfMuonTracking_Hist, i);
 
             if(triggers.size() != 0){
                 itriggered = triggerInfo.IsAnyTriggered(triggers[i]);
@@ -149,7 +155,7 @@ void ntuple_eventInfo::readEvent(const edm::Event& iEvent){
 
             //std::cout<<"period "<<periods[i]<<" has sf = "<<isf<<std::endl;
 
-            event_weight_ += lumis[i] * isf * itriggered;
+            event_weight_ += lumis[i] * sigma * 1./nEvents * isf * itriggered;
 
             //std::cout<<"period "<<periods[i]<<" has part weight = "<<event_weight_<<std::endl;
 
@@ -168,13 +174,13 @@ bool ntuple_eventInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, 
     return true;
 }
 
-double getScalefactor(double x, double y, std::vector<TH2F*> hists, unsigned int period){
+double getScalefactor(double x, double y, std::vector<TH2F*> hists, unsigned int period, bool takeOverflowX){
 
     if(hists.size()==0) return 1.;
     else if(hists.size()==1){
         int binx = hists[0]->GetXaxis()->FindBin(x);
         int biny = hists[0]->GetYaxis()->FindBin(y);
-        if(x > hists[0]->GetXaxis()->GetXmax())     //dont take overflow bins, but the last ones
+        if(x > hists[0]->GetXaxis()->GetXmax() && !takeOverflowX)     //dont take overflow bins, but the last ones
             binx -= 1;
         if(y > hists[0]->GetYaxis()->GetXmax())
             biny -= 1;
@@ -183,7 +189,7 @@ double getScalefactor(double x, double y, std::vector<TH2F*> hists, unsigned int
     else if(hists.size() > period){
         int binx = hists[period]->GetXaxis()->FindBin(x);
         int biny = hists[period]->GetYaxis()->FindBin(y);
-        if(x > hists[period]->GetXaxis()->GetXmax())     //dont take overflow bins, but the last ones
+        if(x > hists[period]->GetXaxis()->GetXmax() && !takeOverflowX)     //dont take overflow bins, but the last ones
             binx -= 1;
         if(y > hists[period]->GetYaxis()->GetXmax())
             biny -= 1;

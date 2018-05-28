@@ -48,6 +48,8 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
 
                                 periods=cms.vstring(),
                                 lumis=cms.vdouble(),        #weights are weighted with the luminosity of the period
+                                crossSection=cms.double(1.0),
+                                nEvents=cms.uint32(1),
 
                                 #to use different triggers for the periods
                                 triggerToken=cms.InputTag("TriggerResults::HLT"),
@@ -63,7 +65,8 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                 # - number of strings equal to number of periods to use a different hist for each period
                                 sfTrigger_mu=cms.vstring(),
                                 sfTrigger_mu_Hist = cms.vstring(),
-
+                                sfTrigger_e=cms.vstring(),
+                                sfTrigger_e_Hist=cms.vstring(),
                                 sfTrigger_emu=cms.vstring(),
                                 sfTrigger_emu_Hist=cms.vstring(),
                                 sfMuonId = cms.vstring(),
@@ -74,7 +77,4 @@ deepntuplizer = cms.EDAnalyzer('DeepNtuplizer',
                                 sfMuonTracking_Hist=cms.vstring(),
                                 sfElIdAndIso=cms.vstring(),
                                 sfElIdAndIso_Hist=cms.vstring(),
-
-
-
                                 )

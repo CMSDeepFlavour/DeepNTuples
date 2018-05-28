@@ -74,7 +74,9 @@ class ttsemilepFilter : public edm::stream::EDFilter<> {
       edm::Handle<edm::View<pat::Jet> >    jets;
       edm::Handle<edm::View<pat::MET> >    mets;
 
-      double minMT_muonMETpair = 0.;
+      double minMT_muonMETpair = 0;
+      unsigned int nElectrons = 0;
+      unsigned int nMuons = 0;
 
       /*
       double min_chi2 = 0;
@@ -111,7 +113,10 @@ ttsemilepFilter::ttsemilepFilter(const edm::ParameterSet& iConfig):
 
     //minPt_muon=(iConfig.getParameter<double>("minPt_muon"));
     //minPt_jet=(iConfig.getParameter<double>("minPt_jet"));
-    minMT_muonMETpair=(iConfig.getParameter<double>("cut_minMT_muonMETpair"));
+    minMT_muonMETpair=(iConfig.getParameter<double>("cut_minMT_leptonMETpair"));
+    nElectrons=(iConfig.getParameter<unsigned int>("nElectrons"));
+    nMuons=(iConfig.getParameter<unsigned int>("nMuons"));
+
 }
 
 
@@ -132,15 +137,17 @@ ttsemilepFilter::~ttsemilepFilter()
 bool
 ttsemilepFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+
     iEvent.getByToken(src_muons,  muons);
     iEvent.getByToken(src_electrons,  electrons);
     iEvent.getByToken(src_jets, jets);
     iEvent.getByToken(src_mets, mets);
 
-    if(muons->size()!=1)
+
+    if(muons->size()!=nMuons)
         return false;
 
-    if(electrons->size()!=0)
+    if(electrons->size()!=nElectrons)
         return false;
 
     if(jets->size()!=4)
@@ -152,14 +159,28 @@ ttsemilepFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     }
 
-    const auto muon = muons->ptrAt(0);
     const auto met = mets->ptrAt(0);
+    double mWt = -1.;
 
-    double mWt = std::sqrt(2*(muon->pt()*met->pt() - muon->px()*met->px() - muon->py()*met->py()));
+    if(nMuons==1 && nElectrons==0){
+        const auto muon = muons->ptrAt(0);
+        mWt = std::sqrt(2*(muon->pt()*met->pt() - muon->px()*met->px() - muon->py()*met->py()));
+    }
+    else if (nElectrons==1 && nMuons==0){
+        const auto electron = electrons->ptrAt(0);
+        mWt = std::sqrt(2*(electron->pt()*met->pt() - electron->px()*met->px() - electron->py()*met->py()));
+    }
 
-    //leptonic decaying W reconstruction
-    if(mWt < minMT_muonMETpair)
+
+
+
+    if(mWt == -1.){                     //no W reconstruction
+    }
+    else if(mWt < minMT_muonMETpair){   //leptonic decaying W reconstruction
         return false;
+    }
+
+
 
     //hadronically decaying t reconstruction
     /*

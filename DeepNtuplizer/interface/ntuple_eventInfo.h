@@ -26,7 +26,7 @@
 void readHistoFromGraph(TGraphAsymmErrors* graph, TH1D** h, TString name);
 void initializeScalefactor(std::vector<std::string> dirs, std::vector<std::string> names, std::vector<TH2F*>* sfHists, std::vector<std::string> periods);
 void initializeScalefactor(std::vector<std::string> dirs, std::vector<std::string> names, std::vector<TH1D*>* sfHists, std::vector<std::string> periods);
-double getScalefactor(double x, double y, std::vector<TH2F*> hists, unsigned int period);
+double getScalefactor(double x, double y, std::vector<TH2F*> hists, unsigned int period, bool takeOverflowX = false);
 double getScalefactor(double x, std::vector<TH1D*> hists, unsigned int period);
 
 
@@ -80,6 +80,9 @@ private:
     std::vector<double> lumis;
     std::vector<std::string> periods;
 
+    double sigma;
+    unsigned int nEvents;
+
     std::string pupDataDir_;
     std::string pupMCDir_;
 
@@ -90,6 +93,8 @@ private:
 
     std::vector<std::string> sfTrigger_mu_Dir_;
     std::vector<std::string> sfTrigger_mu_Name_;
+    std::vector<std::string> sfTrigger_e_Dir_;
+    std::vector<std::string> sfTrigger_e_Name_;
     std::vector<std::string> sfTrigger_emu_Dir_;
     std::vector<std::string> sfTrigger_emu_Name_;
     std::vector<std::string> sfMuonId_Dir_;
@@ -102,6 +107,7 @@ private:
     std::vector<std::string> sfMuonTracking_Name_;
 
     std::vector<TH2F*> sfTrigger_mu_Hist;
+    std::vector<TH2F*> sfTrigger_e_Hist;
     std::vector<TH2F*> sfTrigger_emu_Hist;
     std::vector<TH2F*> sfMuonId_Hist;
     std::vector<TH2F*> sfMuonIso_Hist;
