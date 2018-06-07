@@ -19,7 +19,7 @@ options.register('selectJets', True, VarParsing.VarParsing.multiplicity.singleto
 options.register('phase2', False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "apply jet selection for phase 2. Currently sets JetEtaMax to 3.0 and picks slimmedJetsPuppi as jet collection.")
 
 import os
-release=os.environ['CMSSW_VERSION'][6:11]
+release=os.environ['CMSSW_VERSION'][6:]
 print("Using release "+release)
 
 
