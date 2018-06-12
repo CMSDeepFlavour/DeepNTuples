@@ -35,37 +35,39 @@ void ntuple_bTagVars::initBranches(TTree* tree, string On){
     addBranch(tree, (On + "n_TagVarCSV_jetNSelectedTracks").c_str(), &n_jetNSelectedTracks_, (On + "n_jetNSelectedTracks_/i").c_str());
     addBranch(tree, (On + "TagVarCSV_jetNSelectedTracks").c_str(), &jetNSelectedTracks_, (On + "jetNSelectedTracks_/f").c_str());
 
-    addBranch(tree, (On + "TagVarCSVTrk_trackPtRel").c_str()     , &trackPtRel_      , (On + "trackPtRel_[n_jetNSelectedTracks_]/f").c_str()     );
-    addBranch(tree, (On + "TagVarCSVTrk_trackDeltaR").c_str()    , &trackDeltaR_     , (On + "trackDeltaR_[n_jetNSelectedTracks_]/f").c_str()    );
-    addBranch(tree, (On + "TagVarCSVTrk_trackPtRatio").c_str()   , &trackPtRatio_    , (On + "trackPtRatio_[n_jetNSelectedTracks_]/f").c_str()   );
-    addBranch(tree, (On + "TagVarCSVTrk_trackSip3dSig").c_str()  , &trackSip3dSig_   , (On + "trackSip3dSig_[n_jetNSelectedTracks_]/f").c_str()  );
-    addBranch(tree, (On + "TagVarCSVTrk_trackSip2dSig").c_str()  , &trackSip2dSig_   , (On + "trackSip2dSig_[n_jetNSelectedTracks_]/f").c_str()  );
-    addBranch(tree, (On + "TagVarCSVTrk_trackDecayLenVal").c_str(), &trackDecayLenVal_, (On + "trackDecayLenVal_[n_jetNSelectedTracks_]/f").c_str());
-    addBranch(tree, (On + "TagVarCSVTrk_trackJetDistVal").c_str(), &trackJetDistVal_ , (On + "trackJetDistVal_[n_jetNSelectedTracks_]/f").c_str());
+    addBranch(tree, (On + "TagVarCSVTrk_trackPtRel").c_str()     , &trackPtRel_      , (On + "trackPtRel_[" + On + "n_jetNSelectedTracks_]/f").c_str()     );
+    addBranch(tree, (On + "TagVarCSVTrk_trackDeltaR").c_str()    , &trackDeltaR_     , (On + "trackDeltaR_[" + On + "n_jetNSelectedTracks_]/f").c_str()    );
+    addBranch(tree, (On + "TagVarCSVTrk_trackPtRatio").c_str()   , &trackPtRatio_    , (On + "trackPtRatio_[" + On + "n_jetNSelectedTracks_]/f").c_str()   );
+    addBranch(tree, (On + "TagVarCSVTrk_trackSip3dSig").c_str()  , &trackSip3dSig_   , (On + "trackSip3dSig_[" + On + "n_jetNSelectedTracks_]/f").c_str()  );
+    addBranch(tree, (On + "TagVarCSVTrk_trackSip2dSig").c_str()  , &trackSip2dSig_   , (On + "trackSip2dSig_[" + On + "n_jetNSelectedTracks_]/f").c_str()  );
+    addBranch(tree, (On + "TagVarCSVTrk_trackDecayLenVal").c_str(), &trackDecayLenVal_, (On + "trackDecayLenVal_[" + On + "n_jetNSelectedTracks_]/f").c_str());
+    addBranch(tree, (On + "TagVarCSVTrk_trackJetDistVal").c_str(), &trackJetDistVal_ , (On + "trackJetDistVal_[" + On + "n_jetNSelectedTracks_]/f").c_str());
 
     addBranch(tree, (On + "n_TagVarCSV_jetNTracksEtaRel").c_str(), &n_jetNTracksEtaRel_, (On + "n_jetNTracksEtaRel_/i").c_str()               );
     addBranch(tree, (On + "TagVarCSV_jetNTracksEtaRel").c_str(), &jetNTracksEtaRel_, (On + "jetNTracksEtaRel_/f").c_str()               );
 
-    addBranch(tree, (On + "TagVarCSV_trackEtaRel").c_str()    , &trackEtaRel_     , (On + "trackEtaRel_[n_jetNTracksEtaRel_]/f").c_str() );
+    addBranch(tree, (On + "TagVarCSV_trackEtaRel").c_str()    , &trackEtaRel_     , (On + "trackEtaRel_[" + On + "n_jetNTracksEtaRel_]/f").c_str() );
 
-    addBranch(tree, (On + "trackPParRatio").c_str() , &trackPParRatio_  , (On + "trackPParRatio_[n_jetNSelectedTracks_]/f").c_str() );
-    addBranch(tree, (On + "trackSip2dVal").c_str()  , &trackSip2dVal_   , (On + "trackSip2dVal_[n_jetNSelectedTracks_]/f").c_str()  );
-    addBranch(tree, (On + "trackSip3dVal").c_str()  , &trackSip3dVal_   , (On + "trackSip3dVal_[n_jetNSelectedTracks_]/f").c_str()  );
-    addBranch(tree, (On + "trackMomentum").c_str()  , &trackMomentum_   , (On + "trackMomentum_[n_jetNSelectedTracks_]/f").c_str()  );
-    addBranch(tree, (On + "trackEta").c_str()       , &trackEta_        , (On + "trackEta_[n_jetNSelectedTracks_]/f").c_str()       );
-    addBranch(tree, (On + "trackPPar").c_str()      , &trackPPar_       , (On + "trackPPar_[n_jetNSelectedTracks_]/f").c_str()      );
+    addBranch(tree, (On + "trackPParRatio").c_str() , &trackPParRatio_  , (On + "trackPParRatio_[" + On + "n_jetNSelectedTracks_]/f").c_str() );
+    addBranch(tree, (On + "trackSip2dVal").c_str()  , &trackSip2dVal_   , (On + "trackSip2dVal_[" + On + "n_jetNSelectedTracks_]/f").c_str()  );
+    addBranch(tree, (On + "trackSip3dVal").c_str()  , &trackSip3dVal_   , (On + "trackSip3dVal_[" + On + "n_jetNSelectedTracks_]/f").c_str()  );
+    addBranch(tree, (On + "trackMomentum").c_str()  , &trackMomentum_   , (On + "trackMomentum_[" + On + "n_jetNSelectedTracks_]/f").c_str()  );
+    addBranch(tree, (On + "trackEta").c_str()       , &trackEta_        , (On + "trackEta_[" + On + "n_jetNSelectedTracks_]/f").c_str()       );
+    addBranch(tree, (On + "trackPPar").c_str()      , &trackPPar_       , (On + "trackPPar_[" + On + "n_jetNSelectedTracks_]/f").c_str()      );
     //SV info
     addBranch(tree, (On + "n_StoredVertices").c_str()   , &n_StoredVertices_    , (On + "n_StoredVertices_/i").c_str() );
     addBranch(tree, (On + "NStoredVertices").c_str()   , &NStoredVertices_    , (On + "NStoredVertices_/f").c_str() );
+    addBranch(tree, (On + "n_StoredFlightDist").c_str()   , &n_StoredFlightDist_    , (On + "n_StoredFlightDist_/i").c_str() );
+    addBranch(tree, (On + "NStoredFlightDist").c_str()   , &NStoredFlightDist_    , (On + "NStoredFlightDist_/f").c_str() );
 
-    addBranch(tree, (On + "TagVarCSV_vertexMass").c_str()        , &vertexMass_         , (On + "vertexMass_[n_StoredVertices_]/f").c_str()        );
-    addBranch(tree, (On + "TagVarCSV_vertexNTracks").c_str()     , &vertexNTracks_      , (On + "vertexNTracks_[n_StoredVertices_]/f").c_str()     );
-    addBranch(tree, (On + "TagVarCSV_vertexEnergyRatio").c_str() , &vertexEnergyRatio_  , (On + "vertexEnergyRatio_[n_StoredVertices_]/f").c_str() );
-    addBranch(tree, (On + "TagVarCSV_vertexJetDeltaR").c_str()   , &vertexJetDeltaR_    , (On + "vertexJetDeltaR_[n_StoredVertices_]/f").c_str()   );
-    addBranch(tree, (On + "TagVarCSV_flightDistance2dVal").c_str(), &flightDistance2dVal_, (On + "flightDistance2dVal_[n_StoredVertices_]/f").c_str());
-    addBranch(tree, (On + "TagVarCSV_flightDistance2dSig").c_str(), &flightDistance2dSig_, (On + "flightDistance2dSig_[n_StoredVertices_]/f").c_str());
-    addBranch(tree, (On + "TagVarCSV_flightDistance3dVal").c_str(), &flightDistance3dVal_, (On + "flightDistance3dVal_[n_StoredVertices_]/f").c_str());
-    addBranch(tree, (On + "TagVarCSV_flightDistance3dSig").c_str(), &flightDistance3dSig_, (On + "flightDistance3dSig_[n_StoredVertices_]/f").c_str());
+    addBranch(tree, (On + "TagVarCSV_vertexMass").c_str()        , &vertexMass_         , (On + "vertexMass_[" + On + "n_StoredVertices_]/f").c_str()        );
+    addBranch(tree, (On + "TagVarCSV_vertexNTracks").c_str()     , &vertexNTracks_      , (On + "vertexNTracks_[" + On + "n_StoredVertices_]/f").c_str()     );
+    addBranch(tree, (On + "TagVarCSV_vertexEnergyRatio").c_str() , &vertexEnergyRatio_  , (On + "vertexEnergyRatio_[" + On + "n_StoredVertices_]/f").c_str() );
+    addBranch(tree, (On + "TagVarCSV_vertexJetDeltaR").c_str()   , &vertexJetDeltaR_    , (On + "vertexJetDeltaR_[" + On + "n_StoredVertices_]/f").c_str()   );
+    addBranch(tree, (On + "TagVarCSV_flightDistance2dVal").c_str(), &flightDistance2dVal_, (On + "flightDistance2dVal_[" + On + "n_StoredFlightDist_]/f").c_str());
+    addBranch(tree, (On + "TagVarCSV_flightDistance2dSig").c_str(), &flightDistance2dSig_, (On + "flightDistance2dSig_[" + On + "n_StoredFlightDist_]/f").c_str());
+    addBranch(tree, (On + "TagVarCSV_flightDistance3dVal").c_str(), &flightDistance3dVal_, (On + "flightDistance3dVal_[" + On + "n_StoredFlightDist_]/f").c_str());
+    addBranch(tree, (On + "TagVarCSV_flightDistance3dSig").c_str(), &flightDistance3dSig_, (On + "flightDistance3dSig_[" + On + "n_StoredFlightDist_]/f").c_str());
 }
 
 
@@ -137,15 +139,16 @@ bool ntuple_bTagVars::fillBranches(const reco::ShallowTagInfo &tagInfo){
     //*******************
     n_StoredVertices_ = dump_vector(vars, vertexMass_, reco::btau::vertexMass,max_nStoredVertices_);
     NStoredVertices_=n_StoredVertices_;
-
+    n_StoredFlightDist_ = dump_vector(vars, flightDistance2dVal_, reco::btau::flightDistance2dVal,max_nStoredVertices_);
+    NStoredFlightDist_=n_StoredFlightDist_;
     dump_vector(vars, vertexNTracks_, reco::btau::vertexNTracks,max_nStoredVertices_);
     dump_vector(vars, vertexEnergyRatio_, reco::btau::vertexEnergyRatio,max_nStoredVertices_);
     dump_vector(vars, vertexJetDeltaR_, reco::btau::vertexJetDeltaR,max_nStoredVertices_);
-    dump_vector(vars, flightDistance2dVal_, reco::btau::flightDistance2dVal,max_nStoredVertices_);
     dump_vector(vars, flightDistance2dSig_, reco::btau::flightDistance2dSig,max_nStoredVertices_);
     dump_vector(vars, flightDistance3dVal_, reco::btau::flightDistance3dVal,max_nStoredVertices_);
     dump_vector(vars, flightDistance3dSig_, reco::btau::flightDistance3dSig,max_nStoredVertices_);
 
+    
     return true;
 }
 
