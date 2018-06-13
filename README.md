@@ -65,6 +65,22 @@ sed -i 's|deepFlavourJetTags|pfDeepCSVJetTags|g' DeepNTuples/DeepNtuplizer/produ
 scram b -j 4
 ```
 
+Installation (CMSSW_9_4_X for phase2 samples)
+============
+```
+cmsrel CMSSW_9_4_8
+cd CMSSW_9_4_8/src
+cmsenv
+git cms-init
+git clone -b 94X https://github.com/CMSDeepFlavour/DeepNTuples
+cd DeepNTuples
+git submodule init
+git submodule update
+
+scram b -j 4
+```
+
+
 Further settings
 ============
 
