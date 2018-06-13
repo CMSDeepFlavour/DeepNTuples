@@ -76,7 +76,6 @@ git cms-init
 git clone https://github.com/CMSDeepFlavour/DeepNTuples
 cd DeepNTuples
 git checkout 94X
-git revert -m 1 578ae33227bcfcb67d034e38a26485efd180ea92 #Temporary solution 
 # Add JetToolBox
 git submodule init
 git submodule update
