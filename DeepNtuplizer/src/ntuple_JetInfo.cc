@@ -389,40 +389,40 @@ bool ntuple_JetInfo::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     genDecay_ = -1.;
 
-    reco::GenParticleRefVector Bhadrons_in_jet = jet.jetFlavourInfo().getbHadrons();
-
-    if (Bhadrons_in_jet.size() > 0){ 
-
-        for (unsigned int idx=0; idx<Bhadron_.size(); ++idx){
-
-            reco::GenParticle bhad = Bhadron_[idx];
-
-            bool bhad_is_in_jet = false;
-
-            for (reco::GenParticleRefVector::const_iterator bhad_in_jet = Bhadrons_in_jet.begin(); bhad_in_jet!=Bhadrons_in_jet.end(); ++bhad_in_jet) {
-
-                //check if bhad is identical to bhad_in_jet
-                if ( (*bhad_in_jet)->pt() == bhad.pt() && (*bhad_in_jet)->eta() == bhad.eta()
-                        && (*bhad_in_jet)->phi() == bhad.phi() && (*bhad_in_jet)->pdgId() == bhad.pdgId())              
-                    bhad_is_in_jet = true;
-            }
-            if (bhad_is_in_jet){
-
-                if (Bhadron_daughter_[idx].vx()!=bhad.vx()){
-                    
-                    float vx = Bhadron_daughter_[idx].vx() - bhad.vx();
-                    float vy = Bhadron_daughter_[idx].vy() - bhad.vy();
-
-                    float dxy = sqrt(vx*vx+vy*vy);
-                    if (dxy > genDecay_)
-                        genDecay_= dxy;
-                }
-                else if (genDecay_ < 0) 
-                    genDecay_ = -0.1;
-            }
-        }
-    }
-
+//    reco::GenParticleRefVector Bhadrons_in_jet = jet.jetFlavourInfo().getbHadrons();
+//
+//    if (Bhadrons_in_jet.size() > 0){ 
+//
+//        for (unsigned int idx=0; idx<Bhadron_.size(); ++idx){
+//
+//            reco::GenParticle bhad = Bhadron_[idx];
+//
+//            bool bhad_is_in_jet = false;
+//
+//            for (reco::GenParticleRefVector::const_iterator bhad_in_jet = Bhadrons_in_jet.begin(); bhad_in_jet!=Bhadrons_in_jet.end(); ++bhad_in_jet) {
+//
+//                //check if bhad is identical to bhad_in_jet
+//                if ( (*bhad_in_jet)->pt() == bhad.pt() && (*bhad_in_jet)->eta() == bhad.eta()
+//                        && (*bhad_in_jet)->phi() == bhad.phi() && (*bhad_in_jet)->pdgId() == bhad.pdgId())              
+//                    bhad_is_in_jet = true;
+//            }
+//            if (bhad_is_in_jet){
+//
+//                if (Bhadron_daughter_[idx].vx()!=bhad.vx()){
+//                    
+//                    float vx = Bhadron_daughter_[idx].vx() - bhad.vx();
+//                    float vy = Bhadron_daughter_[idx].vy() - bhad.vy();
+//
+//                    float dxy = sqrt(vx*vx+vy*vy);
+//                    if (dxy > genDecay_)
+//                        genDecay_= dxy;
+//                }
+//                else if (genDecay_ < 0) 
+//                    genDecay_ = -0.1;
+//            }
+//        }
+//    }
+//
 
 
     //https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016
