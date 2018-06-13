@@ -55,9 +55,10 @@ if not  issgesched:
 
 
 for dir in dirs:
-    
+    if dir.endswith('/'):
+        dir = dir[:-1]
     print('\nchecking dir '+dir)
-    
+
     if len(dir.split('/'))>1:
         print ('please run this script directly in the parent directory of the job directory')
         exit()
