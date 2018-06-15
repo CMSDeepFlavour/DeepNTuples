@@ -25,6 +25,7 @@
 #include "DeepNTuples/DeepNtuplizer/interface/ntuple_pfCands.h"
 #include "DeepNTuples/DeepNtuplizer/interface/ntuple_SV.h"
 #include "DeepNTuples/DeepNtuplizer/interface/ntuple_DeepVertex.h"
+#include "DeepNTuples/DeepNtuplizer/interface/ntuple_eventInfo.h"
 
 static bool debug=true;
 
@@ -133,6 +134,7 @@ std::vector<TChain* > mergeDescriptor::createChains(
     branchinfos.push_back(new ntuple_bTagVars());
     branchinfos.push_back(new ntuple_pfCands());
   //  branchinfos.push_back(new ntuple_DeepVertex());
+    branchinfos.push_back(new ntuple_eventInfo());
 
     std::vector<TChain* > chains;
     for(size_t i=0;i<infiles.size();i++){

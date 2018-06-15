@@ -21,8 +21,9 @@ public:
     ntuple_JetInfo():ntuple_content(),
     gluonReduction_(0),
     useherwcompat_matching_(false),
-    isherwig_(false)
-{}
+    isherwig_(false),
+    isData_(false)
+    {}
 
     void getInput(const edm::ParameterSet& iConfig);
     void initBranches(TTree* );
@@ -130,6 +131,8 @@ public:
 
     bool useherwcompat_matching_;
     bool isherwig_;
+    bool isData_;
+    bool removeUndefined_;
 
     /////////branches
 
@@ -167,6 +170,7 @@ public:
     int isPhysLeptonicB_;
     int isPhysLeptonicB_C_;
     int isPhysTau_;
+    int isRealData_;
 
     // global variables
     float npv_;

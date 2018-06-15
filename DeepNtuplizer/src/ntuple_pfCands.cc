@@ -273,14 +273,16 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
                         -mindrsvpfcand(PackedCandidate), PackedCandidate->pt()/jet_uncorr_pt));
             }
             else{
-                sortedneutrals.push_back(sorting::sortingClass<size_t>
-                (i, -1, -mindrsvpfcand(PackedCandidate), PackedCandidate->pt()/jet_uncorr_pt));
+                sorting::sortingClass<size_t>  ineutral = sorting::sortingClass<size_t>(i, -1, -mindrsvpfcand(PackedCandidate), PackedCandidate->pt()/jet_uncorr_pt);
+                sortedneutrals.push_back(ineutral);
             }
         }
     }
 
+
     std::sort(sortedcharged.begin(),sortedcharged.end(),sorting::sortingClass<size_t>::compareByABCInv);
     std::sort(sortedneutrals.begin(),sortedneutrals.end(),sorting::sortingClass<size_t>::compareByABCInv);
+
 
     // counts neutral and charged candicates
     n_Cpfcand_ = std::min(sortedcharged.size(),max_pfcand_);
@@ -288,10 +290,8 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     std::vector<size_t> sortedchargedindices,sortedneutralsindices;
 
-        sortedchargedindices=sorting::invertSortingVector(sortedcharged);
-        sortedneutralsindices=sorting::invertSortingVector(sortedneutrals);
-
-
+    sortedchargedindices=sorting::invertSortingVector(sortedcharged);
+    sortedneutralsindices=sorting::invertSortingVector(sortedneutrals);
 
 
 
@@ -458,6 +458,11 @@ bool ntuple_pfCands::fillBranches(const pat::Jet & jet, const size_t& jetidx, co
 
     nCpfcand_=n_Cpfcand_;
     nNpfcand_=n_Npfcand_;
+
+    if(jet.eta() == -1.039){
+        std::cout<<" end pfCands ..."<<std::endl;
+    }
+
 
     return true; //for making cuts
 }

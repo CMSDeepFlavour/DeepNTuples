@@ -13,6 +13,8 @@
 #include "../interface/ntuple_bTagVars.h"
 #include "../interface/ntuple_FatJetInfo.h"
 #include "../interface/ntuple_DeepVertex.h"
+#include "../interface/ntuple_eventInfo.h"
+
 
 //ROOT includes
 #include "TTree.h"
@@ -52,7 +54,7 @@
 #include "TrackingTools/IPTools/interface/IPTools.h"
 #include "DataFormats/GeometryCommonDetAlgo/interface/Measurement1D.h"
 
-
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 
 #if defined( __GXX_EXPERIMENTAL_CXX0X__)
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
@@ -108,10 +110,10 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
                             vtxToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
                             svToken_(consumes<reco::VertexCompositePtrCandidateCollection>(
                                     iConfig.getParameter<edm::InputTag>("secVertices"))),
-                                    jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets"))),
-                                    puToken_(consumes<std::vector<PileupSummaryInfo >>(iConfig.getParameter<edm::InputTag>("pupInfo"))),
-                                    rhoToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoInfo"))),
-                                    t_qgtagger(iConfig.getParameter<std::string>("qgtagger"))
+                            jetToken_(consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("jets"))),
+                            puToken_(consumes<std::vector<PileupSummaryInfo >>(iConfig.getParameter<edm::InputTag>("pupInfo"))),
+                            rhoToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoInfo"))),
+                            t_qgtagger(iConfig.getParameter<std::string>("qgtagger"))
 {
     /*
      *  Initialise the modules here
@@ -127,12 +129,16 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     const bool useHerwigCompatibleMatching=iConfig.getParameter<bool>("useHerwigCompatible");
     const bool isHerwig=iConfig.getParameter<bool>("isHerwig");
 
+    const bool isData=iConfig.getParameter<bool>("isData");
+
     ntuple_content::useoffsets = iConfig.getParameter<bool>("useOffsets");
 
     applySelection_=iConfig.getParameter<bool>("applySelection");
 
+
     ntuple_SV* svmodule=new ntuple_SV("", jetR);
     addModule(svmodule);
+
 
     //Loose IVF vertices
     //ntuple_SV* svmodule_LooseIVF=new ntuple_SV("LooseIVF_", jetR);
@@ -156,12 +162,15 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
     jetinfo->setUseHerwigCompatibleMatching(useHerwigCompatibleMatching);
     jetinfo->setIsHerwig(isHerwig);
 
-    jetinfo->setGenJetMatchReclusterToken(
-            consumes<edm::Association<reco::GenJetCollection> >(
-                    iConfig.getParameter<edm::InputTag>( "genJetMatchRecluster" )));
-    jetinfo->setGenJetMatchWithNuToken(
-            consumes<edm::Association<reco::GenJetCollection> >(
-                    iConfig.getParameter<edm::InputTag>( "genJetMatchWithNu" )));
+    if(!isData){
+        jetinfo->setGenJetMatchReclusterToken(
+                consumes<edm::Association<reco::GenJetCollection> >(
+                        iConfig.getParameter<edm::InputTag>( "genJetMatchRecluster" )));
+        jetinfo->setGenJetMatchWithNuToken(
+                consumes<edm::Association<reco::GenJetCollection> >(
+                        iConfig.getParameter<edm::InputTag>( "genJetMatchWithNu" )));
+    }
+
 
     jetinfo->setGenParticlesToken(
             consumes<reco::GenParticleCollection>(
@@ -182,7 +191,18 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
 
     addModule(pfcands);
 
-    addModule(new ntuple_bTagVars());
+    ntuple_bTagVars * btagvars = new ntuple_bTagVars();
+    addModule(btagvars);
+
+    ntuple_eventInfo *evweight = new ntuple_eventInfo();
+    if(!isData){
+        evweight->setLHEToken(consumes<LHEEventProduct>(iConfig.getParameter<edm::InputTag>("lheInfo")));
+        evweight->setMuonsToken(consumes<edm::View<pat::Muon> >(iConfig.getParameter<edm::InputTag>("sfMuons")));
+        evweight->setElectronsToken(consumes<edm::View<pat::Electron> >(iConfig.getParameter<edm::InputTag>("sfElectrons")));
+        evweight->setTriggerToken(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerToken")));
+    }
+    addModule(evweight);
+
 
     if(runFatJets_){
         auto *fatjetinfo = new ntuple_FatJetInfo(jetR);
@@ -196,9 +216,9 @@ DeepNtuplizer::DeepNtuplizer(const edm::ParameterSet& iConfig):
      *
      * parse the input parameters (if any)
      */
-    for(auto& m: modules_)
+    for(auto& m: modules_){
         m->getInput(iConfig);
-
+    }
 }
 
 
@@ -214,7 +234,6 @@ DeepNtuplizer::~DeepNtuplizer()
 void
 DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-
     //global info
 
     edm::Handle<reco::VertexCollection> vertices;
@@ -225,7 +244,8 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(svToken_, secvertices);
 
     edm::Handle<std::vector<PileupSummaryInfo> > pupInfo;
-    iEvent.getByToken(puToken_, pupInfo);
+    if(!iEvent.isRealData())
+        iEvent.getByToken(puToken_, pupInfo);
 
     edm::Handle<double> rhoInfo;
     iEvent.getByToken(rhoToken_,rhoInfo);
@@ -236,7 +256,8 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     for(auto& m:modules_){
         m->setPrimaryVertices(vertices.product());
         m->setSecVertices(secvertices.product());
-        m->setPuInfo(pupInfo.product());
+        if(!iEvent.isRealData())
+            m->setPuInfo(pupInfo.product());
         m->setRhoInfo(rhoInfo.product());
         m->readSetup(iSetup);
         m->readEvent(iEvent);
@@ -251,12 +272,15 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     edm::View<pat::Jet>::const_iterator jetIter;
     // loop over the jets
+
     //for (edm::View<pat::Jet>::const_iterator jetIter = jets->begin(); jetIter != jets->end(); ++jetIter) {
     for(size_t j=0;j<indices.size();j++){
         njetstotal_++;
+
         size_t jetidx=indices.at(j);
         jetIter = jets->begin()+jetidx;
         const pat::Jet& jet = *jetIter;
+
 
         if(jet.genJet())
             njetswithgenjet_++;
@@ -273,6 +297,7 @@ DeepNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             njetsselected_++;
         }
     } // end of looping over the jets
+
 }
 
 
